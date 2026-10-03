@@ -46,6 +46,7 @@ const COLLAPSED_KEY = 'spacefly.nav.collapsed';
                         hlmSidebarMenuButton
                         [routerLink]="item.path"
                         routerLinkActive
+                        ariaCurrentWhenActive="page"
                         #rla="routerLinkActive"
                         [routerLinkActiveOptions]="{ paths: 'exact', queryParams: 'ignored', fragment: 'ignored', matrixParams: 'ignored' }"
                         [isActive]="rla.isActive"
@@ -64,7 +65,7 @@ const COLLAPSED_KEY = 'spacefly.nav.collapsed';
           </hlm-sidebar-group>
         }
       </hlm-sidebar-content>
-      <button hlmSidebarRail></button>
+      <button hlmSidebarRail [attr.aria-label]="'nav.toggle' | transloco"></button>
     </hlm-sidebar>
   `,
 })

@@ -25,6 +25,7 @@
     "menu": "Menú",
     "readOnly": "solo lectura",
     "toggle": "Mostrar u ocultar menú",
+    "skipToContent": "Saltar al contenido",
     "breadcrumb": "Ruta de navegación",
     "sections": {
       "general": "General",

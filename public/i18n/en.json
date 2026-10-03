@@ -25,6 +25,7 @@
     "menu": "Menu",
     "readOnly": "read-only",
     "toggle": "Toggle menu",
+    "skipToContent": "Skip to content",
     "breadcrumb": "Breadcrumb",
     "sections": {
       "general": "General",
