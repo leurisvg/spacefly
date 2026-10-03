@@ -4,7 +4,7 @@ Dashboards, reports and analytics for your personal finances on top of **Firefly
 
 SpaceFly is the evolution of [firefly-iii-email-summary](https://github.com/yemzikk/firefly-iii-email-summary). It takes everything that monthly email report offers (KPIs, categories compared with the previous month, budgets, money-flow diagram, daily calendar, per-account activity, top expenses, savings and financial summary) and turns it into an interactive web app with multiple screens, any time period and drill-down to the individual transaction.
 
-> **Current scope:** read-only visualization. SpaceFly never modifies data in Firefly III.
+> **Current scope:** reports and analytics, plus recording and maintaining your data: create, edit and delete transactions (the type is deduced from the accounts), categories, tags, accounts, budgets, subscriptions and goals. Firefly III stays the source of truth: your rules and webhooks always run.
 
 ---
 
@@ -17,7 +17,8 @@ SpaceFly is the evolution of [firefly-iii-email-summary](https://github.com/yemz
 - [Screens](#screens)
 - [Privacy mode](#privacy-mode)
 - [Visual design](#visual-design)
-- [Firefly III endpoints used](#firefly-iii-endpoints-used-get-only)
+- [Creating and editing data](#creating-and-editing-data)
+- [Firefly III endpoints used](#firefly-iii-endpoints-used)
 - [Roadmap](#roadmap)
 - [Configuration](#configuration)
 - [Development](#development)
@@ -48,7 +49,7 @@ SpaceFly is the evolution of [firefly-iii-email-summary](https://github.com/yemz
 Browser ──(Cloudflare Zero Trust)──► SpaceFly (Node container)
                                       ├─ /            → Angular SPA (static)
                                       ├─ /auth/*      → OAuth with Firefly, session
-                                      └─ /api/*       → report endpoints (GET only)
+                                      └─ /api/*       → reports (GET) and writes (POST/PUT/DELETE, CSRF-guarded)
                                             │  user token (stored server-side)
                                             ▼
                                       Firefly III /api/v1 (internal Docker network)
@@ -56,9 +57,9 @@ Browser ──(Cloudflare Zero Trust)──► SpaceFly (Node container)
 
 ### BFF principles
 
-1. **Read-only**: the Firefly client can only issue `GET` requests.
+1. **One client, explicit writes**: the Firefly client exposes a reader (`get`/`list`/`page`) and a writer (`post`/`put`/`delete`). Reports only receive the reader. A write is never retried after a timeout or a network error (it could create a duplicate); only a `401` is retried, with the same body and a refreshed token.
 2. **Ledger engine**: instead of making N requests per category, it downloads all transactions of the period once (`/v1/transactions?type=all`, paginated) and flattens them into normalized *splits*: date, type, amount, `pc_amount`, currency, foreign amount, category, budget, tags, bill, source and destination. Every aggregate is computed from that set.
-3. **Per-month cache** (in-memory LRU + SQLite): closed months are stored with a long TTL and the current month with a short TTL. A "Refresh" button invalidates the cache.
+3. **Per-month cache** (in-memory LRU + SQLite): closed months are stored with a long TTL and the current month with a short TTL. A "Refresh" button invalidates the cache. After a transaction write only the months it touched are dropped (plus balances, budgets, subscriptions, goals, categories and tags); closed months that were not touched stay cached. A fetch that started before a write can never store its stale result.
 4. **Currencies**: everything is consolidated in DOP. To display USD, the rate in effect on each transaction's date is used. Every amount keeps `{original, currency, rate}` so the breakdown can be shown.
 5. **Shared typed contracts** (`shared/`): the same DTOs are used by the server and by Angular.
 
@@ -66,6 +67,7 @@ Browser ──(Cloudflare Zero Trust)──► SpaceFly (Node container)
 
 - **OAuth with Firefly**: a confidential client is created in Firefly (*Profile → OAuth → Clients*) with redirect `https://<app>/auth/callback`. The BFF stores the tokens encrypted (AES-GCM) in SQLite and only hands the browser an `httpOnly; Secure; SameSite=Lax` cookie. Tokens are refreshed automatically.
 - **Cloudflare Access**: a middleware verifies the `Cf-Access-Jwt-Assertion` header (signature, `aud` and allowed email). It can be disabled in development with `CF_ACCESS_ENABLED=false`.
+- **Writes are CSRF-protected.** `SameSite=Lax` does not stop requests between sibling subdomains (`firefly.` → `spacefly.` are the same site), so every `POST`/`PUT`/`DELETE` on `/api/*` and `/auth/logout` must carry the `X-SpaceFly: 1` header, an `Origin` equal to `APP_URL` (when the browser sends one), `Sec-Fetch-Site: same-origin` (when sent) and a JSON body (`415` otherwise). Bodies are capped at 64 KB and writes are rate limited. Because of this check, open SpaceFly at exactly the address in `APP_URL`.
 - Security headers (CSP and similar) and a rate limit on `/auth`.
 
 ---
@@ -82,19 +84,20 @@ SpaceFly/
 ├─ docker-compose.example.yml
 ├─ .env.example
 ├─ shared/                      # shared types/DTOs (no dependencies)
-│  ├─ dto/  (period.ts, money.ts, ledger.ts, reports/*.ts)
+│  ├─ dto/  (period.ts, money.ts, ledger.ts, write.ts, reports/*.ts)
+│  ├─ utils/ (dates.ts, tx-type.ts, amount.ts)   # type inference matrix, amount parsing
 │  └─ index.ts
 ├─ server/
 │  ├─ src/
 │  │  ├─ main.ts                # Hono: serves dist/ and mounts routes
 │  │  ├─ config.ts              # env validated with zod
-│  │  ├─ auth/                  # oauth.routes, session.store, cf-access.middleware, crypto
-│  │  ├─ firefly/               # firefly.client (GET only, pagination, refresh), types
-│  │  ├─ core/                  # ledger.service, currency.service, cache, period
+│  │  ├─ auth/                  # oauth.routes, session.store, cf-access.middleware, write-guard (CSRF), crypto
+│  │  ├─ firefly/               # firefly.client (reader + writer, pagination, refresh), types
+│  │  ├─ core/                  # ledger.service, currency.service, cache, firefly-payloads (write mappers), period
 │  │  ├─ reports/               # one file per report (pure, testable logic)
-│  │  ├─ routes/api.routes.ts   # /api/reports/*, /api/meta, /api/transactions
+│  │  ├─ routes/                # api.routes (reports, meta, reads), write.routes + entity.routes (create/edit/delete), write.schemas, errors
 │  │  └─ db/sqlite.ts           # node:sqlite — sessions, cache, fallback rates
-│  └─ test/fixtures/            # anonymized real Firefly responses
+│  └─ test/fixtures/            # synthetic Firefly responses; fake-firefly also accepts writes (tests and `dev:mock`)
 ├─ public/i18n/{es,en}.json
 └─ src/
    ├─ styles.css                # tailwind + spartan theme (dark) + chart tokens
@@ -103,7 +106,9 @@ SpaceFly/
       ├─ layout/                # shell, collapsible sidebar, topbar, mobile sheet
       ├─ shared/
       │  ├─ charts/             # echarts theme, sankey, calendar, trend, bars, donut, treemap, sparkline
-      │  └─ components/         # kpi-card, money-cell, delta-badge, period-picker, tx-detail-sheet…
+      │  ├─ components/         # kpi-card, money-cell, delta-badge, period-picker, tx-detail-sheet…
+      │  └─ forms/              # form-field, money-input, combobox, account-picker, tx-type-badge, tag-input, date-input, form-footer, confirm
+      ├─ features/editor/       # transaction form, entity editors (category, tag, budget, subscription, account, goal)
       ├─ features/              # one folder per screen
       └─ libs/ui/               # spartan helm components (generated by the CLI)
 ```
@@ -121,7 +126,7 @@ Collapsible sidebar sections: on mobile it opens as a *Sheet*, and on desktop it
 | **Analysis** | Categories · Tags · Budgets · Merchants · Income sources |
 | **Accounts** | Asset accounts · Net worth · Savings |
 | **Planning** | Subscriptions · Recurring · Goals (piggy banks) · Cash-flow projection |
-| **Transactions** | Explorer |
+| **Transactions** | Explorer · New / edit transaction |
 | **System** | Settings · About |
 
 ---
@@ -143,7 +148,20 @@ Common behavior across all screens: filters live in the URL, every amount shows 
 11. **Subscriptions**: monthly cost and annual equivalent, upcoming dates, paid vs pending and amount variation.
 12. **Recurring and projection**: upcoming occurrences and cash-flow projection at 30, 60 and 90 days.
 13. **Goals**: progress of each piggy bank and estimated completion date based on contribution pace.
-14. **Transaction explorer**: table with search (Firefly syntax), filters, sorting, pagination, CSV export and a link to Firefly.
+14. **Transaction explorer**: table with search (Firefly syntax), filters, sorting, pagination, CSV export, a link to Firefly and, per row, edit / delete.
+
+---
+
+## Creating and editing data
+
+The **+ New** button in the top bar creates a transaction, category, tag, budget, subscription, account or goal; the pencil next to a row or card edits it, and every editor can delete (always with a confirmation).
+
+- **Transactions** (`/transactions/new`, `/transactions/:id/edit`). You never pick the type: it is deduced from the source and destination accounts and shown live as you choose them (asset → asset is a transfer; asset → expense, cash or liability is an expense; revenue, cash or liability → asset is income; any other pair is flagged as invalid). A name typed in the destination becomes a new expense account, and in the source a new income source. The amount is in the currency of the account on the amount side; a transfer between currencies asks for the received amount, and expenses/income can carry an amount in another currency. Only **single-part** transactions are edited here; one with several parts (or an opening balance, reconciliation…) shows a notice with an *Edit in Firefly* link, so no part is ever deleted by accident.
+- **After saving**, two switches (remembered in the browser) give three modes: go back to where you came from (or the explorer if you opened the page directly), stay with an empty form (today's date and your default account), or stay keeping the data. When editing, staying reloads the transaction from Firefly because your rules may have changed fields.
+- **Rules and webhooks always run**: SpaceFly sends `apply_rules` and `fire_webhooks` as `true` on every transaction create and update.
+- **Accounts**: the kind (asset, liability, expense, income) is chosen when creating and cannot change later; the fields follow the kind (role, credit-card payment day, interest and debt data, opening balance…). Deleting an account deletes its transactions in Firefly, so the confirmation shows how many and asks you to type the account's name.
+- **Goals**: each goal lists its accounts with the amount set aside in each; "Add / Remove" adjusts one account, and saving always sends the complete list (Firefly replaces a goal's accounts with it).
+- **Errors from Firefly** (`422`) are shown under the field that caused them.
 
 ---
 
@@ -168,9 +186,11 @@ The eye button in the top bar hides **all amounts and percentages** in the app: 
 
 ---
 
-## Firefly III endpoints used (GET only)
+## Firefly III endpoints used
 
-`/v1/about`, `/v1/about/user`, `/v1/preferences`, `/v1/currencies`, `/v1/exchange-rates`, `/v1/transactions`, `/v1/search/transactions`, `/v1/accounts`, `/v1/categories`, `/v1/tags`, `/v1/budgets` (+ `/limits`), `/v1/available-budgets`, `/v1/bills`, `/v1/recurrences`, `/v1/piggy-banks`, `/v1/summary/basic`, `/v1/chart/account/overview`, `/v1/chart/balance/balance`, `/v1/insight/*`.
+Reads: `/v1/about`, `/v1/about/user`, `/v1/preferences`, `/v1/currencies`, `/v1/exchange-rates`, `/v1/transactions`, `/v1/search/transactions`, `/v1/accounts`, `/v1/categories`, `/v1/tags`, `/v1/budgets` (+ `/limits`), `/v1/available-budgets`, `/v1/bills`, `/v1/recurrences`, `/v1/piggy-banks`, `/v1/summary/basic`, `/v1/chart/account/overview`, `/v1/chart/balance/balance`, `/v1/insight/*`.
+
+Writes: `POST/PUT/DELETE /v1/transactions`, `/v1/categories`, `/v1/tags`, `/v1/accounts`, `/v1/budgets`, `/v1/bills` and `/v1/piggy-banks`, plus the matching single-record `GET`s (including `/v1/accounts/{id}/transactions` to count what deleting an account removes).
 
 ---
 
@@ -184,7 +204,9 @@ The eye button in the top bar hides **all amounts and percentages** in the app: 
 - [x] **Phase 5 — Planning**: Subscriptions, Recurring, Cash-flow projection and Goals.
 - [x] **Phase 6 — Explorer and polish**: transaction explorer, CSV/PNG exports, Settings, performance (`@defer`, bundle budgets) and accessibility.
 
-**Pending**: validate against a real Firefly III instance (field names `pc_*` / `primary_currency_*` and `insight`, versions 6.6.2 and 6.7.6, parity with `monthly-report.py`) and review the responsive layout at 375 / 768 / 1440 px in a browser. See [Capturing real fixtures](#capturing-real-fixtures).
+- [x] **Phase 7 — Write support**: create, edit and delete transactions (type deduced from the accounts), categories, tags, accounts, budgets, subscriptions and goals; CSRF guard, targeted cache invalidation and form components built on Angular signal forms.
+
+**Pending**: validate against a real Firefly III instance (field names `pc_*` / `primary_currency_*` and `insight`, versions 6.6.2 and 6.7.6, parity with `monthly-report.py`) and the write paths (see [Verification](#verification)) and review the responsive layout at 375 / 768 / 1440 px in a browser. See [Capturing real fixtures](#capturing-real-fixtures).
 
 ---
 
@@ -234,7 +256,7 @@ Use `CF_ACCESS_ENABLED=false` locally.
 
 ### Mock mode
 
-`npm run dev:mock` starts three processes: `mock:firefly` (a simulated Firefly API on `:8081` with ~14 months of synthetic, deterministic data), the BFF with `.env.mock` (which skips OAuth using a development token) and `ng serve`. It lets you walk through every screen without real data. `.env.mock` contains no secrets and must not be used in production. If something is already listening on `4200`, `3000` or `8081`, startup fails with `EADDRINUSE`.
+`npm run dev:mock` starts three processes: `mock:firefly` (a simulated Firefly API on `:8081` with ~14 months of synthetic, deterministic data that also accepts writes, kept in memory until it restarts), the BFF with `.env.mock` (which skips OAuth using a development token) and `ng serve`. It lets you walk through every screen without real data. `.env.mock` contains no secrets and must not be used in production. If something is already listening on `4200`, `3000` or `8081`, startup fails with `EADDRINUSE`.
 
 ### Capturing real fixtures
 
@@ -519,3 +541,12 @@ Include the `/data` volume in your backups (for a named volume, for example `doc
 - **Parity**: compare `monthly-report.py --preview` with SpaceFly for the same month (KPIs, categories, budgets, Sankey and daily totals).
 - **Responsive**: review at 375px, 768px and 1440px.
 - **Security**: a request without the Cloudflare JWT must receive 403, and the Firefly token must never appear in the browser.
+- **Writes**: the server tests cover the whole create/edit/delete flow against the fake Firefly (type deduction, explicit `apply_rules` / `fire_webhooks`, the 409 that protects multi-part transactions, 422 field mapping, CSRF `403`/`415`, `413` and cache invalidation).
+- **Against a real Firefly 6.6** (a test user, one rule and one webhook pointing at a request catcher), check once:
+  - that `apply_rules` and `fire_webhooks` fire rules and webhooks on create *and* edit;
+  - that the OAuth token issued with `scope ''` is allowed to write;
+  - which spelling Firefly accepts for liabilities (`liability` or `liabilities`) and whether a liability's opening amount goes in `opening_balance` / `opening_balance_date` (as SpaceFly sends it) or in `liability_amount` / `liability_start_date`;
+  - that a PUT clears fields sent empty and accepts a change of type;
+  - the currency of transfers and amounts in another currency;
+  - the goal accounts payload (`accounts: [{ account_id, current_amount }]`) and that changes generate goal events;
+  - the automatic-budget field names (`auto_budget_type`, `auto_budget_amount`, `auto_budget_period`, `auto_budget_currency_code`) and whether subscriptions are linked with `bill_id` or `subscription_id`.

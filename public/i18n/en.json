@@ -25,7 +25,7 @@
   },
   "nav": {
     "menu": "Menu",
-    "readOnly": "read-only",
+    "readOnly": "reports & data entry",
     "toggle": "Toggle menu",
     "skipToContent": "Skip to content",
     "breadcrumb": "Breadcrumb",
@@ -57,6 +57,8 @@
     "goals": "Goals",
     "projection": "Cash-flow projection",
     "explorer": "Explorer",
+    "newTransaction": "New transaction",
+    "editTransaction": "Edit transaction",
     "settings": "Settings",
     "about": "About"
   },
@@ -73,7 +75,7 @@
   "login": {
     "subtitle": "Interactive reports for your Firefly III",
     "button": "Sign in with Firefly",
-    "readOnly": "SpaceFly only reads your data: it never changes anything in Firefly.",
+    "readOnly": "SpaceFly reads your Firefly III data and lets you record and edit it. Your token never reaches the browser.",
     "errors": {
       "invalid_state": "The sign-in attempt expired or is invalid. Please try again.",
       "token_exchange": "Firefly rejected the sign-in. Check the OAuth client.",
@@ -391,6 +393,258 @@
     "primary": "Primary currency",
     "user": "User",
     "instance": "Instance",
-    "body": "SpaceFly is read-only: the server only issues GET requests to Firefly and your token never reaches the browser."
+    "body": "SpaceFly reads and writes your Firefly III data through its server, which also protects writes against requests from other sites. Your token never reaches the browser."
+  },
+  "forms": {
+    "createOption": "Create “{{name}}”",
+    "moreResults": "{{count}} more; type to search",
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "save": "Save",
+    "saving": "Saving…",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "errors": {
+      "required": "This field is required.",
+      "positive": "Enter an amount greater than zero.",
+      "amount": "Enter a valid amount.",
+      "date": "Pick a valid date.",
+      "min": "The value is too low.",
+      "max": "The value is too high.",
+      "minlength": "It is too short.",
+      "maxlength": "It is too long.",
+      "pattern": "The format is not valid.",
+      "email": "Enter a valid email.",
+      "combination": "These two accounts can't be combined.",
+      "foreign": "Enter the received amount.",
+      "range": "The maximum amount can't be lower than the minimum.",
+      "endDate": "The end date must be after the start date.",
+      "day": "Enter a day between 1 and 31.",
+      "accounts": "Pick at least one account.",
+      "interest": "Enter a valid percentage.",
+      "invalid": "The value is not valid."
+    },
+    "account": {
+      "newExpense": "New expense account: “{{name}}”",
+      "newRevenue": "New income source: “{{name}}”",
+      "incompatible": "Not compatible"
+    },
+    "accountGroups": {
+      "asset": "Assets",
+      "liability": "Liabilities",
+      "expense": "Expenses",
+      "revenue": "Income",
+      "cash": "Cash"
+    },
+    "txType": {
+      "pending": "Pick the accounts",
+      "invalid": "Invalid combination"
+    },
+    "tags": {
+      "placeholder": "Add a tag",
+      "add": "Add “{{name}}”",
+      "remove": "Remove {{tag}}"
+    },
+    "confirm": {
+      "ok": "Confirm",
+      "typeToConfirm": "Type “{{text}}” to confirm"
+    }
+  },
+  "editor": {
+    "back": "Back",
+    "retry": "Retry",
+    "networkError": "Couldn't reach the server. Check your connection: the change may not have been saved.",
+    "new": "New",
+    "newTitle": "Create",
+    "tx": {
+      "description": "Whether it's an expense, income or transfer follows from the accounts you pick.",
+      "what": "What happened",
+      "details": "Details",
+      "descriptionLabel": "Description",
+      "from": "From",
+      "to": "To",
+      "swap": "Swap accounts",
+      "accountPlaceholder": "Search or type an account",
+      "amount": "Amount",
+      "received": "Received amount ({{currency}})",
+      "date": "Date",
+      "otherCurrency": "Paid in another currency",
+      "foreignCurrency": "Currency",
+      "foreignAmount": "Amount in that currency",
+      "categoryPlaceholder": "Pick or create a category",
+      "bill": "Subscription",
+      "noBill": "No subscription",
+      "notes": "Notes",
+      "rules": "Your Firefly rules and webhooks will run.",
+      "stay": "Stay here to create another",
+      "stayEdit": "Stay here after saving",
+      "reset": "Reset the form",
+      "created": "Transaction created",
+      "updated": "Transaction updated",
+      "deleted": "Transaction deleted",
+      "deleteTitle": "Delete transaction",
+      "deleteMessage": "Delete “{{name}}”? This can't be undone.",
+      "deleteMessageSplits": "“{{name}}” has several parts: the whole transaction will be deleted. This can't be undone.",
+      "notEditable": {
+        "title": "This transaction can't be edited here",
+        "splits": "It has several parts. Edit it in Firefly so none is lost.",
+        "type": "It is a kind SpaceFly doesn't edit (opening balance, reconciliation…)."
+      },
+      "editInFirefly": "Edit in Firefly",
+      "missing": "That transaction doesn't exist.",
+      "loadError": "Couldn't load the transaction.",
+      "new": "New transaction",
+      "edit": "Edit",
+      "actions": "Actions"
+    },
+    "missing": "That record no longer exists.",
+    "loadError": "Couldn't load the record.",
+    "clear": "Clear",
+    "fields": {
+      "name": "Name",
+      "notes": "Notes",
+      "description": "Description",
+      "active": "Active",
+      "currency": "Currency",
+      "group": "Group"
+    },
+    "entity": {
+      "category": {
+        "new": "New category",
+        "edit": "Edit category",
+        "created": "Category created",
+        "updated": "Category updated",
+        "deleted": "Category deleted",
+        "deleteTitle": "Delete category",
+        "deleteMessage": "Delete the category “{{name}}”? Its transactions will become uncategorized."
+      },
+      "tag": {
+        "new": "New tag",
+        "edit": "Edit tag",
+        "created": "Tag created",
+        "updated": "Tag updated",
+        "deleted": "Tag deleted",
+        "deleteTitle": "Delete tag",
+        "deleteMessage": "Delete the tag “{{name}}”? It will be removed from all its transactions.",
+        "date": "Date",
+        "dateHint": "Optional: groups tags by moment (a trip, an event)."
+      },
+      "budget": {
+        "new": "New budget",
+        "edit": "Edit budget",
+        "created": "Budget created",
+        "updated": "Budget updated",
+        "deleted": "Budget deleted",
+        "deleteTitle": "Delete budget",
+        "deleteMessage": "Delete the budget “{{name}}”? Its transactions will have no budget.",
+        "auto": "Automatic budget",
+        "autoHint": "Firefly sets the amount by itself at the start of each period.",
+        "autoType": "Type",
+        "autoAmount": "Amount per period",
+        "autoPeriod": "Period",
+        "autoTypes": {
+          "reset": "Reset every period",
+          "rollover": "Roll over what's left",
+          "adjusted": "Adjust to what was spent"
+        }
+      },
+      "bill": {
+        "new": "New subscription",
+        "edit": "Edit subscription",
+        "created": "Subscription created",
+        "updated": "Subscription updated",
+        "deleted": "Subscription deleted",
+        "deleteTitle": "Delete subscription",
+        "deleteMessage": "Delete the subscription “{{name}}”? Its transactions are kept but no longer linked.",
+        "fixed": "Fixed amount",
+        "amount": "Amount",
+        "amountMin": "Minimum amount",
+        "amountMax": "Maximum amount",
+        "freq": "Frequency",
+        "skip": "Skip periods",
+        "skipHint": "0 = every period; 1 = every other one.",
+        "date": "First date",
+        "endDate": "End date",
+        "endDateHint": "Optional: leave empty if it doesn't end."
+      },
+      "account": {
+        "new": "New account",
+        "edit": "Edit account",
+        "created": "Account created",
+        "updated": "Account updated",
+        "deleted": "Account deleted",
+        "deleteTitle": "Delete account",
+        "deleteMessage": "Delete the account “{{name}}”?",
+        "deleteWarning": "Its {{count}} transactions will be deleted too. This can't be undone.",
+        "type": "Account type",
+        "types": {
+          "asset": "Asset",
+          "liability": "Liability",
+          "expense": "Expense",
+          "revenue": "Income"
+        },
+        "typeLocked": "The type can't be changed after the account is created.",
+        "role": "Use",
+        "iban": "IBAN",
+        "openingBalance": "Opening balance",
+        "openingBalanceDate": "Opening balance date",
+        "includeNetWorth": "Include in net worth",
+        "cardType": "Card type",
+        "cardTypes": {
+          "monthlyFull": "Full monthly payment"
+        },
+        "paymentDay": "Payment day",
+        "liabilityType": "Liability type",
+        "liabilityTypes": {
+          "loan": "Loan",
+          "debt": "Debt",
+          "mortgage": "Mortgage"
+        },
+        "direction": "Who owes",
+        "directions": {
+          "debit": "I owe",
+          "credit": "I am owed"
+        },
+        "interest": "Interest (%)",
+        "interestPeriod": "Interest period",
+        "interestPeriods": {
+          "daily": "Daily",
+          "monthly": "Monthly",
+          "yearly": "Yearly"
+        },
+        "owed": "Amount owed",
+        "startDate": "Start date"
+      },
+      "piggy": {
+        "new": "New goal",
+        "edit": "Edit goal",
+        "created": "Goal created",
+        "updated": "Goal updated",
+        "deleted": "Goal deleted",
+        "deleteTitle": "Delete goal",
+        "deleteMessage": "Delete the goal “{{name}}”? The money set aside becomes free again in its accounts.",
+        "target": "Goal amount",
+        "startDate": "Start date",
+        "targetDate": "Target date",
+        "accounts": "Accounts",
+        "addAccount": "Add an account…",
+        "none": "Pick at least one account.",
+        "saved": "Set aside",
+        "adjust": "Adjust",
+        "adjustLabel": "Amount to add or remove",
+        "add": "Add",
+        "subtract": "Remove",
+        "remove": "Remove {{name}}",
+        "adjustHint": "Add or remove money set aside in each account; it is saved when you press Save."
+      }
+    },
+    "periods": {
+      "daily": "Daily",
+      "weekly": "Weekly",
+      "monthly": "Monthly",
+      "quarterly": "Quarterly",
+      "half-year": "Half-yearly",
+      "yearly": "Yearly"
+    }
   }
 }

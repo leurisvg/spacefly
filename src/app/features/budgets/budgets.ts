@@ -1,7 +1,10 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
+import { NgIcon, provideIcons } from '@ng-icons/core';
+import { lucidePencil, lucidePlus } from '@ng-icons/lucide';
 import { TranslocoPipe } from '@jsverse/transloco';
 import type { BudgetDetail, BudgetsReport } from '@shared';
 import { HlmBadge } from '@spartan-ng/helm/badge';
+import { HlmButton } from '@spartan-ng/helm/button';
 import { reportResource } from '../../core/api/report-resource';
 import { FormatService } from '../../core/format/format.service';
 import { FORMAT_PIPES } from '../../core/format/pipes';
@@ -18,14 +21,20 @@ import { Meter } from '../../shared/components/meter';
 import { Money } from '../../shared/components/money';
 import { PageHeader } from '../../shared/components/page-header';
 import { TxDetailService } from '../../shared/components/tx-detail.service';
+import { EntityEditor } from '../editor/entity-editor.service';
 
 @Component({
   selector: 'sf-budgets',
-  imports: [TranslocoPipe, HlmBadge, Chart, ChartCard, EmptyState, KpiCard, Meter, Money, PageHeader, ...FORMAT_PIPES],
+  imports: [NgIcon, TranslocoPipe, HlmBadge, HlmButton, Chart, ChartCard, EmptyState, KpiCard, Meter, Money, PageHeader, ...FORMAT_PIPES],
+  providers: [provideIcons({ lucidePencil, lucidePlus })],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'flex flex-col gap-4 sm:gap-5' },
   template: `
-    <sf-page-header [title]="i18n.t('nav.budgets')" [description]="i18n.t('budget.description')" />
+    <sf-page-header [title]="i18n.t('nav.budgets')" [description]="i18n.t('budget.description')">
+      <button hlmBtn size="sm" variant="outline" type="button" (click)="editor.open('budget')">
+        <ng-icon name="lucidePlus" aria-hidden="true" />{{ 'editor.entity.budget.new' | transloco }}
+      </button>
+    </sf-page-header>
 
     <section class="grid grid-cols-2 gap-3 lg:grid-cols-4">
       <sf-kpi [label]="i18n.t('budget.totalLimit')" [value]="totals().limit" accent="var(--money-budget)" [loading]="res.initialLoading()" />
@@ -38,19 +47,35 @@ import { TxDetailService } from '../../shared/components/tx-detail.service';
       @if (data.budgets.length) {
         <section class="grid gap-3 md:grid-cols-2 2xl:grid-cols-3">
           @for (b of data.budgets; track b.id) {
-            <button
-              type="button"
-              class="flex flex-col gap-3 rounded-xl border bg-card p-4 text-left transition hover:border-primary/50"
+            <!-- The whole card selects the budget (stretched button); the pencil sits above it. -->
+            <article
+              class="relative flex flex-col gap-3 rounded-xl border bg-card p-4 text-left transition hover:border-primary/50"
               [class.border-primary]="selected()?.id === b.id"
               [class.border-border]="selected()?.id !== b.id"
-              (click)="filters.setParams({ budget: b.id })"
-              [attr.aria-pressed]="selected()?.id === b.id"
             >
               <div class="flex items-center gap-2">
-                <span class="flex-1 truncate font-medium">{{ b.name }}</span>
+                <button
+                  type="button"
+                  class="flex-1 truncate text-left font-medium after:absolute after:inset-0 after:rounded-xl after:content-['']"
+                  [attr.aria-pressed]="selected()?.id === b.id"
+                  (click)="filters.setParams({ budget: b.id })"
+                >
+                  {{ b.name }}
+                </button>
                 @if (b.autoBudget.type) {
                   <span hlmBadge variant="outline" class="text-[10px]">{{ 'budget.auto.' + b.autoBudget.type | transloco }}</span>
                 }
+                <button
+                  hlmBtn
+                  variant="ghost"
+                  size="icon-sm"
+                  type="button"
+                  class="relative z-10"
+                  [attr.aria-label]="('editor.tx.edit' | transloco) + ': ' + b.name"
+                  (click)="edit($event, b.id)"
+                >
+                  <ng-icon name="lucidePencil" aria-hidden="true" />
+                </button>
               </div>
               <sf-meter [ratio]="b.pct" [marker]="data.elapsedRatio > 0 && data.elapsedRatio < 1 ? data.elapsedRatio : null" />
               <div class="grid grid-cols-3 gap-2 text-xs">
@@ -67,7 +92,7 @@ import { TxDetailService } from '../../shared/components/tx-detail.service';
                   }
                 </p>
               }
-            </button>
+            </article>
           }
         </section>
 
@@ -96,6 +121,7 @@ export class Budgets {
   protected readonly filters = inject(FiltersStore);
   private readonly f = inject(FormatService);
   private readonly detail = inject(TxDetailService);
+  protected readonly editor = inject(EntityEditor);
   protected readonly res = reportResource<BudgetsReport>('reports/budgets');
   protected readonly r = this.res.data;
   private readonly budgetParam = this.filters.param('budget');
@@ -163,6 +189,11 @@ export class Budgets {
       ? { columns: [this.i18n.t('common.category'), this.i18n.t('common.amount')], rows: this.categoryRows().map((c) => [c.name, this.f.money(c.value)]), numeric: [1] }
       : null,
   );
+
+  protected edit(event: Event, id: string): void {
+    event.stopPropagation();
+    this.editor.open('budget', id);
+  }
 
   protected openCategory(index: number): void {
     const b = this.selected();

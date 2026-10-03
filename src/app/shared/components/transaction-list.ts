@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core';
 import { NgIcon, provideIcons } from '@ng-icons/core';
-import { lucideArrowRightLeft, lucideExternalLink } from '@ng-icons/lucide';
+import { RouterLink } from '@angular/router';
+import { lucideArrowRightLeft, lucideExternalLink, lucidePencil } from '@ng-icons/lucide';
 import { TranslocoPipe } from '@jsverse/transloco';
 import type { TxRow } from '@shared';
 import { HlmBadge } from '@spartan-ng/helm/badge';
@@ -11,8 +12,8 @@ import { Money } from './money';
 /** Transactions as a responsive list (cards on mobile, aligned columns from `sm`). */
 @Component({
   selector: 'sf-transaction-list',
-  imports: [NgIcon, TranslocoPipe, HlmBadge, Money, ...FORMAT_PIPES],
-  providers: [provideIcons({ lucideExternalLink, lucideArrowRightLeft })],
+  imports: [NgIcon, RouterLink, TranslocoPipe, HlmBadge, Money, ...FORMAT_PIPES],
+  providers: [provideIcons({ lucideExternalLink, lucideArrowRightLeft, lucidePencil })],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'block' },
   template: `
@@ -23,6 +24,25 @@ import { Money } from './money';
           <div class="min-w-0 flex-1">
             <div class="flex items-center gap-1.5">
               <span class="truncate text-sm font-medium">{{ tx.description }}</span>
+              @if (editable(tx)) {
+                <a
+                  [routerLink]="['/transactions', tx.groupId, 'edit']"
+                  class="text-muted-foreground opacity-0 transition-opacity hover:text-foreground focus:opacity-100 group-hover:opacity-100"
+                  [attr.aria-label]="'editor.tx.edit' | transloco"
+                >
+                  <ng-icon name="lucidePencil" class="text-xs" />
+                </a>
+              } @else if (fireflyEditUrl(tx); as url) {
+                <a
+                  [href]="url"
+                  target="_blank"
+                  rel="noopener"
+                  class="text-muted-foreground opacity-0 transition-opacity hover:text-foreground focus:opacity-100 group-hover:opacity-100"
+                  [attr.aria-label]="'editor.tx.editInFirefly' | transloco"
+                >
+                  <ng-icon name="lucidePencil" class="text-xs" />
+                </a>
+              }
               @if (fireflyUrl(tx); as url) {
                 <a
                   [href]="url"
@@ -76,6 +96,15 @@ export class TransactionList {
   readonly showCategory = input(true);
   protected fireflyUrl(tx: TxRow): string | null {
     return this.meta.fireflyUrl(`/transactions/show/${tx.groupId}`);
+  }
+
+  /** Only single-part expenses, income and transfers are edited in SpaceFly. */
+  protected editable(tx: TxRow): boolean {
+    return tx.splitCount === 1 && ['withdrawal', 'deposit', 'transfer'].includes(tx.type);
+  }
+
+  protected fireflyEditUrl(tx: TxRow): string | null {
+    return this.meta.fireflyUrl(`/transactions/edit/${tx.groupId}`);
   }
 
   protected original(tx: TxRow) {

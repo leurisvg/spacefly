@@ -2,11 +2,14 @@ import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { Hono, type MiddlewareHandler } from 'hono';
 import { serveStatic } from '@hono/node-server/serve-static';
+import { bodyLimit } from 'hono/body-limit';
 import { secureHeaders } from 'hono/secure-headers';
 import type { AppEnv, Services } from './app.types';
 import { cfAccess } from './auth/cf-access.middleware';
 import { oauthRoutes, requireSession } from './auth/oauth.routes';
+import { writeGuard } from './auth/write-guard';
 import { apiRoutes } from './routes/api.routes';
+import { writeRoutes } from './routes/write.routes';
 
 /** Fixed-window rate limit keyed by client IP (Cloudflare first). */
 export function rateLimit(limit: number, windowMs: number): MiddlewareHandler<AppEnv> {
@@ -53,6 +56,16 @@ export function createApp(s: Services) {
   );
   app.use('*', cfAccess(s.config));
 
+  // State-changing requests: CSRF guard first, then size and rate limits.
+  const guard = writeGuard(s.config);
+  const maxBody = bodyLimit({ maxSize: 64 * 1024, onError: (c) => c.json({ error: 'payload_too_large' }, 413) });
+  const writeRate = rateLimit(120, 60_000);
+  const onlyWrites =
+    (mw: MiddlewareHandler<AppEnv>): MiddlewareHandler<AppEnv> =>
+    (c, next) =>
+      c.req.method === 'GET' || c.req.method === 'HEAD' ? next() : mw(c, next);
+
+  app.use('/auth/logout', guard);
   app.use('/auth/*', rateLimit(30, 60_000));
   app.route('/auth', oauthRoutes(s));
 
@@ -60,8 +73,12 @@ export function createApp(s: Services) {
     await next();
     c.header('Cache-Control', 'no-store');
   });
+  app.use('/api/*', guard);
+  app.use('/api/*', onlyWrites(maxBody));
+  app.use('/api/*', onlyWrites(writeRate));
   app.use('/api/*', requireSession(s));
   app.route('/api', apiRoutes(s));
+  app.route('/api', writeRoutes(s));
   app.all('/api/*', (c) => c.json({ error: 'not_found' }, 404));
 
   // Angular SPA: hashed assets are immutable; everything else falls back to index.html.

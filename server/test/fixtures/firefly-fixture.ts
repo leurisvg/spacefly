@@ -5,7 +5,7 @@
  * `npm run fixtures:capture` (see server/scripts/capture-fixtures.ts).
  */
 
-import { createFakeFirefly, type FakeDataset, type FakeFireflyLog } from './fake-firefly';
+import { createFakeFirefly, newLog, type FakeDataset, type FakeFireflyLog } from './fake-firefly';
 
 type Split = Record<string, unknown>;
 
@@ -122,8 +122,16 @@ const account = (id: string, name: string, currency: string, balance: number, ex
   },
 });
 
+const counterparty = (id: string, name: string, type: 'expense' | 'revenue') => ({
+  type: 'accounts',
+  id,
+  attributes: { name, type, active: true, account_role: null, currency_code: 'DOP', primary_currency_code: 'DOP', current_balance: '0.00', pc_current_balance: null, include_net_worth: true },
+});
+const EXPENSE_ACCOUNTS = [SUPER, NETFLIX, EDENORTE, RESTAURANTE].map(([id, name]) => counterparty(id, name, 'expense'));
+const REVENUE_ACCOUNTS = [EMPRESA, FREELANCE].map(([id, name]) => counterparty(id, name, 'revenue'));
+
 /** Balances at a date: a simple function of the month so history charts have shape. */
-function accountsAt(date: string) {
+function assetsAt(date: string) {
   const m = Number(date.slice(5, 7));
   return [
     account('1', 'Banco Popular', 'DOP', 150000 + m * 10000),
@@ -132,6 +140,7 @@ function accountsAt(date: string) {
   ];
 }
 
+export { newLog };
 export type { FakeFireflyLog } from './fake-firefly';
 
 const BUDGETS = [
@@ -199,7 +208,16 @@ export const FIXTURE: FakeDataset = {
   ],
   groups: [...AUGUST, ...SEPTEMBER],
   rates: RATES,
-  accountsAt: (type, date) => (type === 'asset' ? accountsAt(date) : []),
+  accountsAt: (type, date) =>
+    type === 'asset'
+      ? assetsAt(date)
+      : type === 'expense'
+        ? EXPENSE_ACCOUNTS
+        : type === 'revenue'
+          ? REVENUE_ACCOUNTS
+          : type === 'all'
+            ? [...assetsAt(date), ...EXPENSE_ACCOUNTS, ...REVENUE_ACCOUNTS]
+            : [],
   categories: [SALARIO, COMIDA, SERVICIOS, ENTRETENIMIENTO, ['5', 'Transporte']],
   tags: ['hogar', 'suscripcion'],
   budgets: BUDGETS,
@@ -209,7 +227,7 @@ export const FIXTURE: FakeDataset = {
   piggyBanks: [],
 };
 
-/** A `fetch` implementation answering like Firefly III for the fixture data. */
-export function fakeFirefly(log?: FakeFireflyLog): typeof fetch {
-  return createFakeFirefly(FIXTURE, log);
+/** A `fetch` implementation answering like Firefly III for the fixture data. Each call gets its own copy of the transactions, so writes never leak between tests. */
+export function fakeFirefly(log?: FakeFireflyLog, extraGroups: unknown[] = []): typeof fetch {
+  return createFakeFirefly({ ...FIXTURE, groups: structuredClone([...FIXTURE.groups, ...extraGroups]) as FakeDataset['groups'] }, log);
 }

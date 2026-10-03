@@ -20,6 +20,8 @@ export interface AccountRef extends Ref {
 export interface TxRow {
   id: string;
   groupId: string;
+  /** Splits in the transaction group: only single-split transactions can be edited here. */
+  splitCount: number;
   date: string;
   type: TxType;
   description: string;

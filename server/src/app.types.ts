@@ -5,6 +5,7 @@ import type { FireflyData } from './core/firefly-data';
 import type { SettingsStore } from './core/settings.store';
 import type { Sealer } from './auth/crypto';
 import type { Session, SessionStore } from './auth/session.store';
+import type { FireflyWriter } from './firefly/firefly.client';
 
 export interface Services {
   config: Config;
@@ -20,6 +21,7 @@ export type AppEnv = {
   Variables: {
     session: Session;
     data: FireflyData;
+    writer: FireflyWriter;
     cfEmail: string | null;
   };
 };

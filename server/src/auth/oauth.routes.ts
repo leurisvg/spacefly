@@ -172,6 +172,7 @@ export function requireSession(s: Services): MiddlewareHandler<AppEnv> {
     if (!session) return c.json({ error: 'unauthenticated' }, 401);
     const client = new FireflyClient(s.config.FIREFLY_INTERNAL_URL, sessionTokens(s, session), s.fetch);
     c.set('session', session);
+    c.set('writer', client);
     c.set('data', new FireflyData(client, s.cache, session.userId, s.config, s.db));
     return next();
   };

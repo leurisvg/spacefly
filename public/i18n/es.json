@@ -25,7 +25,7 @@
   },
   "nav": {
     "menu": "Menú",
-    "readOnly": "solo lectura",
+    "readOnly": "reportes y captura",
     "toggle": "Mostrar u ocultar menú",
     "skipToContent": "Saltar al contenido",
     "breadcrumb": "Ruta de navegación",
@@ -57,6 +57,8 @@
     "goals": "Metas",
     "projection": "Proyección de flujo",
     "explorer": "Explorador",
+    "newTransaction": "Nueva transacción",
+    "editTransaction": "Editar transacción",
     "settings": "Ajustes",
     "about": "Acerca de"
   },
@@ -73,7 +75,7 @@
   "login": {
     "subtitle": "Reportes interactivos para tu Firefly III",
     "button": "Iniciar sesión con Firefly",
-    "readOnly": "SpaceFly solo lee tus datos: nunca modifica nada en Firefly.",
+    "readOnly": "SpaceFly lee tus datos de Firefly III y te deja registrarlos y editarlos. Tu token nunca llega al navegador.",
     "errors": {
       "invalid_state": "La sesión de inicio expiró o no es válida. Inténtalo de nuevo.",
       "token_exchange": "Firefly rechazó el inicio de sesión. Revisa el cliente OAuth.",
@@ -391,6 +393,258 @@
     "primary": "Moneda primaria",
     "user": "Usuario",
     "instance": "Instancia",
-    "body": "SpaceFly es una app de solo lectura: el servidor solo hace peticiones GET a Firefly y tu token nunca llega al navegador."
+    "body": "SpaceFly lee y escribe en Firefly III a través de su servidor, que además protege las escrituras contra peticiones de otros sitios. Tu token nunca llega al navegador."
+  },
+  "forms": {
+    "createOption": "Crear «{{name}}»",
+    "moreResults": "{{count}} más; escribe para buscar",
+    "today": "Hoy",
+    "yesterday": "Ayer",
+    "save": "Guardar",
+    "saving": "Guardando…",
+    "cancel": "Cancelar",
+    "delete": "Eliminar",
+    "errors": {
+      "required": "Este campo es obligatorio.",
+      "positive": "Escribe un monto mayor que cero.",
+      "amount": "Escribe un monto válido.",
+      "date": "Elige una fecha válida.",
+      "min": "El valor es demasiado bajo.",
+      "max": "El valor es demasiado alto.",
+      "minlength": "Es demasiado corto.",
+      "maxlength": "Es demasiado largo.",
+      "pattern": "El formato no es válido.",
+      "email": "Escribe un correo válido.",
+      "combination": "Estas dos cuentas no se pueden combinar.",
+      "foreign": "Escribe el monto recibido.",
+      "range": "El monto máximo no puede ser menor que el mínimo.",
+      "endDate": "La fecha de fin debe ser posterior a la de inicio.",
+      "day": "Escribe un día entre 1 y 31.",
+      "accounts": "Elige al menos una cuenta.",
+      "interest": "Escribe un porcentaje válido.",
+      "invalid": "El valor no es válido."
+    },
+    "account": {
+      "newExpense": "Nueva cuenta de gastos: «{{name}}»",
+      "newRevenue": "Nueva fuente de ingresos: «{{name}}»",
+      "incompatible": "No compatible"
+    },
+    "accountGroups": {
+      "asset": "Activos",
+      "liability": "Pasivos",
+      "expense": "Gastos",
+      "revenue": "Ingresos",
+      "cash": "Efectivo"
+    },
+    "txType": {
+      "pending": "Elige las cuentas",
+      "invalid": "Combinación no válida"
+    },
+    "tags": {
+      "placeholder": "Añade una etiqueta",
+      "add": "Añadir «{{name}}»",
+      "remove": "Quitar {{tag}}"
+    },
+    "confirm": {
+      "ok": "Confirmar",
+      "typeToConfirm": "Escribe «{{text}}» para confirmar"
+    }
+  },
+  "editor": {
+    "back": "Volver",
+    "retry": "Reintentar",
+    "networkError": "No se pudo contactar con el servidor. Revisa tu conexión: es posible que el cambio no se haya guardado.",
+    "new": "Nuevo",
+    "newTitle": "Crear",
+    "tx": {
+      "description": "Se deduce solo si es un gasto, un ingreso o una transferencia según las cuentas que elijas.",
+      "what": "Qué pasó",
+      "details": "Detalles",
+      "descriptionLabel": "Descripción",
+      "from": "Desde",
+      "to": "Hacia",
+      "swap": "Intercambiar cuentas",
+      "accountPlaceholder": "Busca o escribe una cuenta",
+      "amount": "Monto",
+      "received": "Monto recibido ({{currency}})",
+      "date": "Fecha",
+      "otherCurrency": "Se pagó en otra moneda",
+      "foreignCurrency": "Moneda",
+      "foreignAmount": "Monto en esa moneda",
+      "categoryPlaceholder": "Elige o crea una categoría",
+      "bill": "Suscripción",
+      "noBill": "Sin suscripción",
+      "notes": "Notas",
+      "rules": "Se aplicarán tus reglas y webhooks de Firefly.",
+      "stay": "Seguir aquí para crear otra",
+      "stayEdit": "Seguir aquí después de guardar",
+      "reset": "Restablecer formulario",
+      "created": "Transacción creada",
+      "updated": "Transacción actualizada",
+      "deleted": "Transacción eliminada",
+      "deleteTitle": "Eliminar transacción",
+      "deleteMessage": "¿Eliminar «{{name}}»? No se puede deshacer.",
+      "deleteMessageSplits": "«{{name}}» tiene varias partes: se eliminará la transacción completa. No se puede deshacer.",
+      "notEditable": {
+        "title": "Esta transacción no se puede editar aquí",
+        "splits": "Tiene varias partes. Edítala en Firefly para no perder ninguna.",
+        "type": "Es de un tipo que SpaceFly no edita (saldo inicial, conciliación…)."
+      },
+      "editInFirefly": "Editar en Firefly",
+      "missing": "Esa transacción no existe.",
+      "loadError": "No se pudo cargar la transacción.",
+      "new": "Nueva transacción",
+      "edit": "Editar",
+      "actions": "Acciones"
+    },
+    "missing": "Ese registro ya no existe.",
+    "loadError": "No se pudo cargar el registro.",
+    "clear": "Quitar",
+    "fields": {
+      "name": "Nombre",
+      "notes": "Notas",
+      "description": "Descripción",
+      "active": "Activo",
+      "currency": "Moneda",
+      "group": "Grupo"
+    },
+    "entity": {
+      "category": {
+        "new": "Nueva categoría",
+        "edit": "Editar categoría",
+        "created": "Categoría creada",
+        "updated": "Categoría actualizada",
+        "deleted": "Categoría eliminada",
+        "deleteTitle": "Eliminar categoría",
+        "deleteMessage": "¿Eliminar la categoría «{{name}}»? Sus transacciones quedarán sin categoría."
+      },
+      "tag": {
+        "new": "Nueva etiqueta",
+        "edit": "Editar etiqueta",
+        "created": "Etiqueta creada",
+        "updated": "Etiqueta actualizada",
+        "deleted": "Etiqueta eliminada",
+        "deleteTitle": "Eliminar etiqueta",
+        "deleteMessage": "¿Eliminar la etiqueta «{{name}}»? Se quitará de todas sus transacciones.",
+        "date": "Fecha",
+        "dateHint": "Opcional: sirve para agrupar etiquetas por momento (un viaje, un evento)."
+      },
+      "budget": {
+        "new": "Nuevo presupuesto",
+        "edit": "Editar presupuesto",
+        "created": "Presupuesto creado",
+        "updated": "Presupuesto actualizado",
+        "deleted": "Presupuesto eliminado",
+        "deleteTitle": "Eliminar presupuesto",
+        "deleteMessage": "¿Eliminar el presupuesto «{{name}}»? Sus transacciones quedarán sin presupuesto.",
+        "auto": "Presupuesto automático",
+        "autoHint": "Firefly le asigna el monto solo al empezar cada periodo.",
+        "autoType": "Tipo",
+        "autoAmount": "Monto por periodo",
+        "autoPeriod": "Periodo",
+        "autoTypes": {
+          "reset": "Reiniciar cada periodo",
+          "rollover": "Acumular lo que sobre",
+          "adjusted": "Ajustar según lo gastado"
+        }
+      },
+      "bill": {
+        "new": "Nueva suscripción",
+        "edit": "Editar suscripción",
+        "created": "Suscripción creada",
+        "updated": "Suscripción actualizada",
+        "deleted": "Suscripción eliminada",
+        "deleteTitle": "Eliminar suscripción",
+        "deleteMessage": "¿Eliminar la suscripción «{{name}}»? Sus transacciones se conservan, pero dejan de estar vinculadas.",
+        "fixed": "Monto fijo",
+        "amount": "Monto",
+        "amountMin": "Monto mínimo",
+        "amountMax": "Monto máximo",
+        "freq": "Frecuencia",
+        "skip": "Saltar periodos",
+        "skipHint": "0 = cada periodo; 1 = uno sí y uno no.",
+        "date": "Primera fecha",
+        "endDate": "Fecha de fin",
+        "endDateHint": "Opcional: déjala vacía si no termina."
+      },
+      "account": {
+        "new": "Nueva cuenta",
+        "edit": "Editar cuenta",
+        "created": "Cuenta creada",
+        "updated": "Cuenta actualizada",
+        "deleted": "Cuenta eliminada",
+        "deleteTitle": "Eliminar cuenta",
+        "deleteMessage": "¿Eliminar la cuenta «{{name}}»?",
+        "deleteWarning": "Se eliminarán también sus {{count}} transacciones. No se puede deshacer.",
+        "type": "Tipo de cuenta",
+        "types": {
+          "asset": "Activo",
+          "liability": "Pasivo",
+          "expense": "Gastos",
+          "revenue": "Ingresos"
+        },
+        "typeLocked": "El tipo no se puede cambiar después de crear la cuenta.",
+        "role": "Uso",
+        "iban": "IBAN",
+        "openingBalance": "Saldo inicial",
+        "openingBalanceDate": "Fecha del saldo inicial",
+        "includeNetWorth": "Incluir en el patrimonio neto",
+        "cardType": "Tipo de tarjeta",
+        "cardTypes": {
+          "monthlyFull": "Pago mensual completo"
+        },
+        "paymentDay": "Día de pago",
+        "liabilityType": "Tipo de pasivo",
+        "liabilityTypes": {
+          "loan": "Préstamo",
+          "debt": "Deuda",
+          "mortgage": "Hipoteca"
+        },
+        "direction": "Quién debe",
+        "directions": {
+          "debit": "Yo debo",
+          "credit": "Me deben"
+        },
+        "interest": "Interés (%)",
+        "interestPeriod": "Periodo del interés",
+        "interestPeriods": {
+          "daily": "Diario",
+          "monthly": "Mensual",
+          "yearly": "Anual"
+        },
+        "owed": "Monto adeudado",
+        "startDate": "Fecha de inicio"
+      },
+      "piggy": {
+        "new": "Nueva meta",
+        "edit": "Editar meta",
+        "created": "Meta creada",
+        "updated": "Meta actualizada",
+        "deleted": "Meta eliminada",
+        "deleteTitle": "Eliminar meta",
+        "deleteMessage": "¿Eliminar la meta «{{name}}»? El dinero apartado vuelve a estar libre en sus cuentas.",
+        "target": "Monto de la meta",
+        "startDate": "Fecha de inicio",
+        "targetDate": "Fecha objetivo",
+        "accounts": "Cuentas",
+        "addAccount": "Añadir una cuenta…",
+        "none": "Elige al menos una cuenta.",
+        "saved": "Apartado",
+        "adjust": "Ajustar",
+        "adjustLabel": "Monto a sumar o restar",
+        "add": "Sumar",
+        "subtract": "Restar",
+        "remove": "Quitar {{name}}",
+        "adjustHint": "Suma o resta dinero apartado en cada cuenta; se guarda al pulsar Guardar."
+      }
+    },
+    "periods": {
+      "daily": "Diario",
+      "weekly": "Semanal",
+      "monthly": "Mensual",
+      "quarterly": "Trimestral",
+      "half-year": "Semestral",
+      "yearly": "Anual"
+    }
   }
 }

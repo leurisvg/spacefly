@@ -1,6 +1,7 @@
 import { Injectable, signal, type EnvironmentProviders, type Provider } from '@angular/core';
 import { provideTransloco, TranslocoService, type TranslocoLoader } from '@jsverse/transloco';
-import { BehaviorSubject, of } from 'rxjs';
+import { TestBed } from '@angular/core/testing';
+import { BehaviorSubject, firstValueFrom, of } from 'rxjs';
 import { FiltersStore } from '../app/core/state/filters.store';
 import { MetaStore } from '../app/core/state/meta.store';
 
@@ -38,4 +39,9 @@ export function formatTestProviders(lang = 'es', translations?: Record<string, u
     { provide: MetaStore, useValue: { currencies: signal(CURRENCIES) } },
   ];
   return { providers, lang$, currency };
+}
+
+/** Loads the in-memory translations of `formatTestProviders(lang, translations)`, so `I18n.t()` and `translate()` resolve. */
+export async function loadTranslations(lang = 'en'): Promise<void> {
+  await firstValueFrom(TestBed.inject(TranslocoService).load(lang));
 }

@@ -1,9 +1,10 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { NgIcon, provideIcons } from '@ng-icons/core';
-import { lucideCircleCheck, lucideClock, lucideMinus, lucideTriangleAlert } from '@ng-icons/lucide';
+import { lucideCircleCheck, lucideClock, lucideMinus, lucidePencil, lucidePlus, lucideTriangleAlert } from '@ng-icons/lucide';
 import { TranslocoPipe } from '@jsverse/transloco';
 import type { BillRow, BillsReport } from '@shared';
 import { HlmBadge } from '@spartan-ng/helm/badge';
+import { HlmButton } from '@spartan-ng/helm/button';
 import { reportResource } from '../../core/api/report-resource';
 import { FormatService } from '../../core/format/format.service';
 import { FORMAT_PIPES } from '../../core/format/pipes';
@@ -17,15 +18,20 @@ import { KpiCard } from '../../shared/components/kpi-card';
 import { Money } from '../../shared/components/money';
 import { PageHeader } from '../../shared/components/page-header';
 import { TxDetailService } from '../../shared/components/tx-detail.service';
+import { EntityEditor } from '../editor/entity-editor.service';
 
 @Component({
   selector: 'sf-bills',
-  imports: [NgIcon, TranslocoPipe, HlmBadge, Chart, ChartCard, EmptyState, KpiCard, Money, PageHeader, ...FORMAT_PIPES],
-  providers: [provideIcons({ lucideCircleCheck, lucideClock, lucideMinus, lucideTriangleAlert })],
+  imports: [NgIcon, TranslocoPipe, HlmBadge, HlmButton, Chart, ChartCard, EmptyState, KpiCard, Money, PageHeader, ...FORMAT_PIPES],
+  providers: [provideIcons({ lucideCircleCheck, lucideClock, lucideMinus, lucidePencil, lucidePlus, lucideTriangleAlert })],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'flex flex-col gap-4 sm:gap-5' },
   template: `
-    <sf-page-header [title]="i18n.t('nav.bills')" [description]="i18n.t('bills.description')" />
+    <sf-page-header [title]="i18n.t('nav.bills')" [description]="i18n.t('bills.description')">
+      <button hlmBtn size="sm" variant="outline" type="button" (click)="editor.open('bill')">
+        <ng-icon name="lucidePlus" aria-hidden="true" />{{ 'editor.entity.bill.new' | transloco }}
+      </button>
+    </sf-page-header>
     <section class="grid grid-cols-2 gap-3 lg:grid-cols-4">
       <sf-kpi [label]="i18n.t('bills.monthly')" [value]="r()?.monthlyTotal ?? null" accent="var(--money-expense)" [loading]="res.initialLoading()" />
       <sf-kpi [label]="i18n.t('bills.yearly')" [value]="r()?.yearlyTotal ?? null" accent="var(--money-expense)" [loading]="res.initialLoading()" />
@@ -45,6 +51,7 @@ import { TxDetailService } from '../../shared/components/tx-detail.service';
                 <th class="eyebrow py-2 text-right">{{ 'bills.range' | transloco }}</th>
                 <th class="eyebrow py-2 text-right">{{ 'bills.monthlyEq' | transloco }}</th>
                 <th class="eyebrow py-2 text-right">{{ 'bills.paidThisPeriod' | transloco }}</th>
+                <th class="w-8"><span class="sr-only">{{ 'editor.tx.edit' | transloco }}</span></th>
               </tr>
             </thead>
             <tbody>
@@ -74,6 +81,11 @@ import { TxDetailService } from '../../shared/components/tx-detail.service';
                       <span class="text-muted-foreground">—</span>
                     }
                   </td>
+                  <td class="py-2 text-right">
+                    <button hlmBtn variant="ghost" size="icon-sm" type="button" [attr.aria-label]="('editor.tx.edit' | transloco) + ': ' + b.name" (click)="edit($event, b.id)">
+                      <ng-icon name="lucidePencil" aria-hidden="true" />
+                    </button>
+                  </td>
                 </tr>
               }
             </tbody>
@@ -91,6 +103,7 @@ import { TxDetailService } from '../../shared/components/tx-detail.service';
 export class Bills {
   protected readonly i18n = inject(I18n);
   protected readonly detail = inject(TxDetailService);
+  protected readonly editor = inject(EntityEditor);
   private readonly f = inject(FormatService);
   protected readonly res = reportResource<BillsReport>('reports/bills');
   protected readonly r = this.res.data;
@@ -103,6 +116,11 @@ export class Bills {
     rows: this.active().map((b) => [b.name, this.f.money(b.monthlyEquivalent), this.f.money(b.yearlyEquivalent)]),
     numeric: [1, 2],
   }));
+
+  protected edit(event: Event, id: string): void {
+    event.stopPropagation();
+    this.editor.open('bill', id);
+  }
 
   protected statusIcon(b: BillRow): string {
     return b.status === 'paid' ? 'lucideCircleCheck' : b.status === 'pending' ? 'lucideClock' : 'lucideMinus';

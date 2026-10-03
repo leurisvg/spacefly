@@ -1,68 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { exportJWK, generateKeyPair, SignJWT } from 'jose';
 import type { MonthlyReport, Report, SankeyReport, TxListResponse } from '@shared';
-import { createApp } from '../src/app';
-import type { Services } from '../src/app.types';
-import { Sealer } from '../src/auth/crypto';
-import { SessionStore } from '../src/auth/session.store';
-import { loadConfig } from '../src/config';
-import { Cache } from '../src/core/cache';
-import { SettingsStore } from '../src/core/settings.store';
-import { openDb } from '../src/db/sqlite';
-import { fakeFirefly, type FakeFireflyLog } from './fixtures/firefly-fixture';
-
-const baseEnv = {
-  NODE_ENV: 'test',
-  APP_URL: 'https://spacefly.example.com',
-  FIREFLY_INTERNAL_URL: 'http://firefly:8080',
-  FIREFLY_PUBLIC_URL: 'https://firefly.example.com',
-  FIREFLY_OAUTH_CLIENT_ID: '7',
-  FIREFLY_OAUTH_CLIENT_SECRET: 'client-secret',
-  SESSION_SECRET: 's'.repeat(40),
-  CF_ACCESS_ENABLED: 'false',
-  FX_FALLBACK_PROVIDER: 'none',
-  DATA_DIR: ':memory:',
-  STATIC_DIR: '/nonexistent',
-};
-
-function setup(env: Record<string, string> = {}, fetchImpl?: typeof fetch) {
-  const log: FakeFireflyLog = { methods: [], paths: [] };
-  const config = loadConfig({ ...baseEnv, ...env });
-  const db = openDb(':memory:');
-  const sealer = new Sealer(config.SESSION_SECRET);
-  const s: Services = {
-    config,
-    db,
-    sealer,
-    cache: new Cache(db),
-    sessions: new SessionStore(db, sealer, 86_400_000),
-    settings: new SettingsStore(db),
-    fetch: fetchImpl ?? fakeFirefly(log),
-  };
-  return { app: createApp(s), s, log };
-}
-
-/** Full OAuth round-trip against the fake Firefly; returns the session cookie. */
-async function login(app: ReturnType<typeof setup>['app'], headers: Record<string, string> = {}) {
-  const start = await app.request('/auth/login?returnTo=/reports/monthly', { headers });
-  expect(start.status).toBe(302);
-  const authorize = new URL(start.headers.get('location')!);
-  expect(authorize.origin + authorize.pathname).toBe('https://firefly.example.com/oauth/authorize');
-  expect(authorize.searchParams.get('code_challenge_method')).toBe('S256');
-  expect(authorize.searchParams.get('redirect_uri')).toBe('https://spacefly.example.com/auth/callback');
-  const oauthCookie = start.headers.get('set-cookie')!.split(';')[0];
-  const cb = await app.request(`/auth/callback?code=abc&state=${authorize.searchParams.get('state')}`, {
-    headers: { ...headers, cookie: oauthCookie },
-  });
-  expect(cb.status).toBe(302);
-  expect(cb.headers.get('location')).toBe('/reports/monthly');
-  const cookies = cb.headers.getSetCookie();
-  const session = cookies.find((c) => c.startsWith('sf_session='))!;
-  expect(session).toMatch(/HttpOnly/i);
-  expect(session).toMatch(/Secure/i);
-  expect(session).toMatch(/SameSite=Lax/i);
-  return session.split(';')[0];
-}
+import { login, setup } from './harness';
 
 describe('auth', () => {
   it('rejects API calls without a session', async () => {
@@ -99,7 +38,7 @@ describe('auth', () => {
   it('logs out and invalidates the session', async () => {
     const { app } = setup();
     const cookie = await login(app);
-    expect((await app.request('/auth/logout', { method: 'POST', headers: { cookie } })).status).toBe(204);
+    expect((await app.request('/auth/logout', { method: 'POST', headers: { cookie, 'X-SpaceFly': '1' } })).status).toBe(204);
     expect((await app.request('/api/me', { headers: { cookie } })).status).toBe(401);
   });
 });
@@ -144,7 +83,7 @@ describe('Cloudflare Access', () => {
 });
 
 describe('reports API', () => {
-  it('serves the monthly report and only issues GET requests to the Firefly API', async () => {
+  it('serves the monthly report; reports only issue GET requests to the Firefly API', async () => {
     const { app, log } = setup();
     const cookie = await login(app);
     const res = await app.request('/api/reports/monthly?start=2026-09-01&end=2026-09-30', { headers: { cookie } });
@@ -235,7 +174,7 @@ describe('reports API', () => {
     const cookie = await login(app);
     const put = await app.request('/api/settings', {
       method: 'PUT',
-      headers: { cookie, 'Content-Type': 'application/json' },
+      headers: { cookie, 'Content-Type': 'application/json', 'X-SpaceFly': '1' },
       body: JSON.stringify({ excludedAccounts: ['2'], balanceMonths: 12, sankeyThreshold: 0.05 }),
     });
     expect(put.status).toBe(200);

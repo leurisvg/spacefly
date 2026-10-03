@@ -113,8 +113,25 @@ export const NAV: NavSection[] = [
   },
 ];
 
+/** Screens that aren't in the sidebar but still belong to a section (breadcrumb `nav.<key>`). */
+export const EXTRA_CRUMBS: { pattern: RegExp; section: string; key: string }[] = [
+  { pattern: /^\/transactions\/new$/, section: 'transactions', key: 'newTransaction' },
+  { pattern: /^\/transactions\/[^/]+\/edit$/, section: 'transactions', key: 'editTransaction' },
+];
+
+/** Pages built around a single record rather than a period: the period picker is hidden there. */
+export function isEditorRoute(url: string): boolean {
+  const path = url.split('?')[0].split('#')[0];
+  return EXTRA_CRUMBS.some((c) => c.pattern.test(path));
+}
+
 export function findNav(url: string): { section: NavSection; item: NavItem } | null {
   const path = url.split('?')[0].split('#')[0] || '/';
   for (const section of NAV) for (const item of section.items) if (item.path === path) return { section, item };
+  const extra = EXTRA_CRUMBS.find((c) => c.pattern.test(path));
+  if (extra) {
+    const section = NAV.find((s) => s.key === extra.section)!;
+    return { section, item: { key: extra.key, path, icon: '' } };
+  }
   return null;
 }

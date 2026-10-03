@@ -43,6 +43,8 @@ export const routes: Routes = [
         ],
       },
       { path: 'transactions', loadComponent: () => import('./features/explorer/explorer').then((m) => m.Explorer) },
+      { path: 'transactions/new', loadComponent: () => import('./features/editor/transaction-form').then((m) => m.TransactionForm) },
+      { path: 'transactions/:id/edit', loadComponent: () => import('./features/editor/transaction-form').then((m) => m.TransactionForm) },
       { path: 'settings', loadComponent: () => import('./features/settings/settings').then((m) => m.Settings) },
       { path: 'about', loadComponent: () => import('./features/settings/about').then((m) => m.About) },
     ],

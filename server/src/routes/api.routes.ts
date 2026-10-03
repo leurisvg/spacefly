@@ -30,15 +30,13 @@ import { buildBills, buildPiggyBanks, buildProjection, buildRecurrences } from '
 import { buildRanking, keyFns } from '../reports/ranking.report';
 import { buildSankey } from '../reports/sankey.report';
 import { savingsAccounts } from '../reports/helpers';
-import { FireflyError } from '../firefly/firefly.client';
+import { BadRequest, handleApiError } from './errors';
 import packageJson from '../../../package.json' with { type: 'json' };
 
 const date = z.string().refine(isIsoDate, 'expected YYYY-MM-DD');
 const bool = z.enum(['1', '0', 'true', 'false']).transform((v) => v === '1' || v === 'true');
 const groupBy = z.enum(['category', 'tag', 'budget', 'account', 'counterparty']);
 const kind = z.enum(['expense', 'income']);
-
-class BadRequest extends Error {}
 
 function compareVersions(a: string, b: string): number {
   const pa = a.replace(/^v/, '').split(/[.-]/).map((x) => parseInt(x, 10) || 0);
@@ -452,17 +450,7 @@ export function apiRoutes(s: Services) {
     });
   });
 
-  api.onError((err, c) => {
-    if (err instanceof z.ZodError) return c.json({ error: 'bad_request', issues: err.issues }, 400);
-    if (err instanceof BadRequest) return c.json({ error: 'bad_request', message: err.message }, 400);
-    if (err instanceof FireflyError) {
-      if (err.status === 401) return c.json({ error: 'unauthenticated' }, 401);
-      console.error('[firefly]', err.message);
-      return c.json({ error: 'firefly_error', status: err.status }, 502);
-    }
-    console.error('[api]', err);
-    return c.json({ error: 'internal_error' }, 500);
-  });
+  api.onError(handleApiError);
 
   return api;
 }

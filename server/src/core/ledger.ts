@@ -6,6 +6,8 @@ import type { CurrencyService } from './currency.service';
 export interface Split {
   id: string;
   groupId: string;
+  /** How many splits the transaction group has (1 for the vast majority). */
+  splitCount: number;
   date: string;
   type: string;
   description: string;
@@ -49,6 +51,7 @@ export function normalizeGroups(groups: FfResource<FfTransactionGroup>[]): Split
       out.push({
         id: t.transaction_journal_id,
         groupId: g.id,
+        splitCount: g.attributes.transactions.length,
         date: t.date.slice(0, 10),
         type: t.type,
         description: t.description || g.attributes.group_title || '—',
@@ -159,6 +162,7 @@ export class ReportContext {
     return {
       id: s.id,
       groupId: s.groupId,
+      splitCount: s.splitCount,
       date: s.date,
       type: s.type,
       description: s.description,

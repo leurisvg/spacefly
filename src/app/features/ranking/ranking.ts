@@ -1,12 +1,16 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
+import { NgIcon, provideIcons } from '@ng-icons/core';
+import { lucidePencil, lucidePlus } from '@ng-icons/lucide';
 import { TranslocoPipe } from '@jsverse/transloco';
 import type { BudgetsReport, GroupBy, RankingReport } from '@shared';
+import { HlmButton } from '@spartan-ng/helm/button';
 import { HlmToggleGroupImports } from '@spartan-ng/helm/toggle-group';
 import { reportResource } from '../../core/api/report-resource';
 import { FormatService } from '../../core/format/format.service';
 import { FORMAT_PIPES } from '../../core/format/pipes';
 import { I18n } from '../../core/i18n/i18n';
 import { FiltersStore } from '../../core/state/filters.store';
+import { MetaStore } from '../../core/state/meta.store';
 import { linesOption, rankingBarsOption, sunburstOption, treemapOption, type Slice } from '../../shared/charts/builders';
 import { Chart } from '../../shared/charts/chart';
 import { ChartCard, type ChartTable } from '../../shared/charts/chart-card';
@@ -17,6 +21,7 @@ import { KpiCard } from '../../shared/components/kpi-card';
 import { Money } from '../../shared/components/money';
 import { PageHeader } from '../../shared/components/page-header';
 import { TxDetailService } from '../../shared/components/tx-detail.service';
+import { EntityEditor } from '../editor/entity-editor.service';
 
 type View = 'bars' | 'treemap' | 'sunburst';
 type Item = RankingReport['items'][number];
@@ -24,11 +29,17 @@ type Item = RankingReport['items'][number];
 /** Categories · Tags · Merchants (expense accounts) · Income sources (revenue accounts). */
 @Component({
   selector: 'sf-ranking',
-  imports: [TranslocoPipe, HlmToggleGroupImports, Chart, ChartCard, Delta, EmptyState, KpiCard, Money, PageHeader, ...FORMAT_PIPES],
+  imports: [NgIcon, TranslocoPipe, HlmButton, HlmToggleGroupImports, Chart, ChartCard, Delta, EmptyState, KpiCard, Money, PageHeader, ...FORMAT_PIPES],
+  providers: [provideIcons({ lucidePencil, lucidePlus })],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'flex flex-col gap-4 sm:gap-5' },
   template: `
     <sf-page-header [title]="i18n.t('nav.' + key())" [description]="i18n.t('ranking.descriptions.' + key())">
+      @if (entityKind(); as kind) {
+        <button hlmBtn size="sm" variant="outline" type="button" (click)="create(kind)">
+          <ng-icon name="lucidePlus" aria-hidden="true" />{{ 'editor.entity.' + kind + '.new' | transloco }}
+        </button>
+      }
       @if (!fixedKind()) {
         <hlm-toggle-group type="single" variant="outline" size="sm" [value]="kindNow()" [nullable]="false" (valueChange)="$event && filters.setParams({ kind: $any($event) })">
           <button hlmToggleGroupItem value="expense">{{ 'common.expenses' | transloco }}</button>
@@ -88,6 +99,9 @@ type Item = RankingReport['items'][number];
             <th class="eyebrow py-2 text-right">{{ 'ranking.count' | transloco }}</th>
             <th class="eyebrow py-2 text-right">{{ 'ranking.avgTicket' | transloco }}</th>
             <th class="eyebrow py-2 text-right">{{ 'ranking.previous' | transloco }}</th>
+            @if (entityKind()) {
+              <th class="w-8"><span class="sr-only">{{ 'editor.tx.edit' | transloco }}</span></th>
+            }
           </tr>
         </thead>
         <tbody>
@@ -109,6 +123,15 @@ type Item = RankingReport['items'][number];
                   <sf-delta [value]="it.value" [previous]="it.previous || null" [upIsGood]="kindNow() === 'income'" />
                 </span>
               </td>
+              @if (entityKind()) {
+                <td class="py-2 text-right">
+                  @if (entityId(it); as eid) {
+                    <button hlmBtn variant="ghost" size="icon-sm" type="button" [attr.aria-label]="('editor.tx.edit' | transloco) + ': ' + nameOf(it)" (click)="edit($event, eid)">
+                      <ng-icon name="lucidePencil" aria-hidden="true" />
+                    </button>
+                  }
+                </td>
+              }
             </tr>
           }
         </tbody>
@@ -122,6 +145,8 @@ export class Ranking {
   private readonly f = inject(FormatService);
   private readonly colors = inject(SeriesColors);
   private readonly detail = inject(TxDetailService);
+  private readonly meta = inject(MetaStore);
+  protected readonly editor = inject(EntityEditor);
 
   // Route data (withComponentInputBinding)
   readonly by = input<GroupBy>('category');
@@ -207,6 +232,28 @@ export class Ranking {
         }
       : null,
   );
+
+  /** Categories, tags and merchants / income sources (expense and revenue accounts) can be created and edited from here. */
+  protected readonly entityKind = computed<'category' | 'tag' | 'account' | null>(() =>
+    this.by() === 'category' ? 'category' : this.by() === 'tag' ? 'tag' : this.by() === 'counterparty' ? 'account' : null,
+  );
+
+  /** Tag rows are identified by their name, so the editor needs the id from the lookups. */
+  protected entityId(it: { id: string | null; name: string }): string | null {
+    if (!it.id) return null;
+    if (this.by() === 'tag') return this.meta.lookups()?.tags.find((t) => t.name === it.id)?.id ?? null;
+    return this.by() === 'category' || this.by() === 'counterparty' ? it.id : null;
+  }
+
+  protected create(kind: 'category' | 'tag' | 'account'): void {
+    this.editor.open(kind, null, kind === 'account' ? { accountType: this.kindNow() === 'income' ? 'revenue' : 'expense' } : {});
+  }
+
+  protected edit(event: Event, id: string): void {
+    event.stopPropagation();
+    const kind = this.entityKind();
+    if (kind) this.editor.open(kind, id);
+  }
 
   protected open(it: { id: string | null; name: string }): void {
     const key = { category: 'category', tag: 'tag', budget: 'budget', account: 'account', counterparty: 'counterparty' }[this.by()];

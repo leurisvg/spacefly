@@ -8,6 +8,9 @@ import type { Db } from '../db/sqlite';
 export class Cache {
   private readonly memory = new LRUCache<string, { value: unknown; expiresAt: number }>({ max: 500 });
   private readonly inflight = new Map<string, Promise<unknown>>();
+  /** Bumped on every `deletePrefix`; a fetch that started before a matching invalidation must not store its result. */
+  private seq = 0;
+  private readonly invalidations: { prefix: string; seq: number }[] = [];
 
   constructor(private readonly db: Db | null) {}
 
@@ -48,19 +51,30 @@ export class Cache {
     if (hit !== undefined) return hit;
     const pending = this.inflight.get(key);
     if (pending) return pending as Promise<T>;
-    const p = compute()
+    const startedAt = this.seq;
+    const p: Promise<T> = compute()
       .then((value) => {
-        this.set(key, value, ttlSeconds, persist);
+        if (!this.invalidatedSince(key, startedAt)) this.set(key, value, ttlSeconds, persist);
         return value;
       })
-      .finally(() => this.inflight.delete(key));
+      .finally(() => {
+        if (this.inflight.get(key) === p) this.inflight.delete(key);
+      });
     this.inflight.set(key, p);
     return p;
   }
 
+  /** Drops every entry under `prefix`, including fetches still in flight (their result would be stale). */
   deletePrefix(prefix: string): void {
+    this.invalidations.push({ prefix, seq: ++this.seq });
+    if (this.invalidations.length > 256) this.invalidations.shift();
     for (const key of this.memory.keys()) if (key.startsWith(prefix)) this.memory.delete(key);
-    this.db?.prepare('DELETE FROM cache WHERE key >= ? AND key < ?').run(prefix, prefix + '￿');
+    for (const key of this.inflight.keys()) if (key.startsWith(prefix)) this.inflight.delete(key);
+    this.db?.prepare('DELETE FROM cache WHERE key >= ? AND key < ?').run(prefix, prefix + '\uffff');
+  }
+
+  private invalidatedSince(key: string, seq: number): boolean {
+    return this.invalidations.some((i) => i.seq > seq && key.startsWith(i.prefix));
   }
 
   purgeExpired(): void {

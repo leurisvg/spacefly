@@ -1,17 +1,33 @@
 import { httpResource } from '@angular/common/http';
 import { ChangeDetectionStrategy, Component, computed, inject, linkedSignal, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { NgIcon, provideIcons } from '@ng-icons/core';
-import { lucideArrowUpDown, lucideChevronLeft, lucideChevronRight, lucideExternalLink, lucideFileSpreadsheet, lucideSearch, lucideX } from '@ng-icons/lucide';
+import {
+  lucideArrowUpDown,
+  lucideChevronLeft,
+  lucideChevronRight,
+  lucideEllipsis,
+  lucideExternalLink,
+  lucideFileSpreadsheet,
+  lucidePencil,
+  lucidePlus,
+  lucideSearch,
+  lucideTrash2,
+  lucideX,
+} from '@ng-icons/lucide';
 import { TranslocoPipe } from '@jsverse/transloco';
 import type { Report, SearchResponse, TxListResponse, TxRow } from '@shared';
 import { HlmBadge } from '@spartan-ng/helm/badge';
+import { toast } from '@spartan-ng/brain/sonner';
 import { HlmButton } from '@spartan-ng/helm/button';
+import { HlmDropdownMenuImports } from '@spartan-ng/helm/dropdown-menu';
 import { HlmInput } from '@spartan-ng/helm/input';
 import { HlmSkeleton } from '@spartan-ng/helm/skeleton';
 import { HlmTableImports } from '@spartan-ng/helm/table';
 import { HlmToggleGroupImports } from '@spartan-ng/helm/toggle-group';
 import { HlmTooltip } from '@spartan-ng/helm/tooltip';
+import { WriteApi } from '../../core/api/write-api';
 import { FormatService } from '../../core/format/format.service';
 import { FORMAT_PIPES } from '../../core/format/pipes';
 import { I18n } from '../../core/i18n/i18n';
@@ -23,6 +39,7 @@ import { Money } from '../../shared/components/money';
 import { PageHeader } from '../../shared/components/page-header';
 import { Select } from '../../shared/components/select';
 import { TransactionList } from '../../shared/components/transaction-list';
+import { ConfirmService } from '../../shared/forms/confirm.service';
 
 type SortKey = 'date' | 'description' | 'amount' | 'category';
 const PAGE_SIZE = 50;
@@ -38,7 +55,9 @@ const PAGE_SIZE = 50;
     NgIcon,
     TranslocoPipe,
     HlmBadge,
+    RouterLink,
     HlmButton,
+    HlmDropdownMenuImports,
     HlmInput,
     HlmSkeleton,
     HlmTableImports,
@@ -51,11 +70,26 @@ const PAGE_SIZE = 50;
     TransactionList,
     ...FORMAT_PIPES,
   ],
-  providers: [provideIcons({ lucideSearch, lucideX, lucideFileSpreadsheet, lucideArrowUpDown, lucideChevronLeft, lucideChevronRight, lucideExternalLink })],
+  providers: [
+    provideIcons({
+      lucideSearch,
+      lucideX,
+      lucideFileSpreadsheet,
+      lucideArrowUpDown,
+      lucideChevronLeft,
+      lucideChevronRight,
+      lucideExternalLink,
+      lucideEllipsis,
+      lucidePencil,
+      lucidePlus,
+      lucideTrash2,
+    }),
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'flex flex-col gap-4 sm:gap-5' },
   template: `
     <sf-page-header [title]="i18n.t('nav.explorer')" [description]="i18n.t('explorer.description')">
+      <a hlmBtn size="sm" routerLink="/transactions/new"><ng-icon name="lucidePlus" aria-hidden="true" />{{ 'editor.tx.new' | transloco }}</a>
       <button hlmBtn variant="outline" size="sm" (click)="exportCsv()" [disabled]="!sorted().length || privacy.hidden()" [attr.title]="privacy.hidden() ? ('explorer.exportHidden' | transloco) : null">
         <ng-icon name="lucideFileSpreadsheet" />{{ 'explorer.export' | transloco }}
       </button>
@@ -140,7 +174,7 @@ const PAGE_SIZE = 50;
                   </th>
                 }
                 <th hlmTh>{{ 'common.account' | transloco }}</th>
-                <th hlmTh class="w-8"><span class="sr-only">Firefly</span></th>
+                <th hlmTh class="w-8"><span class="sr-only">{{ 'editor.tx.actions' | transloco }}</span></th>
               </tr>
             </thead>
             <tbody hlmTBody>
@@ -169,11 +203,23 @@ const PAGE_SIZE = 50;
                   </td>
                   <td hlmTd class="max-w-[16rem] truncate text-xs text-muted-foreground">{{ tx.source.name }} → {{ tx.destination.name }}</td>
                   <td hlmTd>
-                    @if (fireflyLink(tx); as url) {
-                      <a [href]="url" target="_blank" rel="noopener" class="text-muted-foreground hover:text-foreground" [attr.aria-label]="'tx.openInFirefly' | transloco">
-                        <ng-icon name="lucideExternalLink" />
-                      </a>
-                    }
+                    <button hlmBtn variant="ghost" size="icon-sm" [hlmDropdownMenuTrigger]="rowMenu" align="end" [attr.aria-label]="'editor.tx.actions' | transloco">
+                      <ng-icon name="lucideEllipsis" aria-hidden="true" />
+                    </button>
+                    <ng-template #rowMenu>
+                      <hlm-dropdown-menu class="w-52">
+                        @if (editable(tx)) {
+                          <a hlmDropdownMenuItem [routerLink]="['/transactions', tx.groupId, 'edit']"><ng-icon name="lucidePencil" aria-hidden="true" />{{ 'editor.tx.edit' | transloco }}</a>
+                        } @else if (fireflyEditLink(tx); as url) {
+                          <a hlmDropdownMenuItem [href]="url" target="_blank" rel="noopener"><ng-icon name="lucidePencil" aria-hidden="true" />{{ 'editor.tx.editInFirefly' | transloco }}</a>
+                        }
+                        @if (fireflyLink(tx); as url) {
+                          <a hlmDropdownMenuItem [href]="url" target="_blank" rel="noopener"><ng-icon name="lucideExternalLink" aria-hidden="true" />{{ 'tx.openInFirefly' | transloco }}</a>
+                        }
+                        <hlm-dropdown-menu-separator />
+                        <button hlmDropdownMenuItem class="text-destructive" (triggered)="remove(tx)"><ng-icon name="lucideTrash2" aria-hidden="true" />{{ 'forms.delete' | transloco }}</button>
+                      </hlm-dropdown-menu>
+                    </ng-template>
                   </td>
                 </tr>
               }
@@ -197,6 +243,8 @@ export class Explorer {
   private readonly filters = inject(FiltersStore);
   private readonly meta = inject(MetaStore);
   protected readonly privacy = inject(PrivacyStore);
+  private readonly writes = inject(WriteApi);
+  private readonly confirm = inject(ConfirmService);
 
   protected draft = '';
   protected readonly query = signal('');
@@ -298,6 +346,31 @@ export class Explorer {
 
   protected fireflyLink(tx: TxRow): string | null {
     return this.meta.fireflyUrl(`/transactions/show/${tx.groupId}`);
+  }
+
+  protected fireflyEditLink(tx: TxRow): string | null {
+    return this.meta.fireflyUrl(`/transactions/edit/${tx.groupId}`);
+  }
+
+  /** Only single-part expenses, income and transfers are edited in SpaceFly. */
+  protected editable(tx: TxRow): boolean {
+    return tx.splitCount === 1 && ['withdrawal', 'deposit', 'transfer'].includes(tx.type);
+  }
+
+  protected async remove(tx: TxRow): Promise<void> {
+    const ok = await this.confirm.confirm({
+      title: this.i18n.t('editor.tx.deleteTitle'),
+      message: this.i18n.t(tx.splitCount > 1 ? 'editor.tx.deleteMessageSplits' : 'editor.tx.deleteMessage', { name: tx.description }),
+      confirmLabel: this.i18n.t('forms.delete'),
+      destructive: true,
+    });
+    if (!ok) return;
+    try {
+      await this.writes.deleteTransaction(tx.groupId); // refreshes the list on success
+      toast.success(this.i18n.t('editor.tx.deleted'));
+    } catch {
+      toast.error(this.i18n.t('errors.generic'));
+    }
   }
 
   /** CSV of everything currently listed (all pages), amounts in the display currency + original. */

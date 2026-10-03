@@ -3,13 +3,15 @@ import { RouterOutlet } from '@angular/router';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { HlmSidebarImports } from '@spartan-ng/helm/sidebar';
 import { MetaStore } from '../core/state/meta.store';
+import { EntityEditorSheet } from '../features/editor/entity-editor-sheet';
+import { EntityEditor } from '../features/editor/entity-editor.service';
 import { TxDetailSheet } from '../shared/components/tx-detail-sheet';
 import { SidebarNav } from './sidebar-nav';
 import { Topbar } from './topbar';
 
 @Component({
   selector: 'sf-shell',
-  imports: [RouterOutlet, TranslocoPipe, HlmSidebarImports, SidebarNav, Topbar, TxDetailSheet],
+  imports: [RouterOutlet, TranslocoPipe, HlmSidebarImports, SidebarNav, Topbar, TxDetailSheet, EntityEditorSheet],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <a
@@ -36,10 +38,15 @@ import { Topbar } from './topbar';
       </main>
     </div>
     <sf-tx-detail-sheet />
+    <!-- The editors are heavy and rarely needed: load them the first time one is opened. -->
+    @defer (when editor.request() !== null) {
+      <sf-entity-editor-sheet />
+    }
   `,
 })
 export class Shell {
   protected readonly meta = inject(MetaStore);
+  protected readonly editor = inject(EntityEditor);
 
   /** Moves focus to <main> without changing the URL (the router owns the hash). */
   protected focusMain(event: Event): void {

@@ -18,7 +18,8 @@ import { MetaStore } from '../core/state/meta.store';
 import { PrivacyStore } from '../core/state/privacy.store';
 import { CurrencyToggle } from '../shared/components/currency-toggle';
 import { PeriodPicker } from '../shared/components/period-picker';
-import { findNav } from './nav';
+import { findNav, isEditorRoute } from './nav';
+import { NewMenu } from './new-menu';
 
 @Component({
   selector: 'sf-topbar',
@@ -32,6 +33,7 @@ import { findNav } from './nav';
     HlmTooltip,
     PeriodPicker,
     CurrencyToggle,
+    NewMenu,
   ],
   providers: [provideIcons({ lucideRefreshCw, lucideLanguages, lucideLogOut, lucideUser, lucideExternalLink, lucideEye, lucideEyeOff })],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -56,6 +58,7 @@ import { findNav } from './nav';
         }
         <sf-currency-toggle />
       </div>
+      <sf-new-menu />
       <button
         hlmBtn
         variant="ghost"
@@ -143,6 +146,7 @@ export class Topbar {
   /** Pages that don't depend on the period hide the picker. */
   protected readonly showPeriod = computed(() => {
     const path = this.url().split('?')[0];
+    if (isEditorRoute(path)) return false;
     return !['/planning/recurring', '/planning/goals', '/planning/projection', '/settings', '/about', '/accounts/net-worth'].includes(path);
   });
   protected readonly email = computed(() => this.meta.meta()?.email ?? this.auth.me()?.email ?? '');

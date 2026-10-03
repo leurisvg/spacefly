@@ -5,7 +5,8 @@
  *
  *   npm run dev:mock     # mock on :8081 + SpaceFly server (DEV token) + ng serve
  *
- * Deterministic (seeded) so screenshots and numbers are stable between runs.
+ * Deterministic (seeded) so screenshots and numbers are stable between runs. Accepts writes too
+ * (in memory, reset on restart) through the shared fake Firefly.
  */
 import { createServer } from 'node:http';
 import { addDays, addMonths, daysInMonth, monthsInRange, startOfMonth, todayIso } from '../../shared/utils/dates';
@@ -287,7 +288,16 @@ const dataset: FakeDataset = {
   rates: monthsInRange(firstMonth, today).map((m) => ({ from_currency_code: 'USD', to_currency_code: 'DOP', rate: rateFor(m).toFixed(4), date: `${m}-01T00:00:00-04:00` })),
   accountsAt: (type, date) => {
     const d = date > today ? today : date;
-    const pool = type === 'asset' ? owned.filter((a) => a.type === 'asset') : type === 'liabilities' ? owned.filter((a) => a.type === 'liabilities') : type === 'expense' ? [...merchants.values()] : type === 'revenue' ? Object.values(R) : owned;
+    const pool =
+      type === 'asset'
+        ? owned.filter((a) => a.type === 'asset')
+        : type === 'liabilities'
+          ? owned.filter((a) => a.type === 'liabilities')
+          : type === 'expense'
+            ? [...merchants.values()]
+            : type === 'revenue'
+              ? Object.values(R)
+              : [...owned, ...merchants.values(), ...Object.values(R)];
     return pool.map((a) => accountResource(a, d));
   },
   categories: CATS,
@@ -333,7 +343,7 @@ createServer(async (req, res) => {
     body: chunks.length ? Buffer.concat(chunks) : undefined,
   });
   res.writeHead(response.status, { 'Content-Type': 'application/json' });
-  res.end(await response.text());
+  res.end(response.status === 204 ? undefined : await response.text());
 }).listen(PORT, () => {
   console.log(`🧪 Mock Firefly III on http://localhost:${PORT} · ${groups.length} transactions · token "${dataset.token}"`);
 });

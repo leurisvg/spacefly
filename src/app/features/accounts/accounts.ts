@@ -1,7 +1,10 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
+import { NgIcon, provideIcons } from '@ng-icons/core';
+import { lucidePencil, lucidePlus } from '@ng-icons/lucide';
 import { TranslocoPipe } from '@jsverse/transloco';
 import type { AccountsReport } from '@shared';
 import { HlmBadge } from '@spartan-ng/helm/badge';
+import { HlmButton } from '@spartan-ng/helm/button';
 import { reportResource } from '../../core/api/report-resource';
 import { FormatService } from '../../core/format/format.service';
 import { FORMAT_PIPES } from '../../core/format/pipes';
@@ -15,15 +18,20 @@ import { KpiCard } from '../../shared/components/kpi-card';
 import { Money } from '../../shared/components/money';
 import { PageHeader } from '../../shared/components/page-header';
 import { TxDetailService } from '../../shared/components/tx-detail.service';
+import { EntityEditor } from '../editor/entity-editor.service';
 import { MonthsPicker } from './months-picker';
 
 @Component({
   selector: 'sf-accounts',
-  imports: [TranslocoPipe, HlmBadge, Chart, ChartCard, KpiCard, Money, PageHeader, MonthsPicker, ...FORMAT_PIPES],
+  imports: [NgIcon, TranslocoPipe, HlmBadge, HlmButton, Chart, ChartCard, KpiCard, Money, PageHeader, MonthsPicker, ...FORMAT_PIPES],
+  providers: [provideIcons({ lucidePencil, lucidePlus })],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'flex flex-col gap-4 sm:gap-5' },
   template: `
     <sf-page-header [title]="i18n.t('nav.assetAccounts')" [description]="i18n.t('accounts.description')">
+      <button hlmBtn size="sm" variant="outline" type="button" (click)="editor.open('account')">
+        <ng-icon name="lucidePlus" aria-hidden="true" />{{ 'editor.entity.account.new' | transloco }}
+      </button>
       <sf-months-picker [value]="months()" (changed)="filters.setParams({ months: $event })" />
     </sf-page-header>
 
@@ -42,6 +50,7 @@ import { MonthsPicker } from './months-picker';
             <th class="eyebrow py-2 text-right">{{ 'accounts.balance' | transloco }}</th>
             <th class="eyebrow py-2 text-right">{{ 'common.income' | transloco }}</th>
             <th class="eyebrow py-2 text-right">{{ 'common.expenses' | transloco }}</th>
+            <th class="w-8"><span class="sr-only">{{ 'editor.tx.edit' | transloco }}</span></th>
           </tr>
         </thead>
         <tbody>
@@ -63,6 +72,11 @@ import { MonthsPicker } from './months-picker';
               <td class="py-2 text-right"><sf-money [value]="a.balance" tone="auto" /></td>
               <td class="py-2 text-right"><sf-money [value]="a.income" class="text-xs" /></td>
               <td class="py-2 text-right"><sf-money [value]="a.expense" class="text-xs" /></td>
+              <td class="py-2 text-right">
+                <button hlmBtn variant="ghost" size="icon-sm" type="button" [attr.aria-label]="('editor.tx.edit' | transloco) + ': ' + a.name" (click)="edit($event, a.id)">
+                  <ng-icon name="lucidePencil" aria-hidden="true" />
+                </button>
+              </td>
             </tr>
           }
         </tbody>
@@ -81,6 +95,7 @@ export class Accounts {
   protected readonly filters = inject(FiltersStore);
   protected readonly detail = inject(TxDetailService);
   protected readonly colors = inject(SeriesColors);
+  protected readonly editor = inject(EntityEditor);
   private readonly f = inject(FormatService);
   private readonly monthsParam = this.filters.param('months');
   protected readonly months = computed(() => this.monthsParam() ?? '12');
@@ -88,6 +103,11 @@ export class Accounts {
   protected readonly r = this.res.data;
   protected readonly income = computed(() => this.r()?.accounts.reduce((s, a) => s + a.income, 0) ?? null);
   protected readonly expense = computed(() => this.r()?.accounts.reduce((s, a) => s + a.expense, 0) ?? null);
+
+  protected edit(event: Event, id: string): void {
+    event.stopPropagation();
+    this.editor.open('account', id);
+  }
 
   protected readonly options = computed(() => {
     const r = this.r();

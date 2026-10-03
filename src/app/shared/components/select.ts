@@ -1,24 +1,23 @@
-import { ChangeDetectionStrategy, Component, computed, effect, ElementRef, input, model, signal, viewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, ElementRef, input, model, output, signal, viewChild } from '@angular/core';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideCheck, lucideChevronDown, lucideSearch } from '@ng-icons/lucide';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { HlmInput } from '@spartan-ng/helm/input';
 import { HlmPopoverImports } from '@spartan-ng/helm/popover';
+import { fold } from '../forms/fold';
 
 export interface SelectOption {
   value: string;
   label: string;
 }
 
-/** Lower-case and strip accents so "cafe" finds "Café". */
-const fold = (s: string) => s.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase();
-
 let nextId = 0;
 
 /**
  * Select with a search box (combobox + listbox). Typing filters the options (accent- and case-insensitive,
  * every word must match); ↑ ↓ Home End move, Enter picks, Esc closes. With a `placeholder`, the first
- * entry clears the selection ("All categories").
+ * entry clears the selection ("All categories"). Also a form control: `[formField]` binds `value`,
+ * `disabled`, `invalid` and `touched`.
  */
 @Component({
   selector: 'sf-select',
@@ -34,7 +33,10 @@ let nextId = 0;
         type="button"
         role="combobox"
         aria-haspopup="listbox"
-        class="flex h-8 w-full items-center rounded-md border border-input bg-background/40 pl-2.5 pr-8 text-left text-sm text-foreground outline-none transition focus-visible:ring-2 focus-visible:ring-ring/50"
+        class="flex h-8 w-full items-center rounded-md border border-input bg-background/40 pl-2.5 pr-8 text-left text-sm text-foreground outline-none transition focus-visible:ring-2 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50"
+        [class.border-destructive]="invalid()"
+        [disabled]="disabled()"
+        [attr.aria-invalid]="invalid() || null"
         [attr.aria-label]="label() || null"
         [attr.aria-expanded]="open()"
         [attr.aria-controls]="open() ? listId : null"
@@ -105,6 +107,12 @@ export class Select {
   readonly label = input('');
   /** Show the search box. Turn off for short fixed lists. */
   readonly searchable = input(true);
+  /** Form-control contract (see `FormValueControl`): the state a bound field pushes in. */
+  readonly disabled = input(false);
+  readonly invalid = input(false);
+  readonly touched = input(false);
+  /** Emits when the list closes, so a bound field becomes touched. */
+  readonly touch = output<void>();
 
   private readonly trigger = viewChild<ElementRef<HTMLButtonElement>>('trigger');
   private readonly uid = nextId++;
@@ -142,7 +150,9 @@ export class Select {
   }
 
   protected onState(open: boolean): void {
+    const wasOpen = this.open();
     this.open.set(open);
+    if (wasOpen && !open) this.touch.emit();
     if (open) {
       this.query.set('');
       this.active.set(Math.max(0, this.entries().findIndex((o) => o.value === this.value())));
@@ -201,6 +211,7 @@ export class Select {
 
   private close(): void {
     this.open.set(false);
+    this.touch.emit();
     this.trigger()?.nativeElement.focus();
   }
 }

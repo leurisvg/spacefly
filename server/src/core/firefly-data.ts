@@ -1,7 +1,7 @@
 import { monthsInRange, startOfMonth, todayIso, type Period } from '@shared';
 import type { Config } from '../config';
 import type { Db } from '../db/sqlite';
-import type { FireflyClient } from '../firefly/firefly.client';
+import type { FireflyReader } from '../firefly/firefly.client';
 import type {
   FfAbout,
   FfAccount,
@@ -38,6 +38,10 @@ export interface Account {
   isCreditCard: boolean;
   group: string | null;
   order: number;
+  liabilityType: string | null;
+  liabilityDirection: string | null;
+  iban: string | null;
+  notes: string | null;
 }
 
 const META_TTL = 10 * 60;
@@ -49,7 +53,7 @@ const HOUR = 60 * 60;
  */
 export class FireflyData {
   constructor(
-    readonly ff: FireflyClient,
+    readonly ff: FireflyReader,
     private readonly cache: Cache,
     readonly userId: string,
     private readonly config: Config,
@@ -68,6 +72,23 @@ export class FireflyData {
 
   invalidate(): void {
     this.cache.deletePrefix(`u:${this.userId}:`);
+  }
+
+  /**
+   * After a transaction write: drops the months it touched (`tx2:`) plus everything derived from
+   * transactions — balances, budgets, subscriptions, goals, categories and tags. Closed months that
+   * weren't touched stay cached.
+   */
+  invalidateAfterTransaction(dates: string[]): void {
+    for (const month of new Set(dates.map((d) => d.slice(0, 7)))) this.cache.deletePrefix(this.key('tx2', month));
+    for (const prefix of ['accounts', 'available', 'bills', 'piggy-banks', 'piggy-events', 'categories', 'tags', 'budgets']) {
+      this.cache.deletePrefix(this.key(prefix));
+    }
+  }
+
+  /** Drops cached lists of one kind (e.g. `categories`) after an entity write. */
+  invalidateKinds(...kinds: string[]): void {
+    for (const kind of kinds) this.cache.deletePrefix(this.key(kind));
   }
 
   about(): Promise<FfAbout> {
@@ -143,7 +164,7 @@ export class FireflyData {
 
   /** All splits of a calendar month (YYYY-MM). */
   monthSplits(month: string): Promise<Split[]> {
-    return this.cache.wrap(this.key('tx', month), this.ttlFor(month), async () => {
+    return this.cache.wrap(this.key('tx2', month), this.ttlFor(month), async () => {
       const start = `${month}-01`;
       const end = new Date(Date.UTC(Number(month.slice(0, 4)), Number(month.slice(5, 7)), 0)).toISOString().slice(0, 10);
       const groups = await this.ff.list<FfTransactionGroup>('/v1/transactions', { start, end, type: 'all' });
@@ -208,6 +229,11 @@ export class FireflyData {
     );
   }
 
+  /** Every subscription, without period-dependent pay dates (for pickers). */
+  billsAll(): Promise<FfResource<FfBill>[]> {
+    return this.cache.wrap(this.key('bills', 'all'), this.config.CACHE_TTL_CURRENT_MONTH, () => this.ff.list<FfBill>('/v1/bills'));
+  }
+
   recurrences(): Promise<FfResource<FfRecurrence>[]> {
     return this.cache.wrap(this.key('recurrences'), META_TTL, () => this.ff.list<FfRecurrence>('/v1/recurrences'));
   }
@@ -250,6 +276,10 @@ function toAccount(r: FfResource<FfAccount>): Account {
     isCreditCard: a.account_role === 'ccAsset' || (a.credit_card_type ?? '') !== '',
     group: a.object_group_title ?? null,
     order: a.order ?? 0,
+    liabilityType: a.liability_type ?? null,
+    liabilityDirection: a.liability_direction ?? null,
+    iban: a.iban || null,
+    notes: a.notes || null,
   };
 }
 

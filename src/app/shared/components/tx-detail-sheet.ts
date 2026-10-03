@@ -1,5 +1,8 @@
 import { httpResource } from '@angular/common/http';
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { NavigationStart, Router } from '@angular/router';
+import { filter } from 'rxjs';
 import { TranslocoPipe } from '@jsverse/transloco';
 import type { Report, TxListResponse, TxRow } from '@shared';
 import { HlmSheetImports } from '@spartan-ng/helm/sheet';
@@ -84,7 +87,20 @@ interface Group {
 export class TxDetailSheet {
   protected readonly detail = inject(TxDetailService);
   private readonly filters = inject(FiltersStore);
+  private readonly router = inject(Router);
   protected readonly req = this.detail.request;
+
+  constructor() {
+    // Going to another page (an edit form, say) leaves the sheet behind; changing only the query string doesn't.
+    this.router.events
+      .pipe(
+        filter((e): e is NavigationStart => e instanceof NavigationStart),
+        takeUntilDestroyed(),
+      )
+      .subscribe((e) => {
+        if (e.url.split('?')[0] !== this.router.url.split('?')[0]) this.detail.close();
+      });
+  }
   protected readonly open = computed(() => this.req() !== null);
   protected readonly range = computed(() => ({
     start: this.req()?.filter.start ?? this.filters.period().start,

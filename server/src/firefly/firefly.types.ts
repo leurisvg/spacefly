@@ -93,8 +93,16 @@ export interface FfAccount {
   pc_current_balance?: string | null;
   current_balance_date?: string | null;
   include_net_worth?: boolean;
+  liability_type?: string | null;
   liability_direction?: string | null;
+  interest?: string | null;
+  interest_period?: string | null;
   credit_card_type?: string | null;
+  monthly_payment_date?: string | null;
+  iban?: string | null;
+  notes?: string | null;
+  opening_balance?: string | null;
+  opening_balance_date?: string | null;
   object_group_title?: string | null;
   order?: number | null;
 }
@@ -108,6 +116,7 @@ export interface FfExchangeRate {
 
 export interface FfCategory {
   name: string;
+  notes?: string | null;
 }
 
 export interface FfTag {
@@ -119,6 +128,7 @@ export interface FfTag {
 export interface FfBudget {
   name: string;
   active: boolean;
+  notes?: string | null;
   order?: number | null;
   auto_budget_type?: string | null;
   auto_budget_period?: string | null;
@@ -150,6 +160,7 @@ export interface FfAvailableBudget {
 export interface FfBill {
   name: string;
   active: boolean;
+  notes?: string | null;
   currency_code?: string | null;
   amount_min: string;
   amount_max: string;
@@ -198,6 +209,7 @@ export interface FfRecurrence {
 
 export interface FfPiggyBank {
   name: string;
+  notes?: string | null;
   active?: boolean;
   currency_code?: string | null;
   target_amount?: string | null;
