@@ -1,0 +1,78 @@
+/** Reads a CSS custom property from :root (tokens live in styles.css). */
+export function cssVar(name: string, fallback = '#888'): string {
+  if (typeof document === 'undefined') return fallback;
+  return getComputedStyle(document.documentElement).getPropertyValue(name).trim() || fallback;
+}
+
+export const SERIES_VARS = Array.from({ length: 8 }, (_, i) => `--series-${i + 1}`);
+
+export function seriesPalette(): string[] {
+  return SERIES_VARS.map((v) => cssVar(v));
+}
+
+/** Escapes untrusted labels (Firefly names) before they go into tooltip HTML. */
+export function esc(value: unknown): string {
+  return String(value ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!);
+}
+
+/** Tooltip row: short line key in the series color, value first (Strong), label after. */
+export function tooltipRow(color: string, label: string, value: string): string {
+  return `<div style="display:flex;align-items:center;gap:8px;line-height:1.6">
+    <span style="display:inline-block;width:10px;height:2px;border-radius:1px;background:${color}"></span>
+    <strong style="font-family:var(--font-mono);font-weight:600;color:${cssVar('--chart-ink')}">${esc(value)}</strong>
+    <span style="color:${cssVar('--chart-ink-2')}">${esc(label)}</span></div>`;
+}
+
+export function tooltipTitle(title: string): string {
+  return `<div style="font-weight:600;margin-bottom:4px;color:${cssVar('--chart-ink')}">${esc(title)}</div>`;
+}
+
+/** ECharts theme from the design tokens: recessive hairline grid/axes, thin marks, text in ink tokens. */
+export function buildTheme() {
+  const ink = cssVar('--chart-ink');
+  const ink2 = cssVar('--chart-ink-2');
+  const muted = cssVar('--chart-muted');
+  const grid = cssVar('--chart-grid');
+  const axis = cssVar('--chart-axis');
+  const surface = cssVar('--chart-surface');
+  const font = cssVar('--font-sans', 'Inter, system-ui, sans-serif');
+  const axisCommon = {
+    axisLine: { show: true, lineStyle: { color: axis, width: 1 } },
+    axisTick: { show: false },
+    axisLabel: { color: muted, fontSize: 11, fontFamily: font },
+    splitLine: { show: true, lineStyle: { color: grid, width: 1, type: 'solid' } },
+    splitArea: { show: false },
+  };
+  return {
+    color: seriesPalette(),
+    backgroundColor: 'transparent',
+    textStyle: { fontFamily: font, color: ink2 },
+    title: { textStyle: { color: ink, fontWeight: 600, fontSize: 13 }, subtextStyle: { color: muted } },
+    legend: { textStyle: { color: ink2, fontSize: 12 }, icon: 'roundRect', itemWidth: 12, itemHeight: 3, itemGap: 16 },
+    tooltip: {
+      backgroundColor: '#0f172a',
+      borderColor: axis,
+      borderWidth: 1,
+      padding: [8, 12],
+      textStyle: { color: ink, fontSize: 12, fontFamily: font },
+      extraCssText: 'border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.45);',
+      axisPointer: { lineStyle: { color: axis, width: 1 }, crossStyle: { color: axis } },
+    },
+    categoryAxis: { ...axisCommon, splitLine: { show: false } },
+    valueAxis: { ...axisCommon, axisLine: { show: false } },
+    timeAxis: axisCommon,
+    line: { lineStyle: { width: 2, cap: 'round', join: 'round' }, symbolSize: 8, symbol: 'circle', smooth: false },
+    bar: { barMaxWidth: 24, itemStyle: { borderRadius: [4, 4, 0, 0] } },
+    pie: { itemStyle: { borderColor: surface, borderWidth: 2 } },
+    sankey: { itemStyle: { borderWidth: 0 }, lineStyle: { opacity: 0.35 } },
+    treemap: { itemStyle: { borderColor: surface, borderWidth: 2, gapWidth: 2 } },
+    sunburst: { itemStyle: { borderColor: surface, borderWidth: 2 } },
+    calendar: {
+      itemStyle: { color: surface, borderColor: cssVar('--background'), borderWidth: 2 },
+      splitLine: { show: false },
+      dayLabel: { color: muted },
+      monthLabel: { color: ink2 },
+      yearLabel: { show: false },
+    },
+  };
+}

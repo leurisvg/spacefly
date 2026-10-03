@@ -1,0 +1,9 @@
+node_modules
+dist
+data
+.angular
+.git
+.idea
+.vscode
+.env
+coverage

@@ -1,0 +1,26 @@
+# SpaceFly next to an existing Firefly III stack.
+# Join the network Firefly's `app` container uses (check with `docker network ls`).
+services:
+  spacefly:
+    build: .
+    image: spacefly:latest
+    container_name: spacefly
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      FIREFLY_INTERNAL_URL: http://firefly:8080   # service/container name of Firefly on the shared network
+      DATA_DIR: /data
+    volumes:
+      - spacefly-data:/data
+    ports:
+      - "127.0.0.1:3000:3000"   # expose only to cloudflared / reverse proxy
+    networks:
+      - firefly
+
+volumes:
+  spacefly-data:
+
+networks:
+  firefly:
+    external: true
+    name: firefly_iii_default   # adjust to your Firefly network name

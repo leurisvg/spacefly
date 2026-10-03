@@ -42,3 +42,8 @@ __screenshots__/
 # System files
 .DS_Store
 Thumbs.db
+
+# SpaceFly
+.env
+/data
+/server/test/fixtures/captured
