@@ -3,11 +3,11 @@ import type { EditorLookups } from '@shared';
 /** What `/api/lookups/editor` would answer for the specs. */
 export const EDITOR_LOOKUPS: EditorLookups = {
   accounts: [
-    { id: '1', name: 'Banco Popular', kind: 'asset', liabilityType: null, currency: 'DOP', role: 'defaultAsset', group: null },
-    { id: '2', name: 'Cuenta USD', kind: 'asset', liabilityType: null, currency: 'USD', role: 'savingAsset', group: null },
-    { id: '5', name: 'Préstamo', kind: 'liability', liabilityType: 'loan', currency: 'DOP', role: null, group: null },
-    { id: '10', name: 'Empresa SRL', kind: 'revenue', liabilityType: null, currency: 'DOP', role: null, group: null },
-    { id: '20', name: 'Supermercado', kind: 'expense', liabilityType: null, currency: 'DOP', role: null, group: null },
+    { id: '1', name: 'Banco Popular', kind: 'asset', liabilityType: null, currency: 'DOP', role: 'defaultAsset', group: null, balance: 0 },
+    { id: '2', name: 'Cuenta USD', kind: 'asset', liabilityType: null, currency: 'USD', role: 'savingAsset', group: null, balance: 0 },
+    { id: '5', name: 'Préstamo', kind: 'liability', liabilityType: 'loan', currency: 'DOP', role: null, group: null, balance: 0 },
+    { id: '10', name: 'Empresa SRL', kind: 'revenue', liabilityType: null, currency: 'DOP', role: null, group: null, balance: 0 },
+    { id: '20', name: 'Supermercado', kind: 'expense', liabilityType: null, currency: 'DOP', role: null, group: null, balance: 0 },
   ],
   categories: [{ id: '1', name: 'Comida' }],
   tags: [{ id: '1', name: 'hogar' }],
