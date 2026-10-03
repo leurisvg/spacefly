@@ -204,6 +204,36 @@ describe('TransactionForm · new', () => {
     expect(s.router.url).toBe('/transactions'); // no history inside the app: the fallback route
   });
 
+  it('suggests descriptions used before while typing', async () => {
+    const s = await setup();
+    await s.type('Comp');
+    expect(s.http.match((r) => r.url === '/api/lookups/descriptions')).toHaveLength(0); // waits for a pause in typing
+    await new Promise((r) => setTimeout(r, 260));
+    const req = s.http.expectOne((r) => r.url === '/api/lookups/descriptions');
+    expect(req.request.params.get('q')).toBe('Comp');
+    req.flush(['Compra quincenal', 'Compra rápida']);
+    await s.settle();
+    const options = [...document.body.querySelectorAll('[role=option]')].map((o) => o.textContent!.trim());
+    expect(options).toEqual(['Compra quincenal', 'Compra rápida']);
+    (document.body.querySelectorAll('[role=option]')[0] as HTMLElement).click();
+    await s.settle();
+    expect(s.model()['description']).toBe('Compra quincenal');
+  });
+
+  it('asks again only for the last text typed, and not at all when the field is emptied', async () => {
+    const s = await setup();
+    await s.type('C');
+    await s.type('Co');
+    await s.type('Com');
+    await new Promise((r) => setTimeout(r, 260));
+    const req = s.http.expectOne((r) => r.url === '/api/lookups/descriptions');
+    expect(req.request.params.get('q')).toBe('Com');
+    req.flush([]);
+    await s.type('');
+    await new Promise((r) => setTimeout(r, 260));
+    s.http.expectNone((r) => r.url === '/api/lookups/descriptions');
+  });
+
   it('sends a new merchant as a name', async () => {
     const s = await setup();
     await s.type('Pan');

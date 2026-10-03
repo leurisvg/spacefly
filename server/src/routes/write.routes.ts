@@ -1,4 +1,5 @@
 import { Hono, type Context } from 'hono';
+import { z } from 'zod';
 import {
   accountKind,
   type AccountEditPayload,
@@ -75,6 +76,22 @@ export function writeRoutes(_s: Services) {
       defaultAccountId: editorAccounts.find((a) => a.kind === 'asset' && a.role === 'defaultAsset')?.id ?? null,
     };
     return c.json(body);
+  });
+
+  /** Descriptions already used, for the suggestions under the description field (Firefly's own autocomplete). */
+  api.get('/lookups/descriptions', async (c) => {
+    const { q } = z.object({ q: z.string().trim().min(1).max(100) }).parse(c.req.query());
+    const found = await c.get('data').ff.get<{ name?: string; description?: string }[]>('/v1/autocomplete/transactions', { query: q, limit: 20 });
+    const seen = new Set<string>();
+    const out: string[] = [];
+    for (const item of found) {
+      const text = (item.description ?? item.name ?? '').trim();
+      if (text && !seen.has(text.toLowerCase())) {
+        seen.add(text.toLowerCase());
+        out.push(text);
+      }
+    }
+    return c.json(out.slice(0, 10));
   });
 
   // ── Transactions ────────────────────────────────────────────────────────────

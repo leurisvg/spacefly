@@ -1,4 +1,5 @@
-import { ChangeDetectionStrategy, Component, computed, effect, inject, input, signal, untracked } from '@angular/core';
+import { httpResource } from '@angular/common/http';
+import { ChangeDetectionStrategy, Component, computed, DestroyRef, effect, inject, input, signal, untracked } from '@angular/core';
 import { form, FormField as Field, maxLength, submit, validate, type FieldTree, type ValidationError } from '@angular/forms/signals';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideArrowRightLeft, lucideExternalLink, lucideInfo } from '@ng-icons/lucide';
@@ -15,7 +16,6 @@ import {
 } from '@shared';
 import { toast } from '@spartan-ng/brain/sonner';
 import { HlmButton } from '@spartan-ng/helm/button';
-import { HlmInput } from '@spartan-ng/helm/input';
 import { HlmSkeleton } from '@spartan-ng/helm/skeleton';
 import { HlmSwitch } from '@spartan-ng/helm/switch';
 import { HlmTextarea } from '@spartan-ng/helm/textarea';
@@ -94,7 +94,6 @@ const isAfterSave = (v: unknown): v is AfterSave =>
     Field,
     NgIcon,
     HlmButton,
-    HlmInput,
     HlmSkeleton,
     HlmSwitch,
     HlmTextarea,
@@ -149,7 +148,14 @@ const isAfterSave = (v: unknown): v is AfterSave =>
         <sf-section [title]="i18n.t('editor.tx.what')" [loading]="lookups.loading()">
           <div class="flex flex-col gap-4">
             <sf-form-field [label]="i18n.t('editor.tx.descriptionLabel')" [required]="true" [field]="f.description">
-              <input hlmInput type="text" class="h-9" autocomplete="off" [formField]="f.description" />
+              <sf-combobox
+                [formField]="f.description"
+                [options]="descriptionOptions()"
+                [freeText]="true"
+                [maxVisible]="8"
+                [ariaLabel]="i18n.t('editor.tx.descriptionLabel')"
+                (typed)="onDescriptionTyped($event)"
+              />
             </sf-form-field>
 
             <div class="grid items-start gap-3 md:grid-cols-[1fr_auto_1fr]">
@@ -379,12 +385,30 @@ export class TransactionForm {
       .map((c) => ({ value: c.code, label: `${c.code} · ${c.name}` })),
   );
 
+  // ── Description suggestions: what was used before, as you type ──────────────
+  private readonly descriptionTerm = signal('');
+  private descriptionTimer: ReturnType<typeof setTimeout> | undefined;
+  private readonly suggestionsRes = httpResource<string[]>(() =>
+    this.descriptionTerm() ? { url: '/api/lookups/descriptions', params: { q: this.descriptionTerm() } } : undefined,
+  );
+  protected readonly descriptionOptions = computed(() =>
+    (this.descriptionTerm() && this.suggestionsRes.hasValue() ? (this.suggestionsRes.value() ?? []) : []).map((d) => ({ value: d, label: d })),
+  );
+
+  protected onDescriptionTyped(text: string): void {
+    clearTimeout(this.descriptionTimer);
+    const term = text.trim();
+    if (!term) this.descriptionTerm.set('');
+    else this.descriptionTimer = setTimeout(() => this.descriptionTerm.set(term), 200);
+  }
+
   protected readonly formErrors = computed(() => this.f().errors().map((e) => e.message ?? ''));
   protected readonly fireflyUrl = computed(() => (this.id() ? this.meta.fireflyUrl(`/transactions/show/${this.id()}`) : null));
 
   private initialized = false;
 
   constructor() {
+    inject(DestroyRef).onDestroy(() => clearTimeout(this.descriptionTimer));
     // Edit mode: load the transaction whenever the route's id changes.
     effect(() => {
       const id = this.id();

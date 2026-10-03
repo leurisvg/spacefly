@@ -610,6 +610,15 @@ export function createFakeFirefly(ds: FakeDataset, log: FakeFireflyLog = newLog(
       });
       return json(page(rows, q));
     }
+    if (p === '/v1/autocomplete/transactions') {
+      const needle = (q.get('query') ?? '').toLowerCase();
+      const limit = Number(q.get('limit') ?? 10) || 10;
+      const hits = ds.groups
+        .flatMap((g) => splitsOf(g).map((t) => ({ id: str(t['transaction_journal_id']), transaction_group_id: g.id, name: str(t['description']), description: str(t['description']) })))
+        .filter((x) => x.description.toLowerCase().includes(needle))
+        .sort((a, b) => a.description.localeCompare(b.description));
+      return json(hits.slice(0, limit));
+    }
     if (p === '/v1/search/transactions') {
       const needle = (q.get('query') ?? '').toLowerCase();
       const rows = ds.groups.filter((g) => splitsOf(g).some((t) => String(t['description']).toLowerCase().includes(needle)));

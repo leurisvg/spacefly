@@ -72,7 +72,7 @@ let nextId = 0;
     <ng-template
       cdkConnectedOverlay
       [cdkConnectedOverlayOrigin]="origin"
-      [cdkConnectedOverlayOpen]="open() && !disabled()"
+      [cdkConnectedOverlayOpen]="open() && !disabled() && (!freeText() || entries().length > 0)"
       [cdkConnectedOverlayWidth]="width()"
       [cdkConnectedOverlayOffsetY]="4"
       (overlayOutsideClick)="onOutside($event)"
@@ -159,6 +159,14 @@ export class Combobox implements FormValueControl<string> {
   readonly maxVisible = input(50);
   /** Emits on every choice, including clearing (`value: ''`). */
   readonly selection = output<ComboSelection>();
+  /**
+   * Plain text field with suggestions: `value` is always what is typed, options are only offered as
+   * shortcuts (and nothing is listed when there are none). Enter keeps submitting the form unless a
+   * suggestion was moved to with the arrow keys.
+   */
+  readonly freeText = input(false);
+  /** Emits the text as the user types (to fetch suggestions). */
+  readonly typed = output<string>();
 
   private readonly fieldEl = viewChild.required<ElementRef<HTMLInputElement>>('field');
   private readonly origin = viewChild.required(CdkOverlayOrigin);
@@ -175,7 +183,7 @@ export class Combobox implements FormValueControl<string> {
   private readonly selectedLabel = computed(() => {
     const v = this.value();
     if (!v) return '';
-    if (this.created()) return v;
+    if (this.created() || this.freeText()) return v;
     return this.options().find((o) => o.value === v)?.label ?? '';
   });
 
@@ -204,13 +212,17 @@ export class Combobox implements FormValueControl<string> {
   });
   protected readonly entries = computed(() => this.built().entries);
   protected readonly hiddenCount = computed(() => this.built().hidden);
-  protected readonly activeId = computed(() => (this.open() && this.entries()[this.active()]?.kind !== 'group' && this.entries().length ? this.optionId(this.active()) : null));
+  protected readonly activeId = computed(() =>
+    this.open() && this.active() >= 0 && this.entries()[this.active()] && this.entries()[this.active()]!.kind !== 'group' ? this.optionId(this.active()) : null,
+  );
 
   constructor() {
     // Mirror the model into the text box while the user isn't typing.
     effect(() => {
       const label = this.selectedLabel();
-      if (!untracked(this.focused) || !untracked(this.open)) this.text.set(label);
+      if (this.freeText()) {
+        if (untracked(this.text) !== label) this.text.set(label);
+      } else if (!untracked(this.focused) || !untracked(this.open)) this.text.set(label);
     });
     effect(() => {
       const id = this.activeId();
@@ -232,7 +244,7 @@ export class Combobox implements FormValueControl<string> {
     this.query.set('');
     this.open.set(true);
     const current = this.entries().findIndex((e) => e.kind === 'option' && e.option.value === this.value() && !this.created());
-    this.active.set(current >= 0 ? current : this.firstSelectable(0, 1));
+    this.active.set(this.freeText() ? -1 : current >= 0 ? current : this.firstSelectable(0, 1));
   }
 
   protected onFocus(): void {
@@ -245,6 +257,13 @@ export class Combobox implements FormValueControl<string> {
     this.text.set(text);
     this.openList();
     this.query.set(text);
+    if (this.freeText()) {
+      this.value.set(text);
+      this.created.set(false);
+      this.typed.emit(text);
+      this.active.set(-1);
+      return;
+    }
     this.active.set(this.firstSelectable(0, 1));
   }
 
@@ -262,6 +281,10 @@ export class Combobox implements FormValueControl<string> {
 
   /** Closing without choosing: an exact match is taken, emptying clears, anything else reverts. */
   private settle(): void {
+    if (this.freeText()) {
+      this.close();
+      return;
+    }
     const typed = this.text().trim();
     if (!typed) {
       if (this.clearable() && this.value()) this.apply({ value: '', created: false, label: '' });
@@ -293,8 +316,9 @@ export class Combobox implements FormValueControl<string> {
       }
       case 'Enter': {
         if (!this.open()) break;
-        event.preventDefault();
         const entry = this.entries()[this.active()];
+        if (!entry && this.freeText()) break; // nothing picked: Enter submits the form as usual
+        event.preventDefault();
         if (entry && entry.kind !== 'group') this.choose(entry);
         break;
       }
@@ -302,7 +326,7 @@ export class Combobox implements FormValueControl<string> {
         if (this.open()) {
           event.preventDefault();
           event.stopPropagation();
-          this.text.set(this.selectedLabel());
+          if (!this.freeText()) this.text.set(this.selectedLabel());
           this.close();
         }
         break;

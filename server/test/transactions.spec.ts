@@ -325,3 +325,31 @@ describe('cache invalidation after writes', () => {
     expect(monthFetches('2026-08')).toBe(augBefore);
   });
 });
+
+describe('description suggestions', () => {
+  it('lists descriptions already used that contain the text, without repeats', async () => {
+    const { app, cookie, post } = await start();
+    await post({ ...base, description: 'Compra rápida' }); // a second "Compra rápida" next to the fixture's
+    const res = await call(app, cookie, 'GET', '/api/lookups/descriptions?q=compra');
+    expect(res.status).toBe(200);
+    const list = (await res.json()) as string[];
+    expect(list).toEqual(['Compra quincenal', 'Compra rápida']);
+  });
+
+  it('matches anywhere in the text and ignores case', async () => {
+    const { app, cookie } = await start();
+    const list = (await (await call(app, cookie, 'GET', '/api/lookups/descriptions?q=N%C3%93MINA')).json()) as string[];
+    expect(list.map((d) => d.toLowerCase())).toEqual(expect.arrayContaining(['nómina septiembre']));
+  });
+
+  it('needs some text to search for', async () => {
+    const { app, cookie } = await start();
+    expect((await call(app, cookie, 'GET', '/api/lookups/descriptions?q=')).status).toBe(400);
+    expect((await call(app, cookie, 'GET', '/api/lookups/descriptions')).status).toBe(400);
+  });
+
+  it('answers with nothing when nothing matches', async () => {
+    const { app, cookie } = await start();
+    expect(await (await call(app, cookie, 'GET', '/api/lookups/descriptions?q=zzzz')).json()).toEqual([]);
+  });
+});
