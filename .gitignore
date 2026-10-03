@@ -47,3 +47,4 @@ Thumbs.db
 .env
 /data
 /server/test/fixtures/captured
+/server/node_modules
