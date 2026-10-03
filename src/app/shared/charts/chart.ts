@@ -1,30 +1,37 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input, output } from '@angular/core';
 import { NgxEchartsDirective } from 'ngx-echarts';
+import { HlmSkeleton } from '@spartan-ng/helm/skeleton';
 import type { ECElementEvent, ECharts, EChartsCoreOption } from 'echarts/core';
 import { ChartCard } from './chart-card';
 
 /**
  * ECharts host with the SpaceFly theme. Registers itself with an enclosing `sf-chart-card`
  * (PNG export). Height is explicit so the x-axis band always fits inside the container.
+ * ECharts only initialises once the chart nears the viewport, so long pages (annual matrix,
+ * heatmap, tall Sankey) don't render canvases the user hasn't scrolled to.
  */
 @Component({
   selector: 'sf-chart',
-  imports: [NgxEchartsDirective],
+  imports: [NgxEchartsDirective, HlmSkeleton],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'block w-full' },
   template: `
-    <div
-      echarts
-      theme="spacefly"
-      [options]="merged()"
-      [autoResize]="true"
-      [style.height]="height()"
-      class="w-full"
-      role="img"
-      [attr.aria-label]="ariaLabel()"
-      (chartInit)="onInit($event)"
-      (chartClick)="chartClick.emit($event)"
-    ></div>
+    @defer (on viewport; prefetch on idle) {
+      <div
+        echarts
+        theme="spacefly"
+        [options]="merged()"
+        [autoResize]="true"
+        [style.height]="height()"
+        class="w-full"
+        role="img"
+        [attr.aria-label]="ariaLabel()"
+        (chartInit)="onInit($event)"
+        (chartClick)="chartClick.emit($event)"
+      ></div>
+    } @placeholder {
+      <div hlmSkeleton class="w-full" [style.height]="height()"></div>
+    }
   `,
 })
 export class Chart {
