@@ -3,6 +3,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { TranslocoService } from '@jsverse/transloco';
 import { MetaStore } from '../state/meta.store';
 import { FiltersStore } from '../state/filters.store';
+import { PrivacyStore } from '../state/privacy.store';
 
 export type DateStyle = 'short' | 'long' | 'month' | 'monthShort' | 'weekday' | 'day' | 'full';
 
@@ -14,6 +15,9 @@ export class FormatService {
   private readonly transloco = inject(TranslocoService);
   private readonly meta = inject(MetaStore);
   private readonly filters = inject(FiltersStore);
+  private readonly privacy = inject(PrivacyStore);
+  /** True while privacy mode is on: amounts and data percentages then show 0. */
+  readonly hidden = this.privacy.hidden;
   readonly lang = toSignal(this.transloco.langChanges$, { initialValue: this.transloco.getActiveLang() });
   readonly locale = computed(() => (this.lang() === 'en' ? 'en-US' : 'es-DO'));
   private readonly cache = new Map<string, Intl.NumberFormat | Intl.DateTimeFormat>();
@@ -23,14 +27,24 @@ export class FormatService {
     return this.meta.currencies().find((c) => c.code === code)?.symbol ?? SYMBOLS[code] ?? code;
   }
 
+  /** Replaces an amount or data percentage by 0 in privacy mode. Rates, dates and counts are not masked. */
+  private mask(value: number): number {
+    return this.privacy.hidden() ? 0 : value;
+  }
+
   number(value: number, decimals = 2): string {
     return this.nf(`n${decimals}`, { minimumFractionDigits: decimals, maximumFractionDigits: decimals }).format(value);
+  }
+
+  /** A plain amount without currency symbol (foreign originals): masked in privacy mode, unlike number(). */
+  amount(value: number, decimals = 2): string {
+    return this.number(this.mask(value), decimals);
   }
 
   /** "RD$1,234.56" / "−RD$1,234.56" / "+US$12.00" (signed). */
   money(value: number | null | undefined, currency?: string, opts: { signed?: boolean; decimals?: number; abs?: boolean } = {}): string {
     if (value === null || value === undefined || Number.isNaN(value)) return '—';
-    const v = opts.abs ? Math.abs(value) : value;
+    const v = this.mask(opts.abs ? Math.abs(value) : value);
     const sign = v < 0 ? '−' : opts.signed && v > 0 ? '+' : '';
     return `${sign}${this.symbol(currency)}${this.number(Math.abs(v), opts.decimals ?? 2)}`;
   }
@@ -38,21 +52,32 @@ export class FormatService {
   /** "RD$12.9K" style for axes, chips and tight spaces. */
   compact(value: number | null | undefined, currency?: string | false): string {
     if (value === null || value === undefined) return '—';
-    const sign = value < 0 ? '−' : '';
-    const n = this.nf('compact', { notation: 'compact', maximumFractionDigits: 1 }).format(Math.abs(value));
+    const v = this.mask(value);
+    const sign = v < 0 ? '−' : '';
+    const n = this.nf('compact', { notation: 'compact', maximumFractionDigits: 1 }).format(Math.abs(v));
     return currency === false ? `${sign}${n}` : `${sign}${this.symbol(currency || undefined)}${n}`;
   }
 
-  /** Ratio → "12.3 %" (es) / "12.3%" (en). */
-  pct(ratio: number | null | undefined, decimals = 1, signed = false): string {
+  /**
+   * Ratio → "12.3 %" (es) / "12.3%" (en). Masked in privacy mode; pass `mask: false` for values that
+   * are settings rather than data (e.g. a threshold slider).
+   */
+  pct(ratio: number | null | undefined, decimals = 1, signed = false, opts: { mask?: boolean } = {}): string {
     if (ratio === null || ratio === undefined || !Number.isFinite(ratio)) return '—';
+    const shown = opts.mask === false ? ratio : this.mask(ratio);
     const s = this.nf(`p${decimals}${signed}`, {
       style: 'percent',
       minimumFractionDigits: decimals,
       maximumFractionDigits: decimals,
       signDisplay: signed ? 'exceptZero' : 'auto',
-    }).format(ratio);
+    }).format(shown);
     return s.replace('-', '−');
+  }
+
+  /** A percentage already on the 0–100 scale in the plain "12.3%" form used by chart tooltips and axes. */
+  share(percent: number, decimals?: number): string {
+    const v = this.mask(percent);
+    return `${decimals === undefined ? v : v.toFixed(decimals)}%`;
   }
 
   date(iso: string | null | undefined, style: DateStyle = 'short'): string {

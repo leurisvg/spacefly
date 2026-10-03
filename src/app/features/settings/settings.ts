@@ -57,7 +57,7 @@ import { Section } from '../../shared/components/section';
                 {{ 'settings.sankeyThreshold' | transloco }}
                 <span class="flex items-center gap-3">
                   <input type="range" min="0" max="0.1" step="0.005" class="w-40 accent-[var(--primary)]" [ngModel]="d.sankeyThreshold" (ngModelChange)="patch({ sankeyThreshold: +$event })" />
-                  <span class="num text-xs">{{ d.sankeyThreshold | pct: 1 }}</span>
+                  <span class="num text-xs">{{ d.sankeyThreshold | pct: 1 : false : false }}</span>
                 </span>
               </label>
             </div>

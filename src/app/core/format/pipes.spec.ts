@@ -26,6 +26,7 @@ describe('format pipes', () => {
     const pipe = TestBed.inject(PctPipe);
     expect(pipe.transform(0.25)).toBe('25.0%');
     expect(pipe.transform(0.25, 0, true)).toBe('+25%');
+    expect(pipe.transform(0.25, 1, false, false)).toBe('25.0%'); // settings opt out of privacy masking
   });
 
   it('fdate and monthLabel', () => {

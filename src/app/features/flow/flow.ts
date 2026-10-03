@@ -53,7 +53,7 @@ import { TxDetailService } from '../../shared/components/tx-detail.service';
           (change)="set('threshold', $any($event.target).value)"
           [attr.aria-label]="'flow.groupSmall' | transloco"
         />
-        <span class="num w-12 text-xs">{{ threshold() | pct: 1 }}</span>
+        <span class="num w-12 text-xs">{{ threshold() | pct: 1 : false : false }}</span>
       </label>
     </div>
 

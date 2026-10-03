@@ -42,7 +42,8 @@ export class Money {
     return parts
       .filter((p) => p.currency !== (display ?? '') || parts.length > 1)
       .map((p) => {
-        const orig = `${p.original < 0 ? '−' : '+'}${this.f.number(Math.abs(p.original))} ${p.currency}`;
+        const original = this.f.hidden() ? 0 : p.original;
+        const orig = `${original < 0 ? '−' : '+'}${this.f.amount(Math.abs(original))} ${p.currency}`;
         if (p.rate === 1) return orig;
         return `${orig} → ${this.f.money(p.original * p.rate, display, { signed: true })} (×${this.f.number(p.rate, 4)})`;
       });
@@ -51,7 +52,8 @@ export class Money {
 
   protected readonly toneClass = computed(() => {
     const t = this.tone();
-    const v = this.value() ?? 0;
+    // Color would reveal the sign of a hidden amount.
+    const v = this.f.hidden() ? 0 : (this.value() ?? 0);
     if (t === 'income' || (t === 'auto' && v > 0)) return 'text-positive';
     if (t === 'expense' || (t === 'auto' && v < 0)) return 'text-negative';
     return '';

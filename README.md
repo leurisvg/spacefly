@@ -129,6 +129,18 @@ Comportamiento común a todas: los filtros viven en la URL, cada monto muestra e
 
 ---
 
+## Modo privacidad
+
+El botón del ojo en la barra superior oculta **todos los montos y porcentajes** de la app: KPIs, tablas, tooltips, ejes y etiquetas de los gráficos, el calendario, el Sankey, el detalle de transacciones y las conversiones de moneda. Cada monto se muestra como `0` (por ejemplo `RD$0.00`) y cada porcentaje como `0%`, para poder compartir pantalla o trabajar con alguien mirando. La preferencia se guarda en el navegador y sigue activa al recargar.
+
+- **Se oculta también** lo que delataría esas cifras: la flecha y el color de las variaciones, el estado y el relleno de los medidores de presupuesto y las barras de progreso de las metas.
+- **No se oculta:** fechas, tasas de cambio, conteos y los controles de configuración (por ejemplo el umbral del Sankey).
+- Los gráficos conservan su forma (la altura relativa de las barras o el ancho del Sankey), pero ningún número real aparece.
+- Mientras está activo, la exportación a CSV del explorador queda desactivada, porque el archivo contendría los montos reales.
+- Es una protección visual en el navegador: los datos siguen llegando al cliente desde la API, así que no sustituye al control de acceso.
+
+---
+
 ## Diseño visual
 
 - Siempre en tema oscuro, con la paleta del tema dark del email summary (`#0a0e1a`, `#111827`, acento índigo, verde para ingresos y rojo para gastos) mapeada a las variables CSS de spartan.

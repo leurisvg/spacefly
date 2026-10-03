@@ -3,7 +3,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router } from '@angular/router';
 import { filter, map, startWith } from 'rxjs';
 import { NgIcon, provideIcons } from '@ng-icons/core';
-import { lucideExternalLink, lucideLanguages, lucideLogOut, lucideRefreshCw, lucideUser } from '@ng-icons/lucide';
+import { lucideExternalLink, lucideEye, lucideEyeOff, lucideLanguages, lucideLogOut, lucideRefreshCw, lucideUser } from '@ng-icons/lucide';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { toast } from '@spartan-ng/brain/sonner';
 import { HlmBreadcrumbImports } from '@spartan-ng/helm/breadcrumb';
@@ -15,6 +15,7 @@ import { ApiService } from '../core/api/report-resource';
 import { AuthService } from '../core/auth/auth.service';
 import { LANG_KEY, LANGS, type Lang } from '../core/i18n/transloco-loader';
 import { MetaStore } from '../core/state/meta.store';
+import { PrivacyStore } from '../core/state/privacy.store';
 import { CurrencyToggle } from '../shared/components/currency-toggle';
 import { PeriodPicker } from '../shared/components/period-picker';
 import { findNav } from './nav';
@@ -32,7 +33,7 @@ import { findNav } from './nav';
     PeriodPicker,
     CurrencyToggle,
   ],
-  providers: [provideIcons({ lucideRefreshCw, lucideLanguages, lucideLogOut, lucideUser, lucideExternalLink })],
+  providers: [provideIcons({ lucideRefreshCw, lucideLanguages, lucideLogOut, lucideUser, lucideExternalLink, lucideEye, lucideEyeOff })],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'sticky top-0 z-20 flex flex-col gap-2 border-b border-border bg-background/85 px-3 py-2 backdrop-blur supports-[backdrop-filter]:bg-background/70 sm:px-5',
@@ -55,6 +56,17 @@ import { findNav } from './nav';
         }
         <sf-currency-toggle />
       </div>
+      <button
+        hlmBtn
+        variant="ghost"
+        size="icon-sm"
+        [hlmTooltip]="(privacy.hidden() ? 'topbar.showAmounts' : 'topbar.hideAmounts') | transloco"
+        [attr.aria-label]="(privacy.hidden() ? 'topbar.showAmounts' : 'topbar.hideAmounts') | transloco"
+        [attr.aria-pressed]="privacy.hidden()"
+        (click)="privacy.toggle()"
+      >
+        <ng-icon [name]="privacy.hidden() ? 'lucideEyeOff' : 'lucideEye'" />
+      </button>
       <button
         hlmBtn
         variant="ghost"
@@ -111,6 +123,7 @@ export class Topbar {
   private readonly api = inject(ApiService);
   private readonly meta = inject(MetaStore);
   protected readonly auth = inject(AuthService);
+  protected readonly privacy = inject(PrivacyStore);
   protected readonly langs = LANGS;
   protected readonly lang = toSignal(this.transloco.langChanges$, { initialValue: this.transloco.getActiveLang() });
   protected readonly refreshing = signal(false);

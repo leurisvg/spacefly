@@ -1,8 +1,10 @@
 import { TestBed } from '@angular/core/testing';
 import { formatTestProviders } from '../../../testing/format-providers';
+import { PrivacyStore } from '../state/privacy.store';
 import { FormatService } from './format.service';
 
 function setup(lang = 'es') {
+  localStorage.clear(); // privacy mode is persisted
   const t = formatTestProviders(lang);
   TestBed.configureTestingModule({ providers: t.providers });
   return { f: TestBed.inject(FormatService), ...t };
@@ -47,6 +49,12 @@ describe('FormatService', () => {
     expect(f.compact(950, false)).toBe('950');
   });
 
+  it('formats plain 0–100 shares for tooltips and axes', () => {
+    const { f } = setup('en');
+    expect(f.share(12.345, 1)).toBe('12.3%');
+    expect(f.share(40)).toBe('40%');
+  });
+
   it('formats percentages with a true minus sign', () => {
     const { f } = setup('en');
     expect(f.pct(0.1234)).toBe('12.3%');
@@ -78,5 +86,53 @@ describe('FormatService', () => {
     const days = f.weekdayNames();
     expect(days).toHaveLength(7);
     expect(days[0]).toBe('M');
+  });
+
+  describe('privacy mode', () => {
+    function hidden() {
+      const r = setup('en');
+      TestBed.inject(PrivacyStore).set(true);
+      return r.f;
+    }
+
+    it('shows every amount as 0', () => {
+      const f = hidden();
+      expect(f.money(1234.5)).toBe('RD$0.00');
+      expect(f.money(-1234.5)).toBe('RD$0.00');
+      expect(f.money(12, 'USD', { signed: true })).toBe('US$0.00');
+      expect(f.compact(12900)).toBe('RD$0');
+      expect(f.compact(-1_500_000, 'USD')).toBe('US$0');
+      expect(f.amount(50.25)).toBe('0.00');
+    });
+
+    it('shows every data percentage as 0', () => {
+      const f = hidden();
+      expect(f.pct(0.25)).toBe('0.0%');
+      expect(f.pct(-0.05, 0)).toBe('0%');
+      expect(f.pct(0.05, 1, true)).toBe('0.0%');
+      expect(f.share(12.345, 1)).toBe('0.0%');
+      expect(f.share(40)).toBe('0%');
+    });
+
+    it('keeps percentages that are settings, not data', () => {
+      const f = hidden();
+      expect(f.pct(0.05, 1, false, { mask: false })).toBe('5.0%');
+    });
+
+    it('does not mask rates, dates or the missing-value dash', () => {
+      const f = hidden();
+      expect(f.number(61.0123, 4)).toBe('61.0123');
+      expect(f.date('2026-09-01', 'long')).toBe('September 1, 2026');
+      expect(f.pct(null)).toBe('—');
+    });
+
+    it('keeps the placeholder for missing values and restores real amounts when shown again', () => {
+      const f = hidden();
+      expect(f.money(null)).toBe('—');
+      TestBed.inject(PrivacyStore).set(false);
+      expect(f.money(1234.5)).toBe('RD$1,234.50');
+      expect(f.pct(0.25)).toBe('25.0%');
+      expect(f.share(12.345, 1)).toBe('12.3%');
+    });
   });
 });

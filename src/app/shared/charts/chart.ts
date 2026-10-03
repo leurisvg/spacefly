@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, inject, input, output } f
 import { NgxEchartsDirective } from 'ngx-echarts';
 import { HlmSkeleton } from '@spartan-ng/helm/skeleton';
 import type { ECElementEvent, ECharts, EChartsCoreOption } from 'echarts/core';
+import { PrivacyStore } from '../../core/state/privacy.store';
 import { ChartCard } from './chart-card';
 
 /**
@@ -36,6 +37,7 @@ import { ChartCard } from './chart-card';
 })
 export class Chart {
   private readonly card = inject(ChartCard, { optional: true });
+  private readonly privacy = inject(PrivacyStore);
   readonly options = input.required<EChartsCoreOption>();
   readonly height = input('18rem');
   readonly ariaLabel = input<string>('');
@@ -45,7 +47,9 @@ export class Chart {
   protected readonly merged = computed<EChartsCoreOption>(() => ({
     animationDuration: 400,
     animationDurationUpdate: 300,
-    aria: { enabled: true, decal: { show: false } },
+    // Reading `hidden` hands ECharts a fresh option object when privacy toggles, so tooltip and axis
+    // formatters (plain closures that read it live) re-render. ECharts' generated aria text lists the data values.
+    aria: { enabled: !this.privacy.hidden(), decal: { show: false } },
     ...this.options(),
   }));
 

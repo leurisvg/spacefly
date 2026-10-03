@@ -1,9 +1,12 @@
 import { TestBed } from '@angular/core/testing';
 import { formatTestProviders } from '../../../testing/format-providers';
+import { PrivacyStore } from '../../core/state/privacy.store';
 import { KpiCard } from './kpi-card';
 
-function render(inputs: Record<string, unknown>) {
+function render(inputs: Record<string, unknown>, hidden = false) {
+  localStorage.clear();
   TestBed.configureTestingModule({ providers: formatTestProviders('en', { kpi: { vsPrevious: 'vs previous' } }).providers });
+  TestBed.inject(PrivacyStore).set(hidden);
   const fixture = TestBed.createComponent(KpiCard);
   fixture.componentRef.setInput('label', 'Income');
   for (const [k, v] of Object.entries(inputs)) fixture.componentRef.setInput(k, v);
@@ -11,6 +14,8 @@ function render(inputs: Record<string, unknown>) {
   const el = fixture.nativeElement as HTMLElement;
   return { el, text: el.textContent!.replace(/\s+/g, ' ').trim() };
 }
+
+afterEach(() => localStorage.clear());
 
 describe('KpiCard', () => {
   it('renders label, money value and the previous period', () => {
@@ -47,5 +52,17 @@ describe('KpiCard', () => {
     expect(el.querySelector('[hlmSkeleton]')).not.toBeNull();
     expect(text).not.toContain('999');
     expect(el.querySelector('sf-delta')).toBeNull();
+  });
+
+  it('hides value, previous amount and percentages in privacy mode', () => {
+    const { text, el } = render({ value: -1234.5, previous: 1000 }, true);
+    expect(text).toContain('RD$0.00');
+    expect(text).toContain('vs previous RD$0');
+    expect(text).not.toMatch(/1,?234|1K/);
+    expect(el.querySelector('.text-2xl')!.className).not.toContain('text-negative'); // color would reveal the sign of the value
+    TestBed.resetTestingModule();
+    const pct = render({ value: 25, previous: 20, format: 'pct' }, true).text;
+    expect(pct).toContain('0.0%');
+    expect(pct).not.toMatch(/25|20\.0/);
   });
 });

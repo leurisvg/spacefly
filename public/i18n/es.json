@@ -62,6 +62,8 @@
     "refresh": "Refrescar datos",
     "refreshed": "Datos actualizados desde Firefly",
     "language": "Idioma",
+    "hideAmounts": "Ocultar montos",
+    "showAmounts": "Mostrar montos",
     "account": "Cuenta de usuario",
     "openFirefly": "Abrir Firefly III",
     "logout": "Cerrar sesión"
@@ -360,6 +362,7 @@
     "results": "{{n}} resultados",
     "descriptionCol": "Descripción",
     "export": "Exportar CSV",
+    "exportHidden": "La exportación está desactivada mientras los montos están ocultos",
     "page": "Página {{page}} de {{pages}}"
   },
   "settings": {

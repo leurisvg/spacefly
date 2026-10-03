@@ -17,6 +17,7 @@ import { FORMAT_PIPES } from '../../core/format/pipes';
 import { I18n } from '../../core/i18n/i18n';
 import { FiltersStore } from '../../core/state/filters.store';
 import { MetaStore } from '../../core/state/meta.store';
+import { PrivacyStore } from '../../core/state/privacy.store';
 import { EmptyState } from '../../shared/components/empty-state';
 import { Money } from '../../shared/components/money';
 import { PageHeader } from '../../shared/components/page-header';
@@ -55,7 +56,7 @@ const PAGE_SIZE = 50;
   host: { class: 'flex flex-col gap-4 sm:gap-5' },
   template: `
     <sf-page-header [title]="i18n.t('nav.explorer')" [description]="i18n.t('explorer.description')">
-      <button hlmBtn variant="outline" size="sm" (click)="exportCsv()" [disabled]="!sorted().length">
+      <button hlmBtn variant="outline" size="sm" (click)="exportCsv()" [disabled]="!sorted().length || privacy.hidden()" [attr.title]="privacy.hidden() ? ('explorer.exportHidden' | transloco) : null">
         <ng-icon name="lucideFileSpreadsheet" />{{ 'explorer.export' | transloco }}
       </button>
     </sf-page-header>
@@ -195,6 +196,7 @@ export class Explorer {
   private readonly f = inject(FormatService);
   private readonly filters = inject(FiltersStore);
   private readonly meta = inject(MetaStore);
+  protected readonly privacy = inject(PrivacyStore);
 
   protected draft = '';
   protected readonly query = signal('');
@@ -300,6 +302,7 @@ export class Explorer {
 
   /** CSV of everything currently listed (all pages), amounts in the display currency + original. */
   protected exportCsv(): void {
+    if (this.privacy.hidden()) return; // the file would contain the real amounts
     const cur = this.filters.currency();
     const header = ['date', 'type', 'description', 'category', 'budget', 'tags', 'source', 'destination', `amount_${cur}`, 'original_amount', 'original_currency', 'rate'];
     const esc = (v: unknown) => {

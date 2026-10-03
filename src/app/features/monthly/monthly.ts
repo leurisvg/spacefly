@@ -83,9 +83,9 @@ import { Section } from '../../shared/components/section';
                       <span class="text-muted-foreground">—</span><br /><span class="text-positive">{{ 'monthly.new' | transloco }}</span>
                     } @else {
                       <sf-money [value]="c.previous" tone="auto" class="text-muted-foreground" /><br />
-                      <span [class]="c.total.value - c.previous > 0 ? 'text-positive' : 'text-negative'" class="num">
+                      <span [class]="hidden() ? 'text-muted-foreground' : c.total.value - c.previous > 0 ? 'text-positive' : 'text-negative'" class="num">
                         {{ c.total.value - c.previous | money: null : true }}
-                        {{ c.total.value - c.previous > 0 ? '↑' : '↓' }}{{ abs((c.total.value - c.previous) / c.previous) | pct: 1 }}
+                        {{ hidden() ? '' : c.total.value - c.previous > 0 ? '↑' : '↓' }}{{ abs((c.total.value - c.previous) / c.previous) | pct: 1 }}
                       </span>
                     }
                   </td>
@@ -266,6 +266,7 @@ export class Monthly {
   protected readonly i18n = inject(I18n);
   protected readonly detail = inject(TxDetailService);
   private readonly f = inject(FormatService);
+  protected readonly hidden = this.f.hidden;
   protected readonly res = reportResource<MonthlyReport>('reports/monthly');
   protected readonly sankey = reportResource<SankeyReport>('reports/sankey');
   protected readonly calendar = reportResource<CalendarReport>('reports/calendar');

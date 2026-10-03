@@ -93,7 +93,7 @@ export class Annual {
         },
       },
       xAxis: { type: 'category', data: r.months.map((m) => this.f.monthLabel(m, false)) },
-      yAxis: { type: 'value', axisLabel: { formatter: (v: number) => `${v}%` }, splitNumber: 4 },
+      yAxis: { type: 'value', axisLabel: { formatter: (v: number) => this.f.share(v) }, splitNumber: 4 },
       series: [
         {
           type: 'bar',

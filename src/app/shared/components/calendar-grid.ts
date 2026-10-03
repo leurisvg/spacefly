@@ -142,6 +142,7 @@ export class CalendarGrid {
 
   /** Same compact labels as the email: 950 / 1.2k. */
   protected short(v: number): string {
+    if (this.f.hidden()) return '0';
     return v >= 1000 ? `${(v / 1000).toFixed(1)}k` : String(Math.round(v));
   }
 }

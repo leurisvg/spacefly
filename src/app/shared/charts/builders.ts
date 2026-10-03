@@ -82,7 +82,7 @@ export function donutOption(f: Fmt, slices: Slice[], centerLabel: string, total:
       trigger: 'item',
       formatter: (p: { dataIndex: number; percent: number }) => {
         const s = slices[p.dataIndex];
-        return tooltipRow(s.color, `${s.name} · ${p.percent.toFixed(1)}%`, f.money(s.value));
+        return tooltipRow(s.color, `${s.name} · ${f.share(p.percent, 1)}`, f.money(s.value));
       },
     },
     legend: { show: false },
@@ -218,7 +218,7 @@ export function treemapOption(f: Fmt, items: Slice[]): EChartsCoreOption {
   return {
     tooltip: {
       formatter: (p: { dataIndex: number; data: { name: string; value: number; color: string } }) =>
-        tooltipRow(p.data.color, `${p.data.name} · ${((p.data.value / total) * 100).toFixed(1)}%`, f.money(p.data.value)),
+        tooltipRow(p.data.color, `${p.data.name} · ${f.share((p.data.value / total) * 100, 1)}`, f.money(p.data.value)),
     },
     series: [
       {
@@ -368,7 +368,7 @@ export function sankeyOption(
   vertical: boolean,
 ): EChartsCoreOption {
   const byId = new Map(report.nodes.map((n) => [n.id, n]));
-  const pctOf = (v: number) => (report.totalIncome ? ` · ${((v / report.totalIncome) * 100).toFixed(1)}%` : '');
+  const pctOf = (v: number) => (report.totalIncome ? ` · ${f.share((v / report.totalIncome) * 100, 1)}` : '');
   return {
     tooltip: {
       trigger: 'item',

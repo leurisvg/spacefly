@@ -88,7 +88,9 @@ export function oauthRoutes(s: Services) {
       });
       return await finishLogin(c, tokens, saved.returnTo);
     } catch (err) {
-      console.error('[auth] token exchange failed:', (err as Error).message);
+      // undici reports network failures as a bare "fetch failed"; the useful part (ENOTFOUND, ECONNREFUSED, TLS…) is in `cause`.
+      const cause = (err as { cause?: { code?: string; message?: string } }).cause;
+      console.error('[auth] token exchange failed:', (err as Error).message, cause ? `(${cause.code ?? cause.message})` : '');
       return c.redirect('/login?error=token_exchange');
     }
   });

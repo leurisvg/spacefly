@@ -21,8 +21,9 @@ export class CompactPipe implements PipeTransform {
 @Pipe({ name: 'pct', pure: false })
 export class PctPipe implements PipeTransform {
   private readonly f = inject(FormatService);
-  transform(ratio: number | null | undefined, decimals = 1, signed = false): string {
-    return this.f.pct(ratio, decimals, signed);
+  /** Pass `mask = false` for settings (thresholds); data percentages are hidden in privacy mode. */
+  transform(ratio: number | null | undefined, decimals = 1, signed = false, mask = true): string {
+    return this.f.pct(ratio, decimals, signed, { mask });
   }
 }
 

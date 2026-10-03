@@ -1,6 +1,7 @@
-import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { HlmSkeleton } from '@spartan-ng/helm/skeleton';
+import { FormatService } from '../../core/format/format.service';
 import { FORMAT_PIPES } from '../../core/format/pipes';
 import { Delta } from './delta';
 import { Sparkline } from './sparkline';
@@ -47,6 +48,7 @@ import { Sparkline } from './sparkline';
   `,
 })
 export class KpiCard {
+  private readonly f = inject(FormatService);
   readonly label = input.required<string>();
   readonly value = input<number | null>(null);
   readonly previous = input<number | null>(null);
@@ -55,5 +57,5 @@ export class KpiCard {
   readonly upIsGood = input(true);
   readonly accent = input('var(--money-net)');
   readonly loading = input(false);
-  protected readonly negative = computed(() => (this.value() ?? 0) < 0);
+  protected readonly negative = computed(() => !this.f.hidden() && (this.value() ?? 0) < 0);
 }

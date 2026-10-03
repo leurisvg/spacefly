@@ -4,6 +4,7 @@ import { lucideCircleCheck, lucideTriangleAlert } from '@ng-icons/lucide';
 import { TranslocoPipe } from '@jsverse/transloco';
 import type { PiggyBanksReport } from '@shared';
 import { reportResource } from '../../core/api/report-resource';
+import { FormatService } from '../../core/format/format.service';
 import { FORMAT_PIPES } from '../../core/format/pipes';
 import { I18n } from '../../core/i18n/i18n';
 import { EmptyState } from '../../shared/components/empty-state';
@@ -37,8 +38,8 @@ import { PageHeader } from '../../shared/components/page-header';
                   <span class="num text-sm font-semibold">{{ p.pct | pct: 0 }}</span>
                 }
               </div>
-              <div class="h-2 w-full overflow-hidden rounded-full bg-[color-mix(in_oklab,var(--money-net)_20%,transparent)]" role="progressbar" [attr.aria-valuenow]="(p.pct ?? 0) * 100" aria-valuemin="0" aria-valuemax="100">
-                <div class="h-full rounded-full bg-[var(--money-net)]" [style.width.%]="(p.pct ?? 0) * 100"></div>
+              <div class="h-2 w-full overflow-hidden rounded-full bg-[color-mix(in_oklab,var(--money-net)_20%,transparent)]" role="progressbar" [attr.aria-valuenow]="f.hidden() ? 0 : (p.pct ?? 0) * 100" aria-valuemin="0" aria-valuemax="100">
+                <div class="h-full rounded-full bg-[var(--money-net)]" [style.width.%]="f.hidden() ? 0 : (p.pct ?? 0) * 100"></div>
               </div>
               <div class="grid grid-cols-2 gap-2 text-xs">
                 <div><div class="text-muted-foreground">{{ 'goals.current' | transloco }}</div><sf-money [value]="p.current" /></div>
@@ -66,5 +67,6 @@ import { PageHeader } from '../../shared/components/page-header';
 })
 export class Goals {
   protected readonly i18n = inject(I18n);
+  protected readonly f = inject(FormatService);
   protected readonly res = reportResource<PiggyBanksReport>('reports/piggy-banks', () => ({}), { global: false });
 }

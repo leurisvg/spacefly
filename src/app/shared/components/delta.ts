@@ -1,6 +1,7 @@
-import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideArrowDown, lucideArrowUp, lucideMinus } from '@ng-icons/lucide';
+import { FormatService } from '../../core/format/format.service';
 import { PctPipe } from '../../core/format/pipes';
 
 /**
@@ -23,6 +24,7 @@ import { PctPipe } from '../../core/format/pipes';
   `,
 })
 export class Delta {
+  private readonly f = inject(FormatService);
   readonly value = input.required<number>();
   readonly previous = input.required<number | null>();
   readonly upIsGood = input(true);
@@ -34,11 +36,12 @@ export class Delta {
     const p = this.previous();
     return p === null || p === 0 ? null : Math.abs(this.diff() / p);
   });
-  protected readonly diffLabel = computed(() => `${Math.abs(this.diff()).toFixed(1)} pp`);
-  protected readonly icon = computed(() => (this.diff() > 0 ? 'lucideArrowUp' : this.diff() < 0 ? 'lucideArrowDown' : 'lucideMinus'));
+  protected readonly diffLabel = computed(() => `${(this.f.hidden() ? 0 : Math.abs(this.diff())).toFixed(1)} pp`);
+  // In privacy mode direction and color would give away the hidden change: show it as neutral.
+  protected readonly icon = computed(() => (this.f.hidden() ? 'lucideMinus' : this.diff() > 0 ? 'lucideArrowUp' : this.diff() < 0 ? 'lucideArrowDown' : 'lucideMinus'));
   protected readonly tone = computed(() => {
     const d = this.diff();
-    if (d === 0 || this.previous() === null) return 'text-muted-foreground';
+    if (d === 0 || this.previous() === null || this.f.hidden()) return 'text-muted-foreground';
     return d > 0 === this.upIsGood() ? 'text-positive' : 'text-negative';
   });
 }
