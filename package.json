@@ -55,11 +55,14 @@
     "@angular/build": "^22.2.1",
     "@angular/cli": "^22.2.1",
     "@angular/compiler-cli": "^22.2.0",
+    "@eslint/js": "^10.0.1",
     "@spartan-ng/cli": "^1.5.0",
     "@tailwindcss/postcss": "^4.3.3",
     "@types/luxon": "^3.7.6",
     "@types/node": "^26.6.4",
+    "angular-eslint": "22.5.0",
     "concurrently": "^10.0.5",
+    "eslint": "^10.9.1",
     "jsdom": "^30.0.0",
     "postcss": "^8.5.28",
     "prettier": "^3.8.1",
@@ -67,6 +70,7 @@
     "tsup": "^8.5.1",
     "tsx": "^4.23.15",
     "typescript": "~6.0.2",
+    "typescript-eslint": "8.69.0",
     "vitest": "^5.0.0"
   }
 }
