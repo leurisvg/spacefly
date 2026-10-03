@@ -146,13 +146,15 @@ Comportamiento común a todas: los filtros viven en la URL, cada monto muestra e
 
 ## Roadmap
 
-- [ ] **Fase 0 — Fundaciones**: Tailwind v4, spartan/ui (CLI + tema), lucide, ngx-echarts, Transloco, fuentes, BFF Hono, proxy de desarrollo, ESLint, Dockerfile y compose de ejemplo.
-- [ ] **Fase 1 — BFF y datos**: config, OAuth con Firefly, sesión cifrada, Cloudflare Access, cliente de Firefly, ledger, monedas, caché y tests con fixtures.
-- [ ] **Fase 2 — Shell de UI**: layout, sidebar, topbar, store de filtros ↔ URL, period picker, toggle de moneda, i18n, login/guard, pipes de dinero y tema de charts.
-- [ ] **Fase 3 — MVP (paridad con el email summary)**: Resumen mensual, Flujo de dinero y Calendario, con el panel de detalle de transacciones.
-- [ ] **Fase 4 — Expansión analítica**: Dashboard, Comparaciones, Reporte anual, Categorías, Tags, Presupuestos, Comercios/Fuentes, Cuentas, Patrimonio y Ahorros.
-- [ ] **Fase 5 — Planificación**: Suscripciones, Recurrentes, Proyección de flujo y Metas.
-- [ ] **Fase 6 — Explorador y pulido**: explorador de transacciones, exports CSV/PNG, Ajustes, rendimiento (`@defer`, bundle budgets) y accesibilidad.
+- [x] **Fase 0 — Fundaciones**: Tailwind v4, spartan/ui (CLI + tema), lucide, ngx-echarts, Transloco, fuentes, BFF Hono, proxy de desarrollo, ESLint, Dockerfile y compose de ejemplo.
+- [x] **Fase 1 — BFF y datos**: config, OAuth con Firefly, sesión cifrada, Cloudflare Access, cliente de Firefly, ledger, monedas, caché y tests con fixtures.
+- [x] **Fase 2 — Shell de UI**: layout, sidebar, topbar, store de filtros ↔ URL, period picker, toggle de moneda, i18n, login/guard, pipes de dinero y tema de charts.
+- [x] **Fase 3 — MVP (paridad con el email summary)**: Resumen mensual, Flujo de dinero y Calendario, con el panel de detalle de transacciones.
+- [x] **Fase 4 — Expansión analítica**: Dashboard, Comparaciones, Reporte anual, Categorías, Tags, Presupuestos, Comercios/Fuentes, Cuentas, Patrimonio y Ahorros.
+- [x] **Fase 5 — Planificación**: Suscripciones, Recurrentes, Proyección de flujo y Metas.
+- [x] **Fase 6 — Explorador y pulido**: explorador de transacciones, exports CSV/PNG, Ajustes, rendimiento (`@defer`, bundle budgets) y accesibilidad.
+
+**Pendiente**: validar contra una instancia real de Firefly III (nombres de campos `pc_*` / `primary_currency_*` e `insight`, versiones 6.6.2 y 6.7.6, paridad con `monthly-report.py`) y revisar el responsive a 375 / 768 / 1440 px en un navegador. Ver [Capturar fixtures reales](#capturar-fixtures-reales).
 
 ---
 
@@ -168,11 +170,13 @@ FIREFLY_PUBLIC_URL=https://firefly.tu-dominio.com # redirect OAuth del navegador
 FIREFLY_OAUTH_CLIENT_ID=
 FIREFLY_OAUTH_CLIENT_SECRET=
 SESSION_SECRET=                                    # 32+ bytes aleatorios
+SESSION_TTL_DAYS=30                                # duración de la sesión
 CF_ACCESS_ENABLED=true
 CF_ACCESS_TEAM_DOMAIN=tu-team.cloudflareaccess.com
 CF_ACCESS_AUD=
 CF_ACCESS_ALLOWED_EMAILS=tu-correo@ejemplo.com
-FX_FALLBACK_PROVIDER=open.er-api
+DISPLAY_CURRENCIES=DOP,USD                         # monedas del selector (la primaria siempre se incluye)
+FX_FALLBACK_PROVIDER=open.er-api                   # open.er-api | none
 CACHE_TTL_CURRENT_MONTH=300
 DATA_DIR=/data                                     # volumen para SQLite
 ```
@@ -189,12 +193,29 @@ DATA_DIR=/data                                     # volumen para SQLite
 
 ```bash
 npm install
-npm run dev     # Angular (http://localhost:4200) + BFF con proxy de /api y /auth
-npm test        # Vitest
-npm run build   # build de producción (web + server)
+npm run dev          # Angular (http://localhost:4200) + BFF con proxy de /api y /auth
+npm run dev:mock     # igual, pero contra un Firefly simulado (sin necesitar tu instancia)
+npm test             # Vitest: web (Angular) + server
+npm run lint         # angular-eslint (excluye src/libs/ui, generado por spartan)
+npm run build        # build de producción (web + server)
 ```
 
 En local usa `CF_ACCESS_ENABLED=false`.
+
+### Modo mock
+
+`npm run dev:mock` levanta tres procesos: `mock:firefly` (API de Firefly simulada en `:8081` con ~14 meses de datos sintéticos y deterministas), el BFF con `.env.mock` (que omite OAuth con un token de desarrollo) y `ng serve`. Sirve para recorrer todas las pantallas sin datos reales. `.env.mock` no contiene secretos y no debe usarse en producción. Si ya tienes algo escuchando en `4200`, `3000` o `8081`, el arranque falla con `EADDRINUSE`.
+
+### Capturar fixtures reales
+
+Con un token de acceso personal de Firefly (*Perfil → OAuth → Tokens de acceso personal*):
+
+```bash
+FIREFLY_INTERNAL_URL=https://firefly.tu-dominio.com DEV_FIREFLY_TOKEN=… \
+  npm run fixtures:capture -- 2026-09
+```
+
+Guarda las respuestas anonimizadas (nombres seudónimos y montos multiplicados por un factor aleatorio, así que las proporciones se conservan) en `server/test/fixtures/captured/<mes>/`, que está en `.gitignore`. Úsalas para ajustar tipos y reportes a lo que devuelve tu versión de Firefly.
 
 ## Deploy
 
