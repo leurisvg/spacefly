@@ -458,9 +458,8 @@ In a private browser window:
 ### Updating
 
 ```bash
-cd spacefly
-git fetch && git log --oneline HEAD..origin/main    # review what changes
-git pull
+cd docker/spacefly
+git -C src pull
 docker compose build && docker compose up -d
 docker image prune -f
 ```
