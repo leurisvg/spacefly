@@ -39,7 +39,7 @@ type Mode = 'previous' | 'yoy' | 'custom';
         <input hlmInput type="date" class="h-8 w-36 text-xs" [ngModel]="b().start" (ngModelChange)="setB('bStart', $event)" [attr.aria-label]="i18n.t('period.from')" />
         <input hlmInput type="date" class="h-8 w-36 text-xs" [ngModel]="b().end" (ngModelChange)="setB('bEnd', $event)" [attr.aria-label]="i18n.t('period.to')" />
       }
-      <sf-select class="w-40" [options]="groupOptions()" [label]="i18n.t('compare.groupBy')" [value]="groupBy()" (valueChange)="filters.setParams({ groupBy: $event })" />
+      <sf-select class="w-40" [searchable]="false" [options]="groupOptions()" [label]="i18n.t('compare.groupBy')" [value]="groupBy()" (valueChange)="filters.setParams({ groupBy: $event })" />
       <hlm-toggle-group type="single" variant="outline" size="sm" [value]="kind()" [nullable]="false" (valueChange)="$event && filters.setParams({ kind: $any($event) })">
         <button hlmToggleGroupItem value="expense">{{ 'common.expenses' | transloco }}</button>
         <button hlmToggleGroupItem value="income">{{ 'common.income' | transloco }}</button>
