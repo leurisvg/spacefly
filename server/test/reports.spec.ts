@@ -7,6 +7,7 @@ import { buildAnnual, buildCompare } from '../src/reports/compare.report';
 import { buildCategories, buildBudgets as buildBudgetRows, buildAssetActivity } from '../src/reports/monthly.report';
 import { buildProjection } from '../src/reports/planning.report';
 import { buildRanking, keyFns } from '../src/reports/ranking.report';
+import { topCategories } from '../src/reports/dashboard.report';
 import { buildSankey } from '../src/reports/sankey.report';
 import { AUG, augSplits, ctxFor, SEP, sepSplits } from './helpers';
 
@@ -255,5 +256,50 @@ describe('analysis reports', () => {
     const r = buildProjection(ctx, 1000, 60, [], []);
     expect(r.days.at(-1)!.balance).toBe(1000);
     expect(r.horizons.map((h) => h.days)).toEqual([30, 60]);
+  });
+});
+
+describe('topCategories', () => {
+  /** Eight expense categories worth 800, 700 … 100 DOP, plus one uncategorized expense of 50. */
+  const synthetic = (): Split[] => {
+    const tpl = sepSplits().find((s) => s.type === 'withdrawal' && s.currency === 'DOP' && !s.foreignCurrency)!;
+    const mk = (i: number, amount: number, categoryId: string | null, categoryName: string | null): Split => ({
+      ...tpl,
+      id: `x${i}`,
+      groupId: `g${i}`,
+      amount,
+      pcAmount: null,
+      categoryId,
+      categoryName,
+    });
+    return [
+      ...Array.from({ length: 8 }, (_, i) => mk(i, (8 - i) * 100, `c${i}`, `Cat ${i}`)),
+      mk(99, 50, null, null),
+    ];
+  };
+
+  it('keeps the top 6 and folds the rest into "others" listing its categories and amounts', () => {
+    const r = topCategories(ctxFor(SEP), synthetic());
+    expect(r.map((c) => c.id)).toEqual(['c0', 'c1', 'c2', 'c3', 'c4', 'c5', '__others__']);
+    expect(r[0].children).toBeUndefined();
+    const others = r.at(-1)!;
+    expect(others.value).toBe(100 + 200 + 50); // Cat 6 (200), Cat 7 (100), uncategorized (50)
+    expect(others.children).toEqual([
+      { id: 'c6', name: 'Cat 6', value: 200 },
+      { id: 'c7', name: 'Cat 7', value: 100 },
+      { id: null, name: '', value: 50 },
+    ]);
+  });
+
+  it('children add up to the others total, so the breakdown reconciles with the slice', () => {
+    const others = topCategories(ctxFor(SEP), synthetic()).at(-1)!;
+    expect(others.children!.reduce((s, c) => s + c.value, 0)).toBe(others.value);
+  });
+
+  it('has no "others" slice when everything fits', () => {
+    const few = synthetic().slice(0, 4);
+    const r = topCategories(ctxFor(SEP), few);
+    expect(r).toHaveLength(4);
+    expect(r.some((c) => c.id === '__others__')).toBe(false);
   });
 });

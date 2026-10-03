@@ -192,11 +192,13 @@ export function inPeriod(splits: Split[], p: Period): Split[] {
 /** Applies a drill-down filter. `none` matches splits without that attribute. */
 export function applyFilter(splits: Split[], f: Omit<TxFilter, 'start' | 'end'>): Split[] {
   const q = f.q?.trim().toLowerCase();
+  const categories = f.categories ? new Set(f.categories.split(',').filter(Boolean)) : null;
   const match = (filter: string | undefined, id: string | null) =>
     filter === undefined || (filter === 'none' ? !id : id === filter);
   return splits.filter((s) => {
     if (f.type && s.type !== f.type) return false;
     if (!match(f.category, s.categoryId)) return false;
+    if (categories && !categories.has(s.categoryId ?? 'none')) return false;
     if (!match(f.budget, s.budgetId)) return false;
     if (!match(f.bill, s.billId)) return false;
     if (f.tag !== undefined && (f.tag === 'none' ? s.tags.length > 0 : !s.tags.includes(f.tag))) return false;

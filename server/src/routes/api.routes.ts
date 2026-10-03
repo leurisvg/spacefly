@@ -146,6 +146,7 @@ export function apiRoutes(s: Services) {
       .object({
         type: z.enum(['withdrawal', 'deposit', 'transfer']).optional(),
         category: z.string().optional(),
+        categories: z.string().max(4000).optional(),
         budget: z.string().optional(),
         tag: z.string().optional(),
         bill: z.string().optional(),

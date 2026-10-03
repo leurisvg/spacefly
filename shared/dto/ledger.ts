@@ -49,6 +49,8 @@ export interface TxFilter {
   end: string;
   type?: 'withdrawal' | 'deposit' | 'transfer';
   category?: string;
+  /** Comma-separated category ids (`none` = uncategorized), for slices that group several categories. */
+  categories?: string;
   budget?: string;
   tag?: string;
   bill?: string;

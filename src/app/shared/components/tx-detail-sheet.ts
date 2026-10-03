@@ -8,7 +8,7 @@ import { FORMAT_PIPES } from '../../core/format/pipes';
 import { FiltersStore } from '../../core/state/filters.store';
 import { Money } from './money';
 import { TransactionList } from './transaction-list';
-import { TxDetailService } from './tx-detail.service';
+import { TxDetailService, type BreakdownRow } from './tx-detail.service';
 
 interface Group {
   key: string;
@@ -44,6 +44,21 @@ interface Group {
           }
         </hlm-sheet-header>
         <div class="flex-1 overflow-y-auto px-5 py-3">
+          @if (req()?.breakdown; as rows) {
+            <section class="mb-4 rounded-lg border border-border/70">
+              <h3 class="eyebrow px-3 pt-2.5">{{ 'tx.breakdown' | transloco }}</h3>
+              <ul class="p-1.5">
+                @for (r of rows; track r.id ?? 'none') {
+                  <li>
+                    <button type="button" class="flex w-full items-center gap-2 rounded px-1.5 py-1.5 text-left text-sm hover:bg-muted" (click)="drill(r)">
+                      <span class="flex-1 truncate">{{ r.name }}</span>
+                      <sf-money [value]="r.value" />
+                    </button>
+                  </li>
+                }
+              </ul>
+            </section>
+          }
           @if (res.isLoading() && !data()) {
             @for (i of [1, 2, 3, 4, 5, 6]; track i) {
               <div hlmSkeleton class="my-3 h-10 w-full"></div>
@@ -84,6 +99,12 @@ export class TxDetailSheet {
     return { url: '/api/transactions', params };
   });
   protected readonly data = computed(() => (this.res.hasValue() ? this.res.value()?.data : undefined));
+
+  /** Narrows a grouped request down to one of its members, keeping the same period and type. */
+  protected drill(row: BreakdownRow): void {
+    const { type, start, end } = this.req()?.filter ?? {};
+    this.detail.open(row.name, { category: row.id ?? 'none', ...(type && { type }), ...(start && { start }), ...(end && { end }) });
+  }
 
   protected readonly groups = computed<Group[]>(() => {
     const map = new Map<string, Group>();

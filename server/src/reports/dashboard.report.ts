@@ -1,4 +1,4 @@
-import { addDays, todayIso, type DashboardReport, type Kpi, type NamedValue } from '@shared';
+import { addDays, todayIso, type DashboardReport, type Kpi, type NamedValue, type TopCategory } from '@shared';
 import type { Account } from '../core/firefly-data';
 import { isExpense, round, type ReportContext, type Split } from '../core/ledger';
 import type { FfBill, FfBudget, FfBudgetLimit, FfResource } from '../firefly/firefly.types';
@@ -27,6 +27,22 @@ export interface DashboardInput {
   calendarCtx: ReportContext;
 }
 
+/** Expense categories ranked by amount: the top `limit` plus an `__others__` slice that lists what it folds. */
+export function topCategories(ctx: ReportContext, splits: Split[], limit = 6): TopCategory[] {
+  const cats = new Map<string | null, NamedValue>();
+  for (const s of splits.filter(isExpense)) {
+    const c = cats.get(s.categoryId) ?? { id: s.categoryId, name: s.categoryName ?? '', value: 0 };
+    c.value += ctx.value(s);
+    cats.set(s.categoryId, c);
+  }
+  const sorted = [...cats.values()].sort((a, b) => b.value - a.value);
+  const top: TopCategory[] = sorted.slice(0, limit).map((c) => ({ ...c, value: round(c.value) }));
+  const rest = sorted.slice(limit);
+  const restTotal = rest.reduce((sum, c) => sum + c.value, 0);
+  if (restTotal > 0) top.push({ id: '__others__', name: '', value: round(restTotal), children: rest.map((c) => ({ ...c, value: round(c.value) })) });
+  return top;
+}
+
 export function buildDashboard(input: DashboardInput): DashboardReport {
   const { ctx } = input;
   const cur = totals(ctx, input.splits);
@@ -38,18 +54,6 @@ export function buildDashboard(input: DashboardInput): DashboardReport {
 
   const kpi = (value: number, previous: number, spark: number[]): Kpi => ({ value: round(value), previous: round(previous), spark });
   const rate = (i: number, e: number) => savingsRate({ income: i, expense: e, net: i - e });
-
-  // Top categories: top 6 + "others"
-  const cats = new Map<string | null, NamedValue>();
-  for (const s of input.splits.filter(isExpense)) {
-    const c = cats.get(s.categoryId) ?? { id: s.categoryId, name: s.categoryName ?? '', value: 0 };
-    c.value += ctx.value(s);
-    cats.set(s.categoryId, c);
-  }
-  const sortedCats = [...cats.values()].sort((a, b) => b.value - a.value);
-  const top = sortedCats.slice(0, 6).map((c) => ({ ...c, value: round(c.value) }));
-  const rest = sortedCats.slice(6).reduce((s, c) => s + c.value, 0);
-  if (rest > 0) top.push({ id: '__others__', name: '', value: round(rest) });
 
   const today = todayIso();
   const horizon = addDays(today, 30);
@@ -84,7 +88,7 @@ export function buildDashboard(input: DashboardInput): DashboardReport {
     },
     months,
     netWorth,
-    topCategories: top,
+    topCategories: topCategories(ctx, input.splits),
     budgets: buildBudgets(ctx, input.splits, input.budgets, input.limits).budgets,
     upcomingBills,
     calendar: buildCalendar(input.calendarCtx, input.calendarSplits, null, []).days,

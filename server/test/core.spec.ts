@@ -121,4 +121,19 @@ describe('ledger normalisation and display values', () => {
     expect(applyFilter(splits, { counterparty: '23' })).toHaveLength(2);
     expect(applyFilter(splits, { q: 'luz' })).toHaveLength(1);
   });
+
+  it('filters by several categories at once (the "others" slice), including uncategorized', () => {
+    const splits = sepSplits().filter((s) => s.type === 'withdrawal');
+    const ids = [...new Set(splits.map((s) => s.categoryId))].filter((id): id is string => id !== null);
+    expect(ids.length).toBeGreaterThan(1);
+    const two = applyFilter(splits, { categories: ids.slice(0, 2).join(',') });
+    expect(two.length).toBeGreaterThan(0);
+    expect(two.every((s) => ids.slice(0, 2).includes(s.categoryId!))).toBe(true);
+    // `none` selects splits without a category, mixed with real ids
+    const mixed = applyFilter(splits, { categories: `none,${ids[0]}` });
+    expect(mixed.every((s) => s.categoryId === null || s.categoryId === ids[0])).toBe(true);
+    expect(mixed.some((s) => s.categoryId === null)).toBe(true);
+    // ignored when empty
+    expect(applyFilter(splits, { categories: '' })).toHaveLength(splits.length);
+  });
 });

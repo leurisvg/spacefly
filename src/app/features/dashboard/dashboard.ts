@@ -219,7 +219,18 @@ export class Dashboard {
 
   protected openCategory(index: number): void {
     const s = this.slices()[index];
-    if (!s || s.id === '__others__') return;
+    if (!s) return;
+    if (s.id === '__others__') {
+      const children = this.d()?.topCategories[index]?.children ?? [];
+      if (children.length) {
+        this.detail.openCategories(
+          s.name,
+          children.map((c) => ({ id: c.id, name: this.i18n.name(c.name, c.id), value: c.value })),
+          { type: 'withdrawal' },
+        );
+      }
+      return;
+    }
     this.detail.open(s.name, { type: 'withdrawal', category: s.id ?? 'none' });
   }
 

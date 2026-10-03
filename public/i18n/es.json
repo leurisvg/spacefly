@@ -108,6 +108,7 @@
   "tx": {
     "none": "No hay transacciones",
     "count": "Transacciones",
+    "breakdown": "Categorías que lo componen",
     "openInFirefly": "Abrir en Firefly"
   },
   "txType": {

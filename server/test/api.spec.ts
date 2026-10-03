@@ -182,6 +182,18 @@ describe('reports API', () => {
     expect(body.data.totals.expense).toBe(12700);
   });
 
+  it('returns the transactions of several categories at once (the dashboard "others" drill-down)', async () => {
+    const { app } = setup();
+    const cookie = await login(app);
+    const one = await app.request('/api/transactions?start=2026-09-01&end=2026-09-30&type=withdrawal&category=2', { headers: { cookie } });
+    const two = await app.request('/api/transactions?start=2026-09-01&end=2026-09-30&type=withdrawal&categories=2,none', { headers: { cookie } });
+    const a = ((await one.json()) as Report<TxListResponse>).data;
+    const b = ((await two.json()) as Report<TxListResponse>).data;
+    expect(b.rows.length).toBeGreaterThan(a.rows.length); // category 2 plus the uncategorized withdrawals
+    expect(b.rows.map((r) => r.description)).toEqual(expect.arrayContaining(['Compra rápida', 'Almuerzo']));
+    expect(b.totals.expense).toBeGreaterThan(a.totals.expense);
+  });
+
   it('answers every report endpoint', async () => {
     const { app } = setup();
     const cookie = await login(app);
