@@ -27,6 +27,17 @@ function flowOf(ctx: ReportContext, a: Account, s: Split): number {
   return -ctx.value(s);
 }
 
+/** Same movement in the account's own currency. */
+function flowInOwn(ctx: ReportContext, a: Account, s: Split): number {
+  const amount =
+    s.currency === a.currency
+      ? s.amount
+      : s.foreignCurrency === a.currency && s.foreignAmount
+        ? s.foreignAmount
+        : ctx.fx.fromPrimary(ctx.primaryValue(s), a.currency, s.date);
+  return s.destId === a.id ? amount : -amount;
+}
+
 function ranked(ctx: ReportContext, splits: Split[], key: (s: Split) => string | null, name: (s: Split) => string): RankedItem[] {
   return [...groupBy(splits, key, name)]
     .map(([id, g]) => ({ id, name: g.name, value: round(ctx.sum(g.splits)), count: g.splits.length }))
@@ -47,6 +58,11 @@ export function buildAccountDetail({ ctx, account: a, excluded, asOf, splits, tr
   let running = opening;
   const after = new Map<string, number>();
   for (const s of settled) after.set(s.id, (running += flowOf(ctx, a, s)));
+
+  const openingOwn = a.balance - settled.reduce((sum, s) => sum + flowInOwn(ctx, a, s), 0);
+  let runningOwn = openingOwn;
+  const afterOwn = new Map<string, number>();
+  for (const s of settled) afterOwn.set(s.id, (runningOwn += flowInOwn(ctx, a, s)));
 
   const byDay = new Map<string, Split[]>();
   for (const s of splits) byDay.set(s.date, [...(byDay.get(s.date) ?? []), s]);
@@ -84,13 +100,20 @@ export function buildAccountDetail({ ctx, account: a, excluded, asOf, splits, tr
   });
 
   const rows: AccountTxRow[] = splits
-    .map((s) => ({ ...ctx.row(s), flow: round(flowOf(ctx, a, s)), balance: after.has(s.id) ? round(after.get(s.id)!) : null }))
+    .map((s) => ({
+      ...ctx.row(s),
+      flow: round(flowOf(ctx, a, s)),
+      balance: after.has(s.id) ? round(after.get(s.id)!) : null,
+      flowOriginal: round(flowInOwn(ctx, a, s)),
+      balanceOriginal: afterOwn.has(s.id) ? round(afterOwn.get(s.id)!) : null,
+    }))
     .reverse();
 
   const first = round(opening);
   return {
     account: { id: a.id, name: a.name, role: a.role, type: a.type, currency: a.currency, iban: a.iban, includeNetWorth: a.includeNetWorth, excluded },
     balanceOriginal: round(a.balance),
+    openingOriginal: round(openingOwn),
     opening: first,
     closing: round(closing),
     change: { abs: round(closing - opening), pct: first !== 0 ? (closing - opening) / Math.abs(first) : null },

@@ -27,9 +27,12 @@ import { Sparkline } from './sparkline';
         @switch (format()) {
           @case ('pct') { {{ (value() ?? 0) / 100 | pct: 1 }} }
           @case ('compact') { {{ value() | compact }} }
-          @default { {{ value() | money }} }
+          @default { {{ value() | money: currency() }} }
         }
       </div>
+    }
+    @if (note() && !loading()) {
+      <div class="-mt-1 text-xs text-muted-foreground">{{ note() }}</div>
     }
     <div class="flex items-end justify-between gap-3">
       <span class="text-xs text-muted-foreground">
@@ -37,7 +40,7 @@ import { Sparkline } from './sparkline';
           {{ 'kpi.vsPrevious' | transloco }}
           @switch (format()) {
             @case ('pct') { {{ previous()! / 100 | pct: 1 }} }
-            @default { {{ previous() | compact }} }
+            @default { {{ previous() | compact: currency() }} }
           }
         }
       </span>
@@ -57,5 +60,9 @@ export class KpiCard {
   readonly upIsGood = input(true);
   readonly accent = input('var(--money-net)');
   readonly loading = input(false);
+  /** Currency of `value` and `previous` when it isn't the display currency. */
+  readonly currency = input<string | undefined>(undefined);
+  /** Small line under the value (e.g. its conversion). */
+  readonly note = input<string | null>(null);
   protected readonly negative = computed(() => !this.f.hidden() && (this.value() ?? 0) < 0);
 }

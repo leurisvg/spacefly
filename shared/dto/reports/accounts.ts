@@ -36,6 +36,9 @@ export interface AccountTxRow extends TxRow {
   flow: number;
   /** Account balance right after this record (null for future-dated records). */
   balance: number | null;
+  /** The same two numbers in the account's own currency. */
+  flowOriginal: number;
+  balanceOriginal: number | null;
 }
 
 export interface AccountDay {
@@ -79,6 +82,7 @@ export interface AccountDetailReport {
   /** Current balance in the account's own currency. */
   balanceOriginal: number;
   opening: number;
+  openingOriginal: number;
   closing: number;
   change: { abs: number; pct: number | null };
   totals: { income: number; expense: number; transferIn: number; transferOut: number; count: number };

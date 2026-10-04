@@ -17,6 +17,7 @@ import { categoryBarsOption, dailyBalanceOption, incomeExpenseOption, rankingBar
 import { Chart } from '../../shared/charts/chart';
 import { ChartCard, type ChartTable } from '../../shared/charts/chart-card';
 import { money } from '../../shared/charts/series-colors';
+import { DualMoney } from '../../shared/components/dual-money';
 import { CalendarGrid } from '../../shared/components/calendar-grid';
 import { EmptyState } from '../../shared/components/empty-state';
 import { KpiCard } from '../../shared/components/kpi-card';
@@ -32,7 +33,7 @@ type Tab = (typeof TABS)[number];
 /** One asset account: balance and flows per day, monthly trend, rankings and every record with its running balance. */
 @Component({
   selector: 'sf-account-detail',
-  imports: [NgIcon, RouterLink, TranslocoPipe, HlmBadge, HlmButton, HlmToggleGroupImports, CalendarGrid, Chart, ChartCard, EmptyState, KpiCard, Money, PageHeader, ...FORMAT_PIPES],
+  imports: [NgIcon, RouterLink, TranslocoPipe, HlmBadge, HlmButton, HlmToggleGroupImports, CalendarGrid, Chart, ChartCard, DualMoney, EmptyState, KpiCard, Money, PageHeader, ...FORMAT_PIPES],
   providers: [provideIcons({ lucideArrowLeft, lucideChevronLeft, lucideChevronRight, lucidePencil })],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'flex flex-col gap-4 sm:gap-5' },
@@ -53,7 +54,7 @@ type Tab = (typeof TABS)[number];
       </sf-page-header>
 
       <section class="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <sf-kpi class="col-span-2 lg:col-span-1" [label]="i18n.t('accounts.detail.closing')" [value]="r()?.closing ?? null" [previous]="r()?.opening ?? null" [spark]="r()?.months?.map(balanceOf) ?? null" accent="var(--money-net)" [loading]="res.initialLoading()" />
+        <sf-kpi class="col-span-2 lg:col-span-1" [label]="i18n.t('accounts.detail.closing')" [value]="foreign() ? (r()?.balanceOriginal ?? null) : (r()?.closing ?? null)" [previous]="foreign() ? (r()?.openingOriginal ?? null) : (r()?.opening ?? null)" [currency]="foreign() ? r()?.account?.currency : undefined" [note]="closingNote()" [spark]="r()?.months?.map(balanceOf) ?? null" accent="var(--money-net)" [loading]="res.initialLoading()" />
         <sf-kpi [label]="i18n.t('common.income')" [value]="r()?.totals?.income ?? null" accent="var(--money-income)" [loading]="res.initialLoading()" />
         <sf-kpi [label]="i18n.t('common.expenses')" [value]="r()?.totals?.expense ?? null" accent="var(--money-expense)" [loading]="res.initialLoading()" />
         <sf-kpi [label]="i18n.t('accounts.detail.change')" [value]="r()?.change?.abs ?? null" accent="var(--money-net)" [loading]="res.initialLoading()" />
@@ -66,7 +67,7 @@ type Tab = (typeof TABS)[number];
             <dl class="grid grid-cols-2 gap-x-6 gap-y-3 text-sm md:grid-cols-4">
               <div>
                 <dt class="eyebrow">{{ 'accounts.detail.opening' | transloco }}</dt>
-                <dd class="mt-0.5"><sf-money [value]="d.opening" /></dd>
+                <dd class="mt-0.5"><sf-dual-money align="start" [original]="d.openingOriginal" [converted]="d.opening" [currency]="d.account.currency" /></dd>
               </div>
               <div>
                 <dt class="eyebrow">{{ 'accounts.balanceOriginal' | transloco }}</dt>
@@ -205,11 +206,19 @@ type Tab = (typeof TABS)[number];
                   <td class="py-2 text-xs">{{ tx.category?.name || ('common.uncategorized' | transloco) }}</td>
                   <td class="max-w-[14rem] truncate py-2 text-xs text-muted-foreground">{{ counterparty(tx) }}</td>
                   <td class="py-2 text-right">
-                    <sf-money [value]="tx.flow" [signed]="true" [tone]="tx.type === 'withdrawal' ? 'expense' : tx.type === 'deposit' ? 'income' : 'none'" [original]="original(tx)" />
+                    @if (foreign()) {
+                      <sf-dual-money [original]="tx.flowOriginal" [converted]="tx.flow" [currency]="r()!.account.currency" [signed]="true" [tone]="tone(tx)" />
+                    } @else {
+                      <sf-money [value]="tx.flow" [signed]="true" [tone]="tone(tx)" [original]="original(tx)" />
+                    }
                   </td>
                   <td class="py-2 text-right">
                     @if (tx.balance !== null) {
-                      <sf-money [value]="tx.balance" class="text-xs text-muted-foreground" />
+                      @if (foreign()) {
+                        <sf-dual-money [original]="tx.balanceOriginal!" [converted]="tx.balance" [currency]="r()!.account.currency" />
+                      } @else {
+                        <sf-money [value]="tx.balance" class="text-xs text-muted-foreground" />
+                      }
                     } @else {
                       <span class="text-xs text-muted-foreground">—</span>
                     }
@@ -302,6 +311,13 @@ export class AccountDetail {
     };
   });
 
+  /** The account keeps its money in a currency other than the one being displayed. */
+  protected readonly foreign = computed(() => {
+    const cur = this.r()?.account.currency;
+    return !!cur && cur !== this.filters.currency();
+  });
+  protected readonly closingNote = computed(() => (this.foreign() ? `≈ ${this.f.money(this.r()?.closing)}` : null));
+
   protected readonly zoomHint = computed(() => ((this.r()?.days.length ?? 0) > 60 ? this.i18n.t('accounts.detail.zoomHint') : null));
 
   protected readonly balanceOptions = computed(() => {
@@ -383,6 +399,10 @@ export class AccountDetail {
   /** The other side of the record: where the money came from or went to. */
   protected counterparty(tx: AccountTxRow): string {
     return (tx.flow > 0 ? tx.source : tx.destination).name;
+  }
+
+  protected tone(tx: AccountTxRow): 'expense' | 'income' | 'none' {
+    return tx.type === 'withdrawal' ? 'expense' : tx.type === 'deposit' ? 'income' : 'none';
   }
 
   protected original(tx: AccountTxRow) {

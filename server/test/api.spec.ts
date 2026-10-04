@@ -184,6 +184,19 @@ describe('reports API', () => {
     expect(d.byWeekday.reduce((a, b) => a + b, 0)).toBe(13200);
   });
 
+  it('also gives amounts and balances in the account currency for a foreign account', async () => {
+    const { app } = setup();
+    const cookie = await login(app);
+    const res = await app.request('/api/reports/accounts/2?start=2026-09-01&end=2026-09-30', { headers: { cookie } });
+    const d = ((await res.json()) as Report<AccountDetailReport>).data;
+    expect(d.account.currency).toBe('USD');
+    expect(d.balanceOriginal).toBe(2900);
+    expect(d.openingOriginal).toBe(2450);
+    // Newest first: the USD 50 dinner, then the USD 500 freelance deposit, each with its balance in USD.
+    expect(d.rows.map((r) => [r.flowOriginal, r.balanceOriginal])).toEqual([[-50, 2900], [500, 2950]]);
+    expect(d.rows[0].flow).toBeCloseTo(-3050, 0);
+  });
+
   it('does not report on accounts that are not asset accounts', async () => {
     const { app } = setup();
     const cookie = await login(app);
