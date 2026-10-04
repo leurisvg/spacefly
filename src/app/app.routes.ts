@@ -33,6 +33,7 @@ export const routes: Routes = [
       { path: 'accounts', loadComponent: () => import('./features/accounts/accounts').then((m) => m.Accounts) },
       { path: 'accounts/net-worth', loadComponent: () => import('./features/accounts/net-worth').then((m) => m.NetWorth) },
       { path: 'accounts/savings', loadComponent: () => import('./features/accounts/savings').then((m) => m.Savings) },
+      { path: 'accounts/:id', loadComponent: () => import('./features/accounts/account-detail').then((m) => m.AccountDetail) },
       {
         path: 'planning',
         children: [

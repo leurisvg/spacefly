@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { exportJWK, generateKeyPair, SignJWT } from 'jose';
-import type { MonthlyReport, Report, SankeyReport, TxListResponse } from '@shared';
+import type { AccountDetailReport, MonthlyReport, Report, SankeyReport, TxListResponse } from '@shared';
 import { login, setup } from './harness';
 
 describe('auth', () => {
@@ -160,6 +160,34 @@ describe('reports API', () => {
       const res = await app.request(path, { headers: { cookie } });
       expect(res.status, `${path}: ${await res.clone().text()}`).toBe(200);
     }
+  });
+
+  it('details one asset account: balance walks back from the real closing balance', async () => {
+    const { app } = setup();
+    const cookie = await login(app);
+    const res = await app.request('/api/reports/accounts/1?start=2026-09-01&end=2026-09-30', { headers: { cookie } });
+    expect(res.status).toBe(200);
+    const d = ((await res.json()) as Report<AccountDetailReport>).data;
+    expect(d.account.name).toBe('Banco Popular');
+    expect(d.closing).toBe(240000);
+    expect(d.opening).toBe(138200);
+    expect(d.totals).toMatchObject({ income: 120000, expense: 13200, transferOut: 5000, transferIn: 0, count: 5 });
+    expect(d.days).toHaveLength(30);
+    expect(d.days[0].balance).toBe(258200);
+    expect(d.days.at(-1)!.balance).toBe(240000);
+    // Records are newest first, each with the balance right after it.
+    expect(d.rows[0]).toMatchObject({ description: 'Almuerzo', flow: -1200, balance: 240000 });
+    expect(d.rows.at(-1)).toMatchObject({ flow: 120000, balance: 258200 });
+    expect(d.rows.find((r) => r.type === 'transfer')!.flow).toBe(-5000);
+    expect(d.months).toHaveLength(12);
+    expect(d.topCategories[0]).toMatchObject({ name: 'Comida', value: 8500 });
+    expect(d.byWeekday.reduce((a, b) => a + b, 0)).toBe(13200);
+  });
+
+  it('does not report on accounts that are not asset accounts', async () => {
+    const { app } = setup();
+    const cookie = await login(app);
+    expect((await app.request('/api/reports/accounts/999?start=2026-09-01&end=2026-09-30', { headers: { cookie } })).status).toBe(404);
   });
 
   it('validates input', async () => {

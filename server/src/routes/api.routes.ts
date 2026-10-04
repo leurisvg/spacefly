@@ -20,6 +20,7 @@ import {
 import type { AppEnv, Services } from '../app.types';
 import { monthEnds, type FireflyData } from '../core/firefly-data';
 import { applyFilter, isExpense, isIncome, isTransfer, ReportContext, round } from '../core/ledger';
+import { buildAccountDetail } from '../reports/account-detail.report';
 import { buildAccounts, buildNetWorth } from '../reports/accounts.report';
 import { buildBudgets } from '../reports/budgets.report';
 import { buildCalendar, buildYearHeatmap, scheduledItems } from '../reports/calendar.report';
@@ -381,6 +382,24 @@ export function apiRoutes(s: Services) {
       snapshots(data, period.end, months, false),
     ]);
     return c.json(wrap(ctx, buildAccounts(ctx, current, splits, history, settings.excludedAccounts)));
+  });
+
+  api.get('/reports/accounts/:id', async (c) => {
+    const { data, period, ctx } = await context(c);
+    const asOf = clampToday(period.end);
+    const trendStart = addMonths(startOfMonth(period.end), -11);
+    const [current, all, trend, history] = await Promise.all([
+      data.accounts('asset', asOf),
+      data.ledger(period),
+      data.ledger({ start: trendStart, end: period.end }),
+      snapshots(data, period.end, 12, false),
+    ]);
+    const account = current.find((a) => a.id === c.req.param('id'));
+    if (!account) return c.json({ error: 'not_found' }, 404);
+    const splits = applyFilter(all, { account: account.id });
+    const months = monthsInRange(trendStart, period.end);
+    const excluded = settingsOf(c).excludedAccounts.includes(account.id);
+    return c.json(wrap(ctx, buildAccountDetail({ ctx, account, excluded, asOf, splits, trend, months, history })));
   });
 
   api.get('/reports/net-worth', async (c) => {

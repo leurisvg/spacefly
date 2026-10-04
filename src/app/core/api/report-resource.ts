@@ -19,10 +19,11 @@ export interface ReportResource<T> {
 
 /**
  * `httpResource` for a `/api/reports/*` endpoint, parameterised by the global filters plus
- * optional extra params. Return `null` from `extra` to pause the request.
+ * optional extra params. Return `null` from `extra` to pause the request. `path` may be a function
+ * when it depends on a signal (a route param).
  */
 export function reportResource<T>(
-  path: string,
+  path: string | (() => string),
   extra?: () => Params | null,
   options: { global?: boolean } = {},
 ): ReportResource<T> {
@@ -31,7 +32,7 @@ export function reportResource<T>(
     const e = extra ? extra() : {};
     if (e === null) return undefined;
     const base = options.global === false ? { currency: filters.currency(), _r: filters.refreshTick() } : filters.query();
-    return { url: `/api/${path}`, params: { ...base, ...e } };
+    return { url: `/api/${typeof path === 'string' ? path : path()}`, params: { ...base, ...e } };
   });
   const latest = computed(() => (ref.hasValue() ? ref.value() : undefined));
   const kept = linkedSignal<Report<T> | undefined, Report<T> | undefined>({

@@ -1,5 +1,5 @@
 import type { EChartsCoreOption } from 'echarts/core';
-import type { SankeyReport } from '@shared';
+import type { AccountDay, SankeyReport } from '@shared';
 import type { FormatService } from '../../core/format/format.service';
 import { cssVar, esc, tooltipRow, tooltipTitle } from './chart-theme';
 import { money } from './series-colors';
@@ -413,6 +413,100 @@ export function sankeyOption(
           overflow: 'truncate',
           width: 140,
         },
+      },
+    ],
+  };
+}
+
+const dayLabel = (f: Fmt, days: { date: string }[]) => (d: { date: string }) => (days.length <= 31 ? d.date.slice(8) : f.date(d.date, 'short'));
+const zoomFor = (count: number) => (count > 60 ? [{ type: 'inside', zoomLock: false }] : []);
+
+/** Balance at the end of each day (future days stay empty), with a zero line when it dips below it. */
+export function dailyBalanceOption(f: Fmt, label: string, days: AccountDay[]): EChartsCoreOption {
+  const color = money.net();
+  const known = days.filter((d) => d.balance !== null);
+  return {
+    grid: { left: 8, right: 16, top: 16, bottom: days.length > 60 ? 28 : 8, containLabel: true },
+    tooltip: {
+      trigger: 'axis',
+      formatter: (p: { dataIndex: number }[]) => {
+        const i = p[0].dataIndex;
+        const d = days[i];
+        if (d.balance === null) return '';
+        const prev = i > 0 ? days[i - 1].balance : null;
+        return (
+          tooltipTitle(f.date(d.date, 'full')) +
+          tooltipRow(color, label, f.money(d.balance)) +
+          (prev !== null ? tooltipRow(money.ink2(), 'Δ', f.money(d.balance - prev, undefined, { signed: true })) : '')
+        );
+      },
+    },
+    dataZoom: zoomFor(days.length),
+    xAxis: { type: 'category', data: days.map(dayLabel(f, days)), boundaryGap: false },
+    yAxis: { ...moneyAxis(f), scale: true },
+    series: [
+      {
+        name: label,
+        type: 'line',
+        data: days.map((d) => d.balance),
+        showSymbol: days.length <= 31,
+        symbolSize: 8,
+        itemStyle: { color, borderColor: money.surface(), borderWidth: 2 },
+        lineStyle: { color, width: 2 },
+        areaStyle: { color, opacity: 0.1 },
+        markLine: known.some((d) => (d.balance ?? 0) < 0)
+          ? { silent: true, symbol: 'none', lineStyle: { color: cssVar('--chart-axis'), type: 'solid' }, label: { show: false }, data: [{ yAxis: 0 }] }
+          : undefined,
+      },
+    ],
+  };
+}
+
+/** Income and expenses per day side by side on one axis; transfers only show in the tooltip. */
+export function dailyFlowOption(f: Fmt, t: (k: string) => string, days: AccountDay[]): EChartsCoreOption {
+  const names = [t('common.income'), t('common.expenses')];
+  return {
+    grid: { ...GRID, bottom: days.length > 60 ? 28 : 8 },
+    legend: legendTop(names),
+    tooltip: {
+      trigger: 'axis',
+      axisPointer: { type: 'shadow', shadowStyle: { color: 'rgba(148,163,184,0.06)' } },
+      formatter: (p: { dataIndex: number }[]) => {
+        const d = days[p[0].dataIndex];
+        return (
+          tooltipTitle(f.date(d.date, 'full')) +
+          tooltipRow(money.income(), names[0], f.money(d.income)) +
+          tooltipRow(money.expense(), names[1], f.money(-d.expense)) +
+          (d.transferIn ? tooltipRow(money.ink2(), t('accounts.detail.transferIn'), f.money(d.transferIn)) : '') +
+          (d.transferOut ? tooltipRow(money.ink2(), t('accounts.detail.transferOut'), f.money(-d.transferOut)) : '') +
+          (d.balance !== null ? tooltipRow(money.net(), t('accounts.balance'), f.money(d.balance)) : '')
+        );
+      },
+    },
+    dataZoom: zoomFor(days.length),
+    xAxis: { type: 'category', data: days.map(dayLabel(f, days)) },
+    yAxis: moneyAxis(f),
+    series: [
+      { name: names[0], type: 'bar', data: days.map((d) => d.income), itemStyle: { color: money.income() }, barGap: '8%' },
+      { name: names[1], type: 'bar', data: days.map((d) => d.expense), itemStyle: { color: money.expense() } },
+    ],
+  };
+}
+
+/** One series over fixed categories (weekdays): single hue, value labels, no legend. */
+export function categoryBarsOption(f: Fmt, labels: string[], values: number[], color: string, name: string): EChartsCoreOption {
+  return {
+    grid: { left: 8, right: 16, top: 24, bottom: 8, containLabel: true },
+    tooltip: { trigger: 'axis', axisPointer: { type: 'shadow', shadowStyle: { color: 'rgba(148,163,184,0.06)' } }, formatter: (p: { dataIndex: number }[]) => tooltipRow(color, `${name} · ${labels[p[0].dataIndex]}`, f.money(values[p[0].dataIndex])) },
+    xAxis: { type: 'category', data: labels },
+    yAxis: moneyAxis(f),
+    series: [
+      {
+        name,
+        type: 'bar',
+        data: values,
+        itemStyle: { color },
+        label: { show: true, position: 'top', formatter: (p: { value: number }) => (p.value ? f.compact(p.value) : ''), color: money.ink2(), fontSize: 11 },
       },
     ],
   };

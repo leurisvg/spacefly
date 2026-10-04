@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
+import { Router, RouterLink } from '@angular/router';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucidePencil, lucidePlus } from '@ng-icons/lucide';
 import { TranslocoPipe } from '@jsverse/transloco';
@@ -17,13 +18,12 @@ import { SeriesColors } from '../../shared/charts/series-colors';
 import { KpiCard } from '../../shared/components/kpi-card';
 import { Money } from '../../shared/components/money';
 import { PageHeader } from '../../shared/components/page-header';
-import { TxDetailService } from '../../shared/components/tx-detail.service';
 import { EntityEditor } from '../editor/entity-editor.service';
 import { MonthsPicker } from './months-picker';
 
 @Component({
   selector: 'sf-accounts',
-  imports: [NgIcon, TranslocoPipe, HlmBadge, HlmButton, Chart, ChartCard, KpiCard, Money, PageHeader, MonthsPicker, ...FORMAT_PIPES],
+  imports: [NgIcon, RouterLink, TranslocoPipe, HlmBadge, HlmButton, Chart, ChartCard, KpiCard, Money, PageHeader, MonthsPicker, ...FORMAT_PIPES],
   providers: [provideIcons({ lucidePencil, lucidePlus })],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'flex flex-col gap-4 sm:gap-5' },
@@ -55,11 +55,11 @@ import { MonthsPicker } from './months-picker';
         </thead>
         <tbody>
           @for (a of r()?.accounts ?? []; track a.id) {
-            <tr class="cursor-pointer border-b border-border/60 hover:bg-muted/40" [class.opacity-60]="a.excluded" (click)="detail.open(a.name, { account: a.id })">
+            <tr class="cursor-pointer border-b border-border/60 hover:bg-muted/40" [class.opacity-60]="a.excluded" (click)="open(a.id)">
               <td class="py-2">
                 <span class="inline-flex flex-wrap items-center gap-2">
                   <span class="size-2.5 rounded-sm" [style.background]="colors.color('account', a.id)"></span>
-                  <span class="font-medium">{{ a.name }}</span>
+                  <a class="font-medium hover:underline" [routerLink]="['/accounts', a.id]" queryParamsHandling="preserve" (click)="$event.stopPropagation()">{{ a.name }}</a>
                   @if (a.role) {
                     <span hlmBadge variant="outline" class="text-[10px]">{{ 'accounts.roles.' + a.role | transloco }}</span>
                   }
@@ -93,7 +93,7 @@ import { MonthsPicker } from './months-picker';
 export class Accounts {
   protected readonly i18n = inject(I18n);
   protected readonly filters = inject(FiltersStore);
-  protected readonly detail = inject(TxDetailService);
+  private readonly router = inject(Router);
   protected readonly colors = inject(SeriesColors);
   protected readonly editor = inject(EntityEditor);
   private readonly f = inject(FormatService);
@@ -103,6 +103,10 @@ export class Accounts {
   protected readonly r = this.res.data;
   protected readonly income = computed(() => this.r()?.accounts.reduce((s, a) => s + a.income, 0) ?? null);
   protected readonly expense = computed(() => this.r()?.accounts.reduce((s, a) => s + a.expense, 0) ?? null);
+
+  protected open(id: string): void {
+    void this.router.navigate(['/accounts', id], { queryParamsHandling: 'preserve' });
+  }
 
   protected edit(event: Event, id: string): void {
     event.stopPropagation();
