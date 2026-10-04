@@ -1,0 +1,15 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "target": "ES2022",
+    "lib": ["ESNext", "dom"],
+    "emitDecoratorMetadata": true,
+    "noEmitOnError": true,
+    "types": []
+  },
+  "include": ["src/**/*.ios.ts", "src/**/*.android.ts"],
+  "files": ["./src/main.ts", "./references.d.ts", "./src/polyfills.ts", "./src/globals.d.ts"],
+  "exclude": ["node_modules", "platforms", "e2e"]
+}

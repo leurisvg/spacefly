@@ -1,0 +1,29 @@
+import { provideZonelessChangeDetection } from '@angular/core';
+import { withInterceptors } from '@angular/common/http';
+import { bootstrapApplication, provideNativeScriptHttpClient, provideNativeScriptRouter, runNativeScriptAngularApp } from '@nativescript/angular';
+import { ApplicationSettings, Device } from '@nativescript/core';
+import { CLIENT_INTERCEPTORS } from '@spacefly/client/auth/auth.interceptor';
+import { initialLang, LANG_KEY } from '@spacefly/client/i18n/lang';
+import { provideClientCore } from '@spacefly/client/i18n/provide-client-core';
+import { baseUrlInterceptor } from '@spacefly/client/platform/api-base-url';
+import { AppComponent } from './app/app.component';
+import { bearerInterceptor } from './app/platform/bearer.interceptor';
+import { provideMobilePlatform } from './app/platform/provide-mobile-platform';
+import { StaticTranslocoLoader } from './app/platform/static-loader';
+import { routes } from './app/app.routes';
+
+const lang = initialLang(ApplicationSettings.getString(LANG_KEY) ?? null, Device.language);
+
+runNativeScriptAngularApp({
+  appModuleBootstrap: () =>
+    bootstrapApplication(AppComponent, {
+      providers: [
+        provideZonelessChangeDetection(),
+        // The bearer interceptor must see `/api/…` paths, and the base URL is added last.
+        provideNativeScriptHttpClient(withInterceptors([...CLIENT_INTERCEPTORS, bearerInterceptor, baseUrlInterceptor])),
+        provideNativeScriptRouter(routes),
+        provideClientCore({ lang, loader: StaticTranslocoLoader }),
+        provideMobilePlatform(),
+      ],
+    }),
+});

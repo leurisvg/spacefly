@@ -1,0 +1,29 @@
+{
+  "name": "@spacefly/mobile",
+  "version": "0.1.0",
+  "private": true,
+  "description": "SpaceFly mobile app (NativeScript + Angular). Only NativeScript dependencies live here: Angular, rxjs and Transloco come from the root package.json so there is a single copy.",
+  "main": "src/main.ts",
+  "dependencies": {
+    "@nativescript-community/ui-webview": "^1.6.2",
+    "@nativescript/angular": "~22.0.1",
+    "@nativescript/core": "~9.1.2",
+    "@nativescript/secure-storage": "^4.0.2",
+    "@noble/hashes": "^2.4.0"
+  },
+  "devDependencies": {
+    "@angular-devkit/build-angular": "^22.2.1",
+    "@nativescript/tailwind": "^4.0.10",
+    "@nativescript/types": "~9.1.2",
+    "@nativescript/webpack": "~5.0.38",
+    "@ngtools/webpack": "^22.2.1"
+  },
+  "scripts": {
+    "dev:android": "ns run android",
+    "dev:ios": "ns run ios",
+    "bundle": "nativescript-webpack build --env.android --env.production",
+    "bundle:ios": "nativescript-webpack build --env.ios --env.production",
+    "build:android": "ns build android --release",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  }
+}

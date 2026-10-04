@@ -1,0 +1,41 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+    <style>
+      html,
+      body,
+      #chart {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+        background: transparent;
+        overflow: hidden;
+        -webkit-tap-highlight-color: transparent;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="chart"></div>
+    <script src="echarts.min.js"></script>
+    <script>
+      // window.sfHydrate is injected by the app (libs/client/src/charts/portable.ts) right after this page loads.
+      var chart = null;
+      window.sfRender = function (option, theme) {
+        if (!chart) {
+          echarts.registerTheme('spacefly', theme);
+          chart = echarts.init(document.getElementById('chart'), 'spacefly');
+          chart.on('click', function (p) {
+            window.nsWebViewBridge.emit('chartClick', { dataIndex: p.dataIndex, name: p.name });
+          });
+          window.addEventListener('resize', function () {
+            chart.resize();
+          });
+        }
+        chart.setOption(window.sfHydrate(option), true);
+      };
+    </script>
+  </body>
+</html>

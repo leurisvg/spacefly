@@ -17,6 +17,7 @@
       "@spacefly/client/testing": ["./libs/client/testing/index.ts"],
       "@spacefly/client/*": ["./libs/client/src/*"],
       "@spacefly/i18n/*": ["./libs/i18n/src/*"],
+      "~/*": ["./apps/mobile/src/*"],
       "@spartan-ng/helm/button": ["./apps/web/src/libs/ui/button/src/index.ts"],
       "@spartan-ng/helm/utils": ["./apps/web/src/libs/ui/utils/src/index.ts"],
       "@spartan-ng/helm/sidebar": ["./apps/web/src/libs/ui/sidebar/src/index.ts"],

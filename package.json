@@ -19,11 +19,18 @@
     "dev:server:mock": "tsx watch --tsconfig apps/server/tsconfig.json --env-file=.env.mock apps/server/src/main.ts",
     "mock:firefly": "tsx --tsconfig apps/server/tsconfig.json apps/server/scripts/mock-firefly.ts",
     "check:deps": "node scripts/check-single-angular.mjs",
-    "test:client": "ng test client"
+    "test:client": "ng test client",
+    "typecheck": "tsc -p apps/web/tsconfig.app.json --noEmit && tsc -p libs/client/tsconfig.lib.json --noEmit && npm run typecheck -w @spacefly/mobile && npm run typecheck:server",
+    "dev:mobile:android": "npm run dev:android -w @spacefly/mobile",
+    "dev:mobile:ios": "npm run dev:ios -w @spacefly/mobile",
+    "bundle:mobile": "npm run bundle -w @spacefly/mobile",
+    "build:mobile:android": "npm run build:android -w @spacefly/mobile",
+    "verify": "npm run check:deps && npm run lint && npm run typecheck && npm test && npm run build && npm run bundle:mobile"
   },
   "private": true,
   "packageManager": "npm@11.6.2",
   "dependencies": {
+    "@angular/animations": "^22.2.1",
     "@angular/cdk": "^22.2.1",
     "@angular/common": "^22.2.0",
     "@angular/compiler": "^22.2.0",
