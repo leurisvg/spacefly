@@ -1,9 +1,9 @@
-import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideLock, lucideRocket } from '@ng-icons/lucide';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { HlmButton } from '@spartan-ng/helm/button';
-import { AuthService } from '@spacefly/client/auth/auth.service';
+import { loginViewModel } from '@spacefly/client/features/settings/login.vm';
 
 @Component({
   selector: 'sf-login',
@@ -20,10 +20,10 @@ import { AuthService } from '@spacefly/client/auth/auth.service';
       <p class="mt-1 text-sm text-muted-foreground">{{ 'login.subtitle' | transloco }}</p>
       @if (error()) {
         <p class="mt-4 rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-negative" role="alert">
-          {{ 'login.errors.' + errorKey() | transloco }}
+          {{ 'login.errors.' + vm.errorKey() | transloco }}
         </p>
       }
-      <button hlmBtn size="lg" class="mt-6 w-full" (click)="login()">
+      <button hlmBtn size="lg" class="mt-6 w-full" (click)="vm.login()">
         <ng-icon name="lucideLock" />
         {{ 'login.button' | transloco }}
       </button>
@@ -32,12 +32,7 @@ import { AuthService } from '@spacefly/client/auth/auth.service';
   `,
 })
 export class Login {
-  private readonly auth = inject(AuthService);
   readonly returnTo = input<string>('/');
   readonly error = input<string | undefined>(undefined);
-  protected readonly errorKey = computed(() => (['invalid_state', 'token_exchange', 'access_denied'].includes(this.error() ?? '') ? this.error() : 'generic'));
-
-  protected login(): void {
-    this.auth.login(this.returnTo() || '/');
-  }
+  protected readonly vm = loginViewModel({ returnTo: this.returnTo, error: this.error });
 }

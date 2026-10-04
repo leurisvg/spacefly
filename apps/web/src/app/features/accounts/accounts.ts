@@ -1,28 +1,17 @@
-import { HttpClient } from '@angular/common/http';
-import { ChangeDetectionStrategy, Component, computed, inject, linkedSignal, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideCheck, lucideChevronDown, lucideChevronUp, lucideGripVertical, lucidePencil, lucidePlus, lucideRotateCcw, lucideArrowUpDown } from '@ng-icons/lucide';
-import { toast } from '@spartan-ng/brain/sonner';
-import { firstValueFrom } from 'rxjs';
 import { TranslocoPipe } from '@jsverse/transloco';
-import type { AccountsReport } from '@spacefly/shared';
 import { HlmBadge } from '@spartan-ng/helm/badge';
 import { HlmButton } from '@spartan-ng/helm/button';
-import { reportResource } from '@spacefly/client/api/report-resource';
-import { FormatService } from '@spacefly/client/format/format.service';
+import { accountsViewModel } from '@spacefly/client/features/accounts/accounts.vm';
 import { FORMAT_PIPES } from '@spacefly/client/format/pipes';
-import { I18n } from '@spacefly/client/i18n/i18n';
-import { FiltersStore } from '@spacefly/client/state/filters.store';
-import { linesOption } from '@spacefly/client/charts/builders';
 import { Chart } from '../../shared/charts/chart';
 import { ChartCard } from '../../shared/charts/chart-card';
-import type { ChartTable } from '@spacefly/client/charts/chart-table';
-import { SeriesColors } from '@spacefly/client/charts/series-colors';
 import { KpiCard } from '../../shared/components/kpi-card';
 import { Money } from '../../shared/components/money';
 import { PageHeader } from '../../shared/components/page-header';
-import { EntityEditor } from '@spacefly/client/state/entity-editor.service';
 import { MonthsPicker } from './months-picker';
 
 @Component({
@@ -32,32 +21,32 @@ import { MonthsPicker } from './months-picker';
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'flex flex-col gap-4 sm:gap-5' },
   template: `
-    <sf-page-header [title]="i18n.t('nav.assetAccounts')" [description]="i18n.t('accounts.description')">
-      @if (reordering()) {
-        <button hlmBtn size="sm" variant="ghost" type="button" (click)="reset()">
+    <sf-page-header [title]="vm.i18n.t('nav.assetAccounts')" [description]="vm.i18n.t('accounts.description')">
+      @if (vm.reordering()) {
+        <button hlmBtn size="sm" variant="ghost" type="button" (click)="vm.reset()">
           <ng-icon name="lucideRotateCcw" aria-hidden="true" />{{ 'accounts.reorder.reset' | transloco }}
         </button>
-        <button hlmBtn size="sm" type="button" (click)="reordering.set(false)">
+        <button hlmBtn size="sm" type="button" (click)="vm.reordering.set(false)">
           <ng-icon name="lucideCheck" aria-hidden="true" />{{ 'accounts.reorder.done' | transloco }}
         </button>
       } @else {
-        <button hlmBtn size="sm" variant="outline" type="button" (click)="reordering.set(true)">
+        <button hlmBtn size="sm" variant="outline" type="button" (click)="vm.reordering.set(true)">
           <ng-icon name="lucideArrowUpDown" aria-hidden="true" />{{ 'accounts.reorder.start' | transloco }}
         </button>
-        <button hlmBtn size="sm" variant="outline" type="button" (click)="editor.open('account')">
+        <button hlmBtn size="sm" variant="outline" type="button" (click)="vm.editor.open('account')">
           <ng-icon name="lucidePlus" aria-hidden="true" />{{ 'editor.entity.account.new' | transloco }}
         </button>
       }
-      <sf-months-picker [value]="months()" (changed)="filters.setParams({ months: $event })" />
+      <sf-months-picker [value]="vm.months()" (changed)="vm.filters.setParams({ months: $event })" />
     </sf-page-header>
 
     <section class="grid grid-cols-2 gap-3 lg:grid-cols-3">
-      <sf-kpi [label]="i18n.t('accounts.total')" [value]="r()?.total ?? null" accent="var(--money-net)" [loading]="res.initialLoading()" />
-      <sf-kpi [label]="i18n.t('common.income')" [value]="income()" accent="var(--money-income)" [loading]="res.initialLoading()" />
-      <sf-kpi class="col-span-2 lg:col-span-1" [label]="i18n.t('common.expenses')" [value]="expense()" accent="var(--money-expense)" [loading]="res.initialLoading()" />
+      <sf-kpi [label]="vm.i18n.t('accounts.total')" [value]="vm.r()?.total ?? null" accent="var(--money-net)" [loading]="vm.res.initialLoading()" />
+      <sf-kpi [label]="vm.i18n.t('common.income')" [value]="vm.income()" accent="var(--money-income)" [loading]="vm.res.initialLoading()" />
+      <sf-kpi class="col-span-2 lg:col-span-1" [label]="vm.i18n.t('common.expenses')" [value]="vm.expense()" accent="var(--money-expense)" [loading]="vm.res.initialLoading()" />
     </section>
 
-    @if (reordering()) {
+    @if (vm.reordering()) {
       <p class="-mb-2 px-1 text-xs text-muted-foreground">{{ 'accounts.reorder.hint' | transloco }}</p>
     }
 
@@ -65,7 +54,7 @@ import { MonthsPicker } from './months-picker';
       <table class="w-full min-w-[40rem] text-sm">
         <thead>
           <tr class="border-b border-border">
-            @if (reordering()) {
+            @if (vm.reordering()) {
               <th class="w-24"><span class="sr-only">{{ 'accounts.reorder.start' | transloco }}</span></th>
             }
             <th class="eyebrow py-2 text-left">{{ 'common.account' | transloco }}</th>
@@ -77,26 +66,26 @@ import { MonthsPicker } from './months-picker';
           </tr>
         </thead>
         <tbody>
-          @for (a of rows(); track a.id; let i = $index; let first = $first; let last = $last) {
+          @for (a of vm.rows(); track a.id; let i = $index; let first = $first; let last = $last) {
             <tr
               class="border-b border-border/60 hover:bg-muted/40"
-              [class.cursor-pointer]="!reordering()"
-              [class.opacity-60]="a.excluded || dragging() === a.id"
-              [attr.draggable]="reordering() ? 'true' : null"
-              (click)="!reordering() && open(a.id)"
-              (dragstart)="dragging.set(a.id)"
-              (dragend)="dragging.set(null)"
-              (dragover)="reordering() && $event.preventDefault()"
-              (drop)="dropOn(a.id)"
+              [class.cursor-pointer]="!vm.reordering()"
+              [class.opacity-60]="a.excluded || vm.dragging() === a.id"
+              [attr.draggable]="vm.reordering() ? 'true' : null"
+              (click)="!vm.reordering() && open(a.id)"
+              (dragstart)="vm.dragging.set(a.id)"
+              (dragend)="vm.dragging.set(null)"
+              (dragover)="vm.reordering() && $event.preventDefault()"
+              (drop)="vm.dropOn(a.id)"
             >
-              @if (reordering()) {
+              @if (vm.reordering()) {
                 <td class="py-2">
                   <span class="inline-flex items-center gap-0.5">
                     <ng-icon name="lucideGripVertical" class="cursor-grab text-muted-foreground" aria-hidden="true" />
-                    <button hlmBtn variant="ghost" size="icon-sm" type="button" [disabled]="first" [attr.aria-label]="i18n.t('accounts.reorder.up', { name: a.name })" (click)="move(a.id, -1)">
+                    <button hlmBtn variant="ghost" size="icon-sm" type="button" [disabled]="first" [attr.aria-label]="vm.i18n.t('accounts.reorder.up', { name: a.name })" (click)="vm.move(a.id, -1)">
                       <ng-icon name="lucideChevronUp" aria-hidden="true" />
                     </button>
-                    <button hlmBtn variant="ghost" size="icon-sm" type="button" [disabled]="last" [attr.aria-label]="i18n.t('accounts.reorder.down', { name: a.name })" (click)="move(a.id, 1)">
+                    <button hlmBtn variant="ghost" size="icon-sm" type="button" [disabled]="last" [attr.aria-label]="vm.i18n.t('accounts.reorder.down', { name: a.name })" (click)="vm.move(a.id, 1)">
                       <ng-icon name="lucideChevronDown" aria-hidden="true" />
                     </button>
                   </span>
@@ -104,7 +93,7 @@ import { MonthsPicker } from './months-picker';
               }
               <td class="py-2">
                 <span class="inline-flex flex-wrap items-center gap-2">
-                  <span class="size-2.5 rounded-sm" [style.background]="colors.color('account', a.id)"></span>
+                  <span class="size-2.5 rounded-sm" [style.background]="vm.colors.color('account', a.id)"></span>
                   <a class="font-medium hover:underline" [routerLink]="['/accounts', a.id]" queryParamsHandling="preserve" (click)="$event.stopPropagation()">{{ a.name }}</a>
                   @if (a.role) {
                     <span hlmBadge variant="outline" class="text-[10px]">{{ 'accounts.roles.' + a.role | transloco }}</span>
@@ -129,74 +118,16 @@ import { MonthsPicker } from './months-picker';
       </table>
     </section>
 
-    <sf-chart-card [title]="i18n.t('accounts.balanceHistory')" [table]="table()" [loading]="res.loading()" [initialLoading]="res.initialLoading()" fileName="account-balances">
-      @if (options(); as o) {
+    <sf-chart-card [title]="vm.i18n.t('accounts.balanceHistory')" [table]="vm.table()" [loading]="vm.res.loading()" [initialLoading]="vm.res.initialLoading()" fileName="account-balances">
+      @if (vm.options(); as o) {
         <sf-chart [options]="o" height="22rem" />
       }
     </sf-chart-card>
   `,
 })
 export class Accounts {
-  protected readonly i18n = inject(I18n);
-  protected readonly filters = inject(FiltersStore);
+  protected readonly vm = accountsViewModel();
   private readonly router = inject(Router);
-  protected readonly colors = inject(SeriesColors);
-  protected readonly editor = inject(EntityEditor);
-  private readonly f = inject(FormatService);
-  private readonly http = inject(HttpClient);
-  private readonly monthsParam = this.filters.param('months');
-  protected readonly months = computed(() => this.monthsParam() ?? '12');
-  protected readonly res = reportResource<AccountsReport>('reports/accounts', () => ({ months: this.months() }));
-  protected readonly r = this.res.data;
-  protected readonly reordering = signal(false);
-  protected readonly dragging = signal<string | null>(null);
-  /** Account ids as displayed: the server's order, then whatever the user moves. */
-  private readonly order = linkedSignal<string[]>(() => this.r()?.accounts.map((a) => a.id) ?? []);
-  protected readonly rows = computed(() => {
-    const byId = new Map((this.r()?.accounts ?? []).map((a) => [a.id, a]));
-    return this.order().flatMap((id) => byId.get(id) ?? []);
-  });
-  protected readonly income = computed(() => this.r()?.accounts.reduce((s, a) => s + a.income, 0) ?? null);
-  protected readonly expense = computed(() => this.r()?.accounts.reduce((s, a) => s + a.expense, 0) ?? null);
-
-  protected move(id: string, delta: -1 | 1): void {
-    const order = [...this.order()];
-    const from = order.indexOf(id);
-    const to = from + delta;
-    if (from < 0 || to < 0 || to >= order.length) return;
-    [order[from], order[to]] = [order[to], order[from]];
-    void this.save(order);
-  }
-
-  protected dropOn(targetId: string): void {
-    const id = this.dragging();
-    this.dragging.set(null);
-    if (!id || id === targetId) return;
-    const from = this.order().indexOf(id);
-    const order = this.order().filter((x) => x !== id);
-    // Dragging down drops the row after the target, dragging up drops it before.
-    order.splice(order.indexOf(targetId) + (from < this.order().indexOf(targetId) ? 1 : 0), 0, id);
-    void this.save(order);
-  }
-
-  /** Back to the default order (largest balance first). */
-  protected async reset(): Promise<void> {
-    try {
-      await firstValueFrom(this.http.put('/api/settings/account-order', { order: [] }));
-      this.res.reload();
-    } catch {
-      toast.error(this.i18n.t('errors.generic'));
-    }
-  }
-
-  private async save(order: string[]): Promise<void> {
-    this.order.set(order);
-    try {
-      await firstValueFrom(this.http.put('/api/settings/account-order', { order }));
-    } catch {
-      toast.error(this.i18n.t('errors.generic'));
-    }
-  }
 
   protected open(id: string): void {
     void this.router.navigate(['/accounts', id], { queryParamsHandling: 'preserve' });
@@ -204,28 +135,6 @@ export class Accounts {
 
   protected edit(event: Event, id: string): void {
     event.stopPropagation();
-    this.editor.open('account', id);
+    this.vm.edit(id);
   }
-
-  /** Balance series in the same order as the table. */
-  private readonly history = computed(() => {
-    const rank = new Map(this.order().map((id, i) => [id, i]));
-    return [...(this.r()?.history ?? [])].sort((a, b) => (rank.get(a.id) ?? Infinity) - (rank.get(b.id) ?? Infinity));
-  });
-
-  protected readonly options = computed(() => {
-    const r = this.r();
-    if (!r?.history.length) return null;
-    return linesOption(this.f, r.months, this.history().map((h) => ({ id: h.id, name: h.name, values: h.balances, color: this.colors.color('account', h.id) })));
-  });
-
-  protected readonly table = computed<ChartTable | null>(() => {
-    const r = this.r();
-    if (!r) return null;
-    return {
-      columns: [this.i18n.t('common.account'), ...r.months.map((m) => this.f.monthLabel(m))],
-      rows: this.history().map((h) => [h.name, ...h.balances.map((b) => this.f.compact(b))]),
-      numeric: r.months.map((_, i) => i + 1),
-    };
-  });
 }

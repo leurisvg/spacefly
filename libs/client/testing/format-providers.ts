@@ -23,7 +23,7 @@ class InMemoryLoader implements TranslocoLoader {
  * Test doubles so FormatService and the components built on it need no router, HTTP or i18n files.
  * With `translations`, a real Transloco (in-memory loader) is wired in so `| transloco` works.
  */
-export function formatTestProviders(lang = 'es', translations?: Record<string, unknown>) {
+export function formatTestProviders(lang = 'es', translations?: Record<string, unknown>, options: { realStores?: boolean } = {}) {
   const lang$ = new BehaviorSubject(lang);
   const currency = signal('DOP');
   loaded = translations ?? {};
@@ -35,8 +35,8 @@ export function formatTestProviders(lang = 'es', translations?: Record<string, u
     : [{ provide: TranslocoService, useValue: { langChanges$: lang$.asObservable(), getActiveLang: () => lang$.value, translate: (key: string) => key } }];
   const providers: (Provider | EnvironmentProviders)[] = [
     ...i18n,
-    { provide: FiltersStore, useValue: { currency } },
-    { provide: MetaStore, useValue: { currencies: signal(CURRENCIES) } },
+    // `realStores` keeps the real FiltersStore/MetaStore (over the platform fakes) for view-model specs.
+    ...(options.realStores ? [] : [{ provide: FiltersStore, useValue: { currency } }, { provide: MetaStore, useValue: { currencies: signal(CURRENCIES) } }]),
   ];
   return { providers, lang$, currency };
 }

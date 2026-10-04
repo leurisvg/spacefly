@@ -109,7 +109,7 @@ async function setup(opts: { id?: string; query?: Record<string, string>; edit?:
     else get.flush(opts.edit ?? EDIT);
   }
   await settle();
-  const comp = fixture.componentInstance as unknown as { model: { (): Record<string, unknown>; update: (f: (m: Record<string, unknown>) => Record<string, unknown>) => void } };
+  const comp = (fixture.componentInstance as unknown as { vm: { model: { (): Record<string, unknown>; update: (f: (m: Record<string, unknown>) => Record<string, unknown>) => void } } }).vm as unknown as { model: { (): Record<string, unknown>; update: (f: (m: Record<string, unknown>) => Record<string, unknown>) => void } };
   const el = fixture.nativeElement as HTMLElement;
   const button = (label: string) => [...el.querySelectorAll('sf-form-footer button')].find((b) => b.textContent!.trim() === label) as HTMLButtonElement;
   const backend = http;
@@ -371,7 +371,7 @@ describe('TransactionForm · new', () => {
       await s.settle();
     }
     const setAfter = (s: Setup, value: { stay: boolean; reset: boolean }) => {
-      const comp = s.fixture.componentInstance as unknown as { after: { set(v: unknown): void } };
+      const comp = (s.fixture.componentInstance as unknown as { vm: { after: { set(v: unknown): void } } }).vm;
       comp.after.set(value);
     };
 
@@ -433,7 +433,7 @@ describe('TransactionForm · edit', () => {
 
   it('reloads from the server when staying, because rules may have changed fields', async () => {
     const s = await setup({ id: '55' });
-    (s.fixture.componentInstance as unknown as { after: { set(v: unknown): void } }).after.set({ stay: true, reset: true });
+    (s.fixture.componentInstance as unknown as { vm: { after: { set(v: unknown): void } } }).vm.after.set({ stay: true, reset: true });
     await s.save();
     s.answer('PUT', '/api/transactions/55', 200, { groupId: '55', journalId: '66', type: 'withdrawal' });
     await s.settle();

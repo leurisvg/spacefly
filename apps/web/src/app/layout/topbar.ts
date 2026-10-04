@@ -1,21 +1,17 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router } from '@angular/router';
 import { filter, map, startWith } from 'rxjs';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideExternalLink, lucideEye, lucideEyeOff, lucideLanguages, lucideLogOut, lucideRefreshCw, lucideUser } from '@ng-icons/lucide';
-import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
-import { toast } from '@spartan-ng/brain/sonner';
+import { TranslocoPipe } from '@jsverse/transloco';
 import { HlmBreadcrumbImports } from '@spartan-ng/helm/breadcrumb';
 import { HlmButton } from '@spartan-ng/helm/button';
 import { HlmDropdownMenuImports } from '@spartan-ng/helm/dropdown-menu';
 import { HlmSidebarImports } from '@spartan-ng/helm/sidebar';
 import { HlmTooltip } from '@spartan-ng/helm/tooltip';
-import { ApiService } from '@spacefly/client/api/report-resource';
-import { AuthService } from '@spacefly/client/auth/auth.service';
-import { LANG_KEY, LANGS, type Lang } from '@spacefly/client/i18n/lang';
-import { MetaStore } from '@spacefly/client/state/meta.store';
-import { PrivacyStore } from '@spacefly/client/state/privacy.store';
+import { preferencesViewModel } from '@spacefly/client/features/settings/preferences.vm';
+import type { Lang } from '@spacefly/client/i18n/lang';
 import { CurrencyToggle } from '../shared/components/currency-toggle';
 import { PeriodPicker } from '../shared/components/period-picker';
 import { findNav, isEditorRoute } from './nav';
@@ -63,12 +59,12 @@ import { NewMenu } from './new-menu';
         hlmBtn
         variant="ghost"
         size="icon-sm"
-        [hlmTooltip]="(privacy.hidden() ? 'topbar.showAmounts' : 'topbar.hideAmounts') | transloco"
-        [attr.aria-label]="(privacy.hidden() ? 'topbar.showAmounts' : 'topbar.hideAmounts') | transloco"
-        [attr.aria-pressed]="privacy.hidden()"
-        (click)="privacy.toggle()"
+        [hlmTooltip]="(vm.privacy.hidden() ? 'topbar.showAmounts' : 'topbar.hideAmounts') | transloco"
+        [attr.aria-label]="(vm.privacy.hidden() ? 'topbar.showAmounts' : 'topbar.hideAmounts') | transloco"
+        [attr.aria-pressed]="vm.privacy.hidden()"
+        (click)="vm.privacy.toggle()"
       >
-        <ng-icon [name]="privacy.hidden() ? 'lucideEyeOff' : 'lucideEye'" />
+        <ng-icon [name]="vm.privacy.hidden() ? 'lucideEyeOff' : 'lucideEye'" />
       </button>
       <button
         hlmBtn
@@ -76,20 +72,20 @@ import { NewMenu } from './new-menu';
         size="icon-sm"
         [hlmTooltip]="'topbar.refresh' | transloco"
         [attr.aria-label]="'topbar.refresh' | transloco"
-        [disabled]="refreshing()"
-        (click)="refresh()"
+        [disabled]="vm.refreshing()"
+        (click)="vm.refresh()"
       >
-        <ng-icon name="lucideRefreshCw" [class.animate-spin]="refreshing()" />
+        <ng-icon name="lucideRefreshCw" [class.animate-spin]="vm.refreshing()" />
       </button>
       <button hlmBtn variant="ghost" size="icon-sm" [hlmDropdownMenuTrigger]="langMenu" [attr.aria-label]="'topbar.language' | transloco">
         <ng-icon name="lucideLanguages" />
       </button>
       <ng-template #langMenu>
         <hlm-dropdown-menu class="w-40">
-          @for (l of langs; track l) {
+          @for (l of vm.langs; track l) {
             <button hlmDropdownMenuItem (triggered)="setLang(l)">
               <span class="flex-1">{{ 'lang.' + l | transloco }}</span>
-              @if (lang() === l) {
+              @if (vm.lang() === l) {
                 <span class="text-primary">●</span>
               }
             </button>
@@ -101,14 +97,14 @@ import { NewMenu } from './new-menu';
       </button>
       <ng-template #userMenu>
         <hlm-dropdown-menu class="w-60">
-          <hlm-dropdown-menu-label class="truncate text-xs font-normal text-muted-foreground">{{ email() }}</hlm-dropdown-menu-label>
+          <hlm-dropdown-menu-label class="truncate text-xs font-normal text-muted-foreground">{{ vm.email() }}</hlm-dropdown-menu-label>
           <hlm-dropdown-menu-separator />
-          @if (fireflyUrl(); as url) {
+          @if (vm.fireflyUrl(); as url) {
             <a hlmDropdownMenuItem [href]="url" target="_blank" rel="noopener">
               <ng-icon name="lucideExternalLink" />{{ 'topbar.openFirefly' | transloco }}
             </a>
           }
-          <button hlmDropdownMenuItem (triggered)="auth.logout()"><ng-icon name="lucideLogOut" />{{ 'topbar.logout' | transloco }}</button>
+          <button hlmDropdownMenuItem (triggered)="vm.logout()"><ng-icon name="lucideLogOut" />{{ 'topbar.logout' | transloco }}</button>
         </hlm-dropdown-menu>
       </ng-template>
     </div>
@@ -122,14 +118,7 @@ import { NewMenu } from './new-menu';
 })
 export class Topbar {
   private readonly router = inject(Router);
-  private readonly transloco = inject(TranslocoService);
-  private readonly api = inject(ApiService);
-  private readonly meta = inject(MetaStore);
-  protected readonly auth = inject(AuthService);
-  protected readonly privacy = inject(PrivacyStore);
-  protected readonly langs = LANGS;
-  protected readonly lang = toSignal(this.transloco.langChanges$, { initialValue: this.transloco.getActiveLang() });
-  protected readonly refreshing = signal(false);
+  protected readonly vm = preferencesViewModel();
 
   private readonly url = toSignal(
     this.router.events.pipe(
@@ -149,24 +138,9 @@ export class Topbar {
     if (isEditorRoute(path)) return false;
     return !['/planning/recurring', '/planning/goals', '/planning/projection', '/settings', '/about', '/accounts/net-worth'].includes(path);
   });
-  protected readonly email = computed(() => this.meta.meta()?.email ?? this.auth.me()?.email ?? '');
-  protected readonly fireflyUrl = computed(() => this.meta.meta()?.fireflyPublicUrl ?? null);
 
   protected setLang(lang: Lang): void {
-    this.transloco.setActiveLang(lang);
-    localStorage.setItem(LANG_KEY, lang);
+    this.vm.setLang(lang);
     document.documentElement.lang = lang;
-  }
-
-  protected async refresh(): Promise<void> {
-    this.refreshing.set(true);
-    try {
-      await this.api.refresh();
-      toast.success(this.transloco.translate('topbar.refreshed'));
-    } catch {
-      toast.error(this.transloco.translate('errors.generic'));
-    } finally {
-      this.refreshing.set(false);
-    }
   }
 }

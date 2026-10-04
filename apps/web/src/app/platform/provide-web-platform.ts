@@ -7,10 +7,10 @@ import { DEVICE_LANG } from '@spacefly/client/platform/device-lang';
 import { FilterParamsSource } from '@spacefly/client/platform/filter-params-source';
 import { KeyValueStorage } from '@spacefly/client/platform/key-value-storage';
 import { Toast } from '@spacefly/client/platform/toast';
-import { ConfirmService } from '../shared/forms/confirm.service';
 import { RouterFilterParams } from './router-filter-params';
 import { WebAuthPlatform } from './web-auth-platform';
 import { WebBackNavigation } from './web-back-navigation';
+import { WebConfirm } from './web-confirm';
 import { WebKeyValueStorage } from './web-key-value-storage';
 import { WebToast } from './web-toast';
 
@@ -22,7 +22,7 @@ export function provideWebPlatform(): (Provider | EnvironmentProviders)[] {
     { provide: AuthPlatform, useClass: WebAuthPlatform },
     { provide: FilterParamsSource, useClass: RouterFilterParams },
     { provide: Toast, useClass: WebToast },
-    { provide: Confirm, useExisting: ConfirmService },
+    { provide: Confirm, useClass: WebConfirm },
     { provide: BackNavigation, useClass: WebBackNavigation },
     { provide: DEVICE_LANG, useFactory: () => (typeof navigator !== 'undefined' ? navigator.language : null) },
   ];
