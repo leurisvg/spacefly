@@ -52,3 +52,5 @@ Thumbs.db
 *.apk
 *.ipa
 *.aab
+*.jks
+*.keystore
