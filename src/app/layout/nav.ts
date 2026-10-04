@@ -7,6 +7,7 @@ import {
   lucideChartNoAxesCombined,
   lucideFileText,
   lucideFolderTree,
+  lucideHandCoins,
   lucideGitCompare,
   lucideInfo,
   lucideLandmark,
@@ -16,6 +17,7 @@ import {
   lucideRepeat,
   lucideSearch,
   lucideSettings,
+  lucideShoppingCart,
   lucideStore,
   lucideTags,
   lucideTarget,
@@ -61,6 +63,8 @@ export const NAV_ICONS = {
   lucideTrendingUp,
   lucideChartNoAxesCombined,
   lucideArrowRightLeft,
+  lucideShoppingCart,
+  lucideHandCoins,
 };
 
 /** Sidebar structure; `key` is both the i18n key (nav.<key>) and the breadcrumb label. */
@@ -90,6 +94,8 @@ export const NAV: NavSection[] = [
     key: 'accounts',
     items: [
       { key: 'assetAccounts', path: '/accounts', icon: 'lucideWallet' },
+      { key: 'expenseAccounts', path: '/accounts/expense', icon: 'lucideShoppingCart' },
+      { key: 'revenueAccounts', path: '/accounts/revenue', icon: 'lucideHandCoins' },
       { key: 'netWorth', path: '/accounts/net-worth', icon: 'lucideLandmark' },
       { key: 'savings', path: '/accounts/savings', icon: 'lucidePiggyBank' },
     ],
@@ -118,6 +124,7 @@ export const EXTRA_CRUMBS: { pattern: RegExp; section: string; key: string; edit
   { pattern: /^\/transactions\/new$/, section: 'transactions', key: 'newTransaction' },
   { pattern: /^\/transactions\/[^/]+\/edit$/, section: 'transactions', key: 'editTransaction' },
   { pattern: /^\/accounts\/[^/]+$/, section: 'accounts', key: 'accountDetail', editor: false },
+  { pattern: /^\/accounts\/(expense|revenue)\/[^/]+$/, section: 'accounts', key: 'accountDetail', editor: false },
 ];
 
 /** Pages built around a single record rather than a period: the period picker is hidden there. */

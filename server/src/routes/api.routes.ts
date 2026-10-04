@@ -19,16 +19,17 @@ import {
 } from '@shared';
 import type { AppEnv, Services } from '../app.types';
 import { monthEnds, type FireflyData } from '../core/firefly-data';
-import { applyFilter, isExpense, isIncome, isTransfer, ReportContext, round } from '../core/ledger';
+import { applyFilter, counterpartySide, isExpense, isIncome, isTransfer, ReportContext, round } from '../core/ledger';
 import { buildAccountDetail } from '../reports/account-detail.report';
 import { buildAccounts, buildNetWorth } from '../reports/accounts.report';
 import { buildBudgets } from '../reports/budgets.report';
 import { buildCalendar, buildYearHeatmap, scheduledItems } from '../reports/calendar.report';
 import { buildAnnual, buildCompare } from '../reports/compare.report';
+import { buildCounterparties, buildCounterpartyDetail } from '../reports/counterparties.report';
 import { buildDashboard } from '../reports/dashboard.report';
 import { buildMonthly, buildSavingsSeries } from '../reports/monthly.report';
 import { buildBills, buildPiggyBanks, buildProjection, buildRecurrences } from '../reports/planning.report';
-import { buildRanking, keyFns } from '../reports/ranking.report';
+import { buildRanking, keyFns, kindFilter } from '../reports/ranking.report';
 import { buildSankey } from '../reports/sankey.report';
 import { savingsAccounts } from '../reports/helpers';
 import { BadRequest, handleApiError } from './errors';
@@ -400,6 +401,53 @@ export function apiRoutes(s: Services) {
     const months = monthsInRange(trendStart, period.end);
     const excluded = settingsOf(c).excludedAccounts.includes(account.id);
     return c.json(wrap(ctx, buildAccountDetail({ ctx, account, excluded, asOf, splits, trend, months, history })));
+  });
+
+  api.get('/reports/counterparties', async (c) => {
+    const { data, period, ctx } = await context(c);
+    const q = z.object({ kind: kind.default('expense') }).parse(c.req.query());
+    const trendStart = addMonths(startOfMonth(period.end), -11);
+    const [accounts, splits, previous, trend] = await Promise.all([
+      data.accounts(q.kind === 'income' ? 'revenue' : 'expense'),
+      data.ledger(period),
+      data.ledger(previousPeriod(period)),
+      data.ledger({ start: trendStart, end: period.end }),
+    ]);
+    const months = monthsInRange(trendStart, period.end);
+    return c.json(wrap(ctx, buildCounterparties({ ctx, kind: q.kind, accounts, splits, previous, trend, months })));
+  });
+
+  api.get('/reports/counterparties/:id', async (c) => {
+    const { data, period, ctx } = await context(c);
+    const q = z.object({ kind: kind.default('expense') }).parse(c.req.query());
+    const trendStart = addMonths(startOfMonth(period.end), -11);
+    const [accounts, all, previous, trend] = await Promise.all([
+      data.accounts(q.kind === 'income' ? 'revenue' : 'expense'),
+      data.ledger(period),
+      data.ledger(previousPeriod(period)),
+      data.ledger({ start: trendStart, end: period.end }),
+    ]);
+    const account = accounts.find((a) => a.id === c.req.param('id'));
+    if (!account) return c.json({ error: 'not_found' }, 404);
+    const own = kindFilter(q.kind);
+    const listed = new Set(accounts.map((a) => a.id));
+    const mine = (s: (typeof all)[number]) => own(s) && counterpartySide(s).id === account.id;
+    const kindSplits = all.filter((s) => own(s) && listed.has(counterpartySide(s).id));
+    return c.json(
+      wrap(
+        ctx,
+        buildCounterpartyDetail({
+          ctx,
+          kind: q.kind,
+          account,
+          splits: kindSplits.filter(mine),
+          kindTotal: ctx.sum(kindSplits),
+          previousTotal: ctx.sum(previous.filter(mine)),
+          trend: trend.filter(mine),
+          months: monthsInRange(trendStart, period.end),
+        }),
+      ),
+    );
   });
 
   api.get('/reports/net-worth', async (c) => {

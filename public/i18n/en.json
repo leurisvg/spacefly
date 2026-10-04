@@ -50,6 +50,8 @@
     "merchants": "Merchants",
     "incomeSources": "Income sources",
     "assetAccounts": "Asset accounts",
+    "expenseAccounts": "Expense accounts",
+    "revenueAccounts": "Revenue accounts",
     "accountDetail": "Account detail",
     "netWorth": "Net worth",
     "savings": "Savings",
@@ -284,6 +286,36 @@
       "savingAsset": "Savings",
       "ccAsset": "Credit card",
       "cashWalletAsset": "Cash"
+    },
+    "counterparty": {
+      "descriptions": {
+        "expense": "Where your money goes: totals, frequency and trend by expense account.",
+        "income": "Where your money comes from: totals, frequency and trend by revenue account."
+      },
+      "showEmpty": "Show without activity",
+      "lastActivity": "Last activity",
+      "monthly": "Last 12 months",
+      "topAccounts": "Busiest accounts",
+      "activeAccounts": "Accounts with activity",
+      "never": "No recent activity",
+      "share": "% of total",
+      "notFoundHint": "It may not be an account of this type, or it was deleted.",
+      "calendar": {
+        "expense": "Spending by day",
+        "income": "Income by day"
+      },
+      "weekday": {
+        "expense": "Spending by weekday",
+        "income": "Income by weekday"
+      },
+      "paidFrom": "Paid from",
+      "receivedIn": "Received in",
+      "byCategory": "By category",
+      "biggest": "Biggest transaction",
+      "lastTransaction": "Last transaction",
+      "monthlyAverage": "Monthly average (12 months)",
+      "total12": "12-month total",
+      "fromAccount": "Account"
     },
     "detail": {
       "back": "Back to accounts",

@@ -50,6 +50,8 @@
     "merchants": "Comercios",
     "incomeSources": "Fuentes de ingreso",
     "assetAccounts": "Cuentas de activo",
+    "expenseAccounts": "Cuentas de gasto",
+    "revenueAccounts": "Cuentas de ingreso",
     "accountDetail": "Detalle de cuenta",
     "netWorth": "Patrimonio neto",
     "savings": "Ahorros",
@@ -284,6 +286,36 @@
       "savingAsset": "Ahorro",
       "ccAsset": "Tarjeta de crédito",
       "cashWalletAsset": "Efectivo"
+    },
+    "counterparty": {
+      "descriptions": {
+        "expense": "A dónde va tu dinero: totales, frecuencia y tendencia por cuenta de gasto.",
+        "income": "De dónde viene tu dinero: totales, frecuencia y tendencia por cuenta de ingreso."
+      },
+      "showEmpty": "Mostrar sin actividad",
+      "lastActivity": "Última actividad",
+      "monthly": "Últimos 12 meses",
+      "topAccounts": "Cuentas con más movimiento",
+      "activeAccounts": "Cuentas con actividad",
+      "never": "Sin actividad reciente",
+      "share": "% del total",
+      "notFoundHint": "Puede que no sea una cuenta de este tipo o que se haya eliminado.",
+      "calendar": {
+        "expense": "Gastos por día",
+        "income": "Ingresos por día"
+      },
+      "weekday": {
+        "expense": "Gasto por día de la semana",
+        "income": "Ingreso por día de la semana"
+      },
+      "paidFrom": "Pagado desde",
+      "receivedIn": "Recibido en",
+      "byCategory": "Por categoría",
+      "biggest": "Mayor transacción",
+      "lastTransaction": "Última transacción",
+      "monthlyAverage": "Promedio mensual (12 meses)",
+      "total12": "Total de 12 meses",
+      "fromAccount": "Cuenta"
     },
     "detail": {
       "back": "Volver a cuentas",

@@ -9,6 +9,7 @@ export * from './dto/reports/sankey';
 export * from './dto/reports/calendar';
 export * from './dto/reports/analysis';
 export * from './dto/reports/accounts';
+export * from './dto/reports/counterparties';
 export * from './dto/reports/planning';
 export * from './dto/reports/dashboard';
 export * from './utils/dates';

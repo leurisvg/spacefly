@@ -33,6 +33,10 @@ export const routes: Routes = [
       { path: 'accounts', loadComponent: () => import('./features/accounts/accounts').then((m) => m.Accounts) },
       { path: 'accounts/net-worth', loadComponent: () => import('./features/accounts/net-worth').then((m) => m.NetWorth) },
       { path: 'accounts/savings', loadComponent: () => import('./features/accounts/savings').then((m) => m.Savings) },
+      { path: 'accounts/expense', loadComponent: () => import('./features/accounts/counterparties').then((m) => m.Counterparties), data: { kind: 'expense' } },
+      { path: 'accounts/revenue', loadComponent: () => import('./features/accounts/counterparties').then((m) => m.Counterparties), data: { kind: 'income' } },
+      { path: 'accounts/expense/:id', loadComponent: () => import('./features/accounts/counterparty-detail').then((m) => m.CounterpartyDetail), data: { kind: 'expense' } },
+      { path: 'accounts/revenue/:id', loadComponent: () => import('./features/accounts/counterparty-detail').then((m) => m.CounterpartyDetail), data: { kind: 'income' } },
       { path: 'accounts/:id', loadComponent: () => import('./features/accounts/account-detail').then((m) => m.AccountDetail) },
       {
         path: 'planning',

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { exportJWK, generateKeyPair, SignJWT } from 'jose';
-import type { AccountDetailReport, MonthlyReport, Report, SankeyReport, TxListResponse } from '@shared';
+import type { AccountDetailReport, CounterpartiesReport, CounterpartyDetailReport, MonthlyReport, Report, SankeyReport, TxListResponse } from '@shared';
 import { login, setup } from './harness';
 
 describe('auth', () => {
@@ -195,6 +195,87 @@ describe('reports API', () => {
     // Newest first: the USD 50 dinner, then the USD 500 freelance deposit, each with its balance in USD.
     expect(d.rows.map((r) => [r.flowOriginal, r.balanceOriginal])).toEqual([[-50, 2900], [500, 2950]]);
     expect(d.rows[0].flow).toBeCloseTo(-3050, 0);
+  });
+
+  it('lists expense and revenue accounts with period, previous period and last activity', async () => {
+    const { app } = setup();
+    const cookie = await login(app);
+    const get = async <T>(path: string) => ((await (await app.request(path, { headers: { cookie } })).json()) as Report<T>).data;
+    const exp = await get<CounterpartiesReport>('/api/reports/counterparties?kind=expense&start=2026-09-01&end=2026-09-30');
+    expect(exp.total).toBeCloseTo(21425.39, 2);
+    expect(exp.items[0]).toMatchObject({ name: 'Supermercado Nacional', value: 12700, previous: 9000, count: 2, avg: 6350, lastDate: '2026-09-10' });
+    expect(exp.items[0].share).toBeCloseTo(12700 / 21425.39, 4);
+    expect(exp.items.map((i) => i.name)).toEqual(['Supermercado Nacional', 'Restaurante', 'Edenorte', 'Netflix']);
+    expect(exp.months).toHaveLength(12);
+    expect(exp.monthly.at(-1)).toBeCloseTo(21425.39, 2);
+
+    // Accounts without activity in the period are still listed, last (Netflix has no August charge).
+    const aug = await get<CounterpartiesReport>('/api/reports/counterparties?kind=expense&start=2026-08-01&end=2026-08-31');
+    expect(aug.items.at(-1)).toMatchObject({ name: 'Netflix', value: 0, count: 0, lastDate: null });
+
+    const inc = await get<CounterpartiesReport>('/api/reports/counterparties?kind=income&start=2026-09-01&end=2026-09-30');
+    expect(inc.total).toBe(150500);
+    expect(inc.items.map((i) => [i.name, i.value])).toEqual([['Empresa SRL', 120000], ['Freelance Inc', 30500]]);
+  });
+
+  it('details one expense account: totals, share, asset accounts used and records', async () => {
+    const { app } = setup();
+    const cookie = await login(app);
+    const res = await app.request('/api/reports/counterparties/20?kind=expense&start=2026-09-01&end=2026-09-30', { headers: { cookie } });
+    expect(res.status).toBe(200);
+    const d = ((await res.json()) as Report<CounterpartyDetailReport>).data;
+    expect(d.account.name).toBe('Supermercado Nacional');
+    expect(d.totals).toMatchObject({ value: 12700, previous: 9000, count: 2, avg: 6350 });
+    expect(d.totals.share).toBeCloseTo(12700 / 21425.39, 4);
+    expect(d.days).toHaveLength(30);
+    expect(d.topAccounts.map((a) => [a.name, a.value])).toEqual([['Banco Popular', 8500], ['Tarjeta Visa', 4200]]);
+    expect(d.topCategories[0]).toMatchObject({ name: 'Comida', value: 12700 });
+    expect(d.rows.map((r) => r.description)).toEqual(['Compra rápida', 'Compra quincenal']);
+    expect(d.months.at(-1)).toMatchObject({ month: '2026-09', value: 12700, count: 2 });
+    expect(d.byWeekday.reduce((a, b) => a + b, 0)).toBe(12700);
+  });
+
+  it('leaves payments to loans and other non-expense accounts out of the expense accounts', async () => {
+    const loanPayment = {
+      type: 'transactions',
+      id: 'g900',
+      attributes: {
+        group_title: null,
+        transactions: [
+          {
+            transaction_journal_id: '900',
+            type: 'withdrawal',
+            date: '2026-09-22T12:00:00-04:00',
+            description: 'Cuota préstamo',
+            amount: '18500.00',
+            pc_amount: '18500.00',
+            currency_code: 'DOP',
+            source_id: '1',
+            source_name: 'Banco Popular',
+            source_type: 'Asset account',
+            destination_id: '90',
+            destination_name: 'Préstamo vehículo',
+            destination_type: 'Loan',
+            tags: [],
+          },
+        ],
+      },
+    };
+    const { app } = setup({}, undefined, [loanPayment]);
+    const cookie = await login(app);
+    const res = await app.request('/api/reports/counterparties?kind=expense&start=2026-09-01&end=2026-09-30', { headers: { cookie } });
+    const d = ((await res.json()) as Report<CounterpartiesReport>).data;
+    expect(d.items.map((i) => i.id)).not.toContain('90');
+    expect(d.total).toBeCloseTo(21425.39, 2);
+    expect((await app.request('/api/reports/counterparties/90?kind=expense&start=2026-09-01&end=2026-09-30', { headers: { cookie } })).status).toBe(404);
+  });
+
+  it('does not mix expense and revenue accounts', async () => {
+    const { app } = setup();
+    const cookie = await login(app);
+    // 10 is a revenue account.
+    expect((await app.request('/api/reports/counterparties/10?kind=expense&start=2026-09-01&end=2026-09-30', { headers: { cookie } })).status).toBe(404);
+    expect((await app.request('/api/reports/counterparties/10?kind=income&start=2026-09-01&end=2026-09-30', { headers: { cookie } })).status).toBe(200);
   });
 
   it('does not report on accounts that are not asset accounts', async () => {
