@@ -39,6 +39,7 @@ const EDIT: TxEditPayload = {
   type: 'withdrawal',
   description: 'Compra quincenal',
   date: '2026-09-03',
+  time: '12:00',
   currency: 'DOP',
   source: { id: '1', name: 'Banco Popular', kind: 'asset' },
   destination: { id: '20', name: 'Supermercado', kind: 'expense' },
@@ -151,6 +152,7 @@ describe('TransactionForm · new', () => {
   it('starts with today and the default account, and asks for the other account', async () => {
     const s = await setup();
     expect(s.model()['date']).toBe(todayIso());
+    expect(s.model()['time']).toMatch(/^([01]\d|2[0-3]):[0-5]\d$/);
     expect(s.model()['source']).toEqual({ id: '1' });
     expect(s.text()).toContain('Pick the accounts');
     expect(s.text()).toContain('your Firefly rules and webhooks will run'.replace('your', 'Your'));
@@ -180,12 +182,13 @@ describe('TransactionForm · new', () => {
   it('sends the transaction without a type, refreshes, and returns to the explorer', async () => {
     const s = await setup();
     await s.type('Supermercado semanal');
-    s.setModel({ destination: { id: '20' }, amount: '150.50', category: 'Comida', tags: ['hogar'] });
+    s.setModel({ destination: { id: '20' }, amount: '150.50', category: 'Comida', tags: ['hogar'], time: '18:45' });
     await s.save();
     const req = s.http.expectOne((r) => r.method === 'POST' && r.url === '/api/transactions');
     expect(req.request.body).toEqual({
       description: 'Supermercado semanal',
       date: todayIso(),
+      time: '18:45',
       source: { id: '1' },
       destination: { id: '20' },
       amount: '150.50',
@@ -249,6 +252,31 @@ describe('TransactionForm · new', () => {
     await s.type('');
     await new Promise((r) => setTimeout(r, 260));
     s.http.expectNone((r) => r.url === '/api/lookups/descriptions');
+  });
+
+  it('reads a loosely typed time and sends it as HH:mm', async () => {
+    const s = await setup();
+    await s.type('Café');
+    s.setModel({ destination: { id: '20' }, amount: '5', time: '930' });
+    await s.save();
+    expect(s.http.expectOne((r) => r.method === 'POST' && r.url === '/api/transactions').request.body).toMatchObject({ time: '09:30' });
+  });
+
+  it('sends no time when the field is left empty, so the server decides', async () => {
+    const s = await setup();
+    await s.type('Café');
+    s.setModel({ destination: { id: '20' }, amount: '5', time: '' });
+    await s.save();
+    expect(s.http.expectOne((r) => r.method === 'POST' && r.url === '/api/transactions').request.body).toMatchObject({ time: null });
+  });
+
+  it('does not send a time that is not a time and says why', async () => {
+    const s = await setup();
+    await s.type('Café');
+    s.setModel({ destination: { id: '20' }, amount: '5', time: '25:99' });
+    await s.save();
+    s.http.expectNone((r) => r.method === 'POST');
+    expect(s.text()).toContain('Enter a valid time');
   });
 
   it('sends a new merchant as a name', async () => {
@@ -384,6 +412,7 @@ describe('TransactionForm · edit', () => {
       budgetId: '1',
       tags: ['hogar'],
       date: '2026-09-03',
+      time: '12:00',
     });
     expect(s.text()).toContain('Edit transaction');
   });
@@ -393,7 +422,7 @@ describe('TransactionForm · edit', () => {
     s.setModel({ amount: '9000' });
     await s.save();
     const req = s.http.expectOne((r) => r.method === 'PUT' && r.url === '/api/transactions/55');
-    expect(req.request.body).toMatchObject({ amount: '9000', category: 'Comida', budgetId: '1' });
+    expect(req.request.body).toMatchObject({ amount: '9000', category: 'Comida', budgetId: '1', time: '12:00' });
     expect(req.request.body).not.toHaveProperty('type');
     req.flush({ groupId: '55', journalId: '66', type: 'withdrawal' });
     await s.settle();

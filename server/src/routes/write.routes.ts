@@ -19,7 +19,7 @@ import {
   type TxWriteResult,
 } from '@shared';
 import type { AppEnv, Services } from '../app.types';
-import { accountBody, assertEditable, billBody, budgetBody, categoryBody, noon, piggyBody, resolveTransaction, tagBody, toAccountEdit, toBillEdit, toBudgetEdit, toCategoryEdit, toEditPayload, toPiggyEdit, toTagEdit, transactionBody } from '../core/firefly-payloads';
+import { accountBody, assertEditable, billBody, budgetBody, categoryBody, momentOf, piggyBody, resolveTransaction, tagBody, toAccountEdit, toBillEdit, toBudgetEdit, toCategoryEdit, toEditPayload, toPiggyEdit, toTagEdit, transactionBody } from '../core/firefly-payloads';
 import type { FireflyData } from '../core/firefly-data';
 import type { FfSingle, FfTransactionGroup } from '../firefly/firefly.types';
 import type { FfAccount, FfBill, FfBudget, FfCategory, FfPiggyBank, FfTag } from '../firefly/firefly.types';
@@ -114,7 +114,7 @@ export function writeRoutes(_s: Services) {
     const resolved = await resolve(data, req);
     const created = await c.get('writer').post<FfSingle<FfTransactionGroup>>(
       '/v1/transactions',
-      transactionBody(req, resolved, { date: noon(req.date) }),
+      transactionBody(req, resolved, { date: momentOf(req.date, req.time) }),
     );
     data.invalidateAfterTransaction([req.date]);
     const split = created.data.attributes.transactions[0]!;
@@ -131,9 +131,10 @@ export function writeRoutes(_s: Services) {
     assertEditable(current);
     const split = current.attributes.transactions[0]!;
     const resolved = await resolve(data, req);
-    const keepsDay = split.date.slice(0, 10) === req.date;
+    // Nothing about when it happened changed: keep the stored moment (seconds and offset included).
+    const keepsMoment = split.date.slice(0, 10) === req.date && (req.time === null || split.date.slice(11, 16) === req.time);
     await c.get('writer').put(`/v1/transactions/${encodeURIComponent(id)}`, transactionBody(req, resolved, {
-      date: keepsDay ? split.date : noon(req.date),
+      date: keepsMoment ? split.date : momentOf(req.date, req.time),
       journalId: split.transaction_journal_id,
     }));
     data.invalidateAfterTransaction([split.date, req.date]);

@@ -8,6 +8,7 @@ import { WriteApi, WriteError } from './write-api';
 const REQ: TxWriteRequest = {
   description: 'Café',
   date: '2026-09-20',
+  time: null,
   source: { id: '1' },
   destination: { name: 'Cafetería' },
   amount: '150.50',

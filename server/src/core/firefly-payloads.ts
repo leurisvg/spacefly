@@ -110,6 +110,9 @@ export function resolveTransaction(
 /** Noon, so a timezone shift can never move the transaction to another day. */
 export const noon = (date: string): string => `${date}T12:00:00`;
 
+/** The moment sent to Firefly: the chosen time, or noon when none was chosen. */
+export const momentOf = (date: string, time: string | null): string => (time ? `${date}T${time}:00` : noon(date));
+
 /**
  * The body for `POST /v1/transactions` or `PUT /v1/transactions/{id}`. Rules and webhooks always
  * run. On update, cleared fields are sent explicitly empty, otherwise Firefly would keep the old value.
@@ -180,6 +183,7 @@ export function toEditPayload(group: FfResource<FfTransactionGroup>): TxEditPayl
     type: t.type as TxKind,
     description: t.description,
     date: t.date.slice(0, 10),
+    time: /^\d{2}:\d{2}/.test(t.date.slice(11, 16)) ? t.date.slice(11, 16) : null,
     source: { id: t.source_id, name: t.source_name, kind: accountKind(t.source_type) },
     destination: { id: t.destination_id, name: t.destination_name, kind: accountKind(t.destination_type) },
     amount: abs(t.amount),

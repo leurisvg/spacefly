@@ -8,6 +8,7 @@ import { Select } from '../components/select';
 import { DateInput } from './date-input';
 import { FormField } from './form-field';
 import { FormFooter } from './form-footer';
+import { parseTime, TimeInput } from './time-input';
 
 const settleOf = (fixture: { detectChanges(): void }) => async () => {
   for (let i = 0; i < 4; i++) {
@@ -129,25 +130,119 @@ describe('sf-select as a form control', () => {
 });
 
 describe('DateInput', () => {
+  const long = (iso: string) => {
+    const [y, m, d] = iso.split('-').map(Number) as [number, number, number];
+    return new Intl.DateTimeFormat('en-US', { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(y, m - 1, d));
+  };
+  const picker = (el: HTMLElement) => el.querySelector('sf-date-input hlm-date-picker')!.textContent!;
+
+  it('uses the spartan date picker, not the browser one', async () => {
+    const { el } = await setupHost();
+    expect(el.querySelector('sf-date-input hlm-date-picker')).not.toBeNull();
+    expect(el.querySelector('input[type=date]')).toBeNull();
+  });
+
+  it('asks to pick a date while empty and shows the chosen one otherwise', async () => {
+    const { el, host, settle } = await setupHost();
+    expect(picker(el)).toContain('Pick a date');
+    host.model.update((m) => ({ ...m, date: '2026-09-15' }));
+    await settle();
+    expect(picker(el)).toContain(long('2026-09-15'));
+  });
+
   it('sets today and yesterday from the shortcuts', async () => {
     const { el, host, settle } = await setupHost();
     const buttons = [...el.querySelectorAll('sf-date-input button')] as HTMLButtonElement[];
     buttons.find((b) => b.textContent!.trim() === 'Today')!.click();
     await settle();
     expect(host.model().date).toBe(todayIso());
+    expect(picker(el)).toContain(long(todayIso()));
     buttons.find((b) => b.textContent!.trim() === 'Yesterday')!.click();
     await settle();
     expect(host.model().date).toBe(addDays(todayIso(), -1));
-    expect((el.querySelector('input[type=date]') as HTMLInputElement).value).toBe(addDays(todayIso(), -1));
+    expect(picker(el)).toContain(long(addDays(todayIso(), -1)));
+  });
+});
+
+describe('parseTime', () => {
+  it.each([
+    ['9', '09:00'],
+    ['930', '09:30'],
+    ['9:30', '09:30'],
+    ['0930', '09:30'],
+    ['21.05', '21:05'],
+    ['23:59', '23:59'],
+    [' 7:05 ', '07:05'],
+  ])('reads %s as %s', (typed, expected) => expect(parseTime(typed)).toBe(expected));
+
+  it.each(['', 'noon', '24:00', '12:60', '9:5', '1:2:3'])('rejects %j', (typed) => expect(parseTime(typed)).toBeNull());
+});
+
+describe('TimeInput', () => {
+  async function setupTime(value = '') {
+    TestBed.configureTestingModule({ providers: formatTestProviders('en', EN).providers });
+    await loadTranslations();
+    const fixture = TestBed.createComponent(TimeInput);
+    fixture.componentRef.setInput('value', value);
+    const emitted: string[] = [];
+    fixture.componentInstance.value.subscribe((v) => emitted.push(v));
+    const settle = settleOf(fixture);
+    await settle();
+    const el = fixture.nativeElement as HTMLElement;
+    const input = el.querySelector('input') as HTMLInputElement;
+    const type = async (text: string) => {
+      input.focus();
+      input.value = text;
+      input.dispatchEvent(new Event('input'));
+      await settle();
+    };
+    const key = async (k: string) => {
+      input.dispatchEvent(new KeyboardEvent('keydown', { key: k, bubbles: true, cancelable: true }));
+      await settle();
+    };
+    return { fixture, el, input, emitted, type, key, settle };
+  }
+
+  it('shows the model value', async () => {
+    const t = await setupTime('18:30');
+    expect(t.input.value).toBe('18:30');
   });
 
-  it('follows typed dates', async () => {
-    const { el, host, settle } = await setupHost();
-    const input = el.querySelector('input[type=date]') as HTMLInputElement;
-    input.value = '2026-09-15';
-    input.dispatchEvent(new Event('input'));
-    await settle();
-    expect(host.model().date).toBe('2026-09-15');
+  it('models what is typed as HH:mm and tidies the text when leaving the field', async () => {
+    const t = await setupTime();
+    await t.type('930');
+    expect(t.emitted.at(-1)).toBe('09:30');
+    expect(t.input.value).toBe('930');
+    t.input.dispatchEvent(new Event('blur'));
+    await t.settle();
+    expect(t.input.value).toBe('09:30');
+  });
+
+  it('keeps what is not a time as typed so the form can flag it', async () => {
+    const t = await setupTime();
+    await t.type('noon');
+    expect(t.emitted.at(-1)).toBe('noon');
+    t.input.dispatchEvent(new Event('blur'));
+    await t.settle();
+    expect(t.input.value).toBe('noon');
+  });
+
+  it('moves by five minutes with the arrow keys and wraps around midnight', async () => {
+    const t = await setupTime('09:30');
+    await t.key('ArrowUp');
+    expect(t.emitted.at(-1)).toBe('09:35');
+    expect(t.input.value).toBe('09:35');
+    const midnight = await setupTime('00:00');
+    await midnight.key('ArrowDown');
+    expect(midnight.emitted.at(-1)).toBe('23:55');
+  });
+
+  it('sets the current time from the Now shortcut', async () => {
+    const t = await setupTime();
+    (t.el.querySelector('button') as HTMLButtonElement).click();
+    await t.settle();
+    expect(t.emitted.at(-1)).toMatch(/^([01]\d|2[0-3]):[0-5]\d$/);
+    expect(t.input.value).toBe(t.emitted.at(-1));
   });
 });
 

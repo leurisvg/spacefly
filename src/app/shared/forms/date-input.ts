@@ -1,28 +1,45 @@
-import { ChangeDetectionStrategy, Component, inject, input, model, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, effect, inject, input, model, output } from '@angular/core';
 import type { FormValueControl } from '@angular/forms/signals';
-import { addDays, todayIso } from '@shared';
-import { HlmInput } from '@spartan-ng/helm/input';
+import { BrnCalendarI18nService } from '@spartan-ng/brain/calendar';
+import { addDays, isIsoDate, todayIso } from '@shared';
+import { HlmDatePickerImports } from '@spartan-ng/helm/date-picker';
+import { FormatService } from '../../core/format/format.service';
 import { I18n } from '../../core/i18n/i18n';
 
-/** Native date field with Today / Yesterday shortcuts. The model is `YYYY-MM-DD` (empty when unset). */
+/** `YYYY-MM-DD` → a local `Date` (the calendar works in local time). */
+const toDate = (iso: string): Date | undefined => {
+  if (!isIsoDate(iso)) return undefined;
+  const [y, m, d] = iso.split('-').map(Number) as [number, number, number];
+  return new Date(y, m - 1, d);
+};
+
+const toIso = (date: Date): string =>
+  `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+
+/**
+ * Date field built on spartan's date picker (a button that opens a calendar), with Today / Yesterday
+ * shortcuts. The model is `YYYY-MM-DD` (empty when unset). It also localizes the calendar (month and
+ * weekday names, Monday first) for the active language.
+ */
 @Component({
   selector: 'sf-date-input',
-  imports: [HlmInput],
+  imports: [HlmDatePickerImports],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'block min-w-0' },
   template: `
     <div class="flex flex-wrap items-center gap-2">
-      <input
-        hlmInput
-        type="date"
-        class="h-8 w-40 text-sm"
-        [value]="value()"
+      <hlm-date-picker
+        class="w-52"
+        align="start"
+        captionLayout="dropdown"
+        [date]="date()"
+        [formatDate]="formatDate"
+        [autoCloseOnSelect]="true"
         [disabled]="disabled()"
-        [attr.aria-invalid]="invalid() || null"
-        [attr.aria-label]="ariaLabel() || null"
-        (input)="value.set($any($event.target).value)"
-        (blur)="touch.emit()"
-      />
+        (dateChange)="onPick($event)"
+      >
+        <hlm-date-picker-trigger class="w-full" [forceInvalid]="invalid()">{{ placeholder() || i18n.t('forms.pickDate') }}</hlm-date-picker-trigger>
+      </hlm-date-picker>
       <button type="button" class="text-xs text-primary hover:underline disabled:opacity-50" [disabled]="disabled()" (click)="set(0)">
         {{ i18n.t('forms.today') }}
       </button>
@@ -34,13 +51,51 @@ import { I18n } from '../../core/i18n/i18n';
 })
 export class DateInput implements FormValueControl<string> {
   protected readonly i18n = inject(I18n);
+  private readonly format = inject(FormatService);
+  private readonly calendar = inject(BrnCalendarI18nService);
 
   readonly value = model('');
+  readonly placeholder = input('');
   readonly ariaLabel = input('');
   readonly disabled = input(false);
   readonly invalid = input(false);
   readonly touched = input(false);
   readonly touch = output<void>();
+
+  protected date(): Date | undefined {
+    return toDate(this.value());
+  }
+
+  protected readonly formatDate = (date: Date): string => this.format.date(toIso(date), 'long');
+
+  constructor() {
+    // The calendar speaks the app's language and starts the week on Monday, like the rest of SpaceFly.
+    effect(() => {
+      const locale = this.format.locale();
+      const names = (opts: Intl.DateTimeFormatOptions) => new Intl.DateTimeFormat(locale, opts);
+      const weekday = names({ weekday: 'short' });
+      const weekdayLong = names({ weekday: 'long' });
+      const month = names({ month: 'short' });
+      // 2024-01-07 was a Sunday: index 0 = Sunday, like the calendar expects.
+      const day = (i: number) => new Date(2024, 0, 7 + i);
+      this.calendar.use({
+        formatWeekdayName: (i) => weekday.format(day(i)).replace('.', '').slice(0, 2),
+        labelWeekday: (i) => weekdayLong.format(day(i)),
+        months: () => Array.from({ length: 12 }, (_, i) => month.format(new Date(2000, i, 1)).replace('.', '')) as never,
+        formatMonth: (i) => month.format(new Date(2000, i, 1)).replace('.', ''),
+        formatHeader: (m, y) => names({ month: 'long', year: 'numeric' }).format(new Date(y, m, 1)),
+        formatYear: (y) => String(y),
+        labelPrevious: () => this.i18n.t('forms.previousMonth'),
+        labelNext: () => this.i18n.t('forms.nextMonth'),
+        firstDayOfWeek: () => 1,
+      });
+    });
+  }
+
+  protected onPick(date: Date | null): void {
+    this.value.set(date ? toIso(date) : '');
+    this.touch.emit();
+  }
 
   protected set(offsetDays: number): void {
     this.value.set(addDays(todayIso(), offsetDays));
