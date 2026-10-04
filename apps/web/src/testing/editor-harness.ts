@@ -4,11 +4,11 @@ import { signal, type EnvironmentProviders, type Provider, type Type } from '@an
 import { TestBed, type ComponentFixture } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { provideRouter } from '@angular/router';
-import { FiltersStore } from '../app/core/state/filters.store';
-import { MetaStore } from '../app/core/state/meta.store';
+import { FiltersStore } from '@spacefly/client/state/filters.store';
+import { MetaStore } from '@spacefly/client/state/meta.store';
 import { DateInput } from '../app/shared/forms/date-input';
-import { formatTestProviders, loadTranslations } from './format-providers';
-import { EN } from './translations';
+import { formatTestProviders, loadTranslations } from '@spacefly/client/testing';
+import { EN } from '@spacefly/client/testing';
 
 export interface EditorHarness<T> {
   fixture: ComponentFixture<T>;

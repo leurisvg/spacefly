@@ -5,23 +5,24 @@ import { lucideArrowLeft, lucideChevronLeft, lucideChevronRight, lucidePencil } 
 import { TranslocoPipe } from '@jsverse/transloco';
 import type { CalendarDay, CounterpartyDetailReport, CounterpartyKind, RankedItem, TxRow } from '@spacefly/shared';
 import { HlmButton } from '@spartan-ng/helm/button';
-import { reportResource } from '../../core/api/report-resource';
-import { FormatService } from '../../core/format/format.service';
-import { FORMAT_PIPES } from '../../core/format/pipes';
-import { I18n } from '../../core/i18n/i18n';
-import { BackNavigation } from '../../core/nav/back-navigation';
-import { categoryBarsOption, rankingBarsOption } from '../../shared/charts/builders';
+import { reportResource } from '@spacefly/client/api/report-resource';
+import { FormatService } from '@spacefly/client/format/format.service';
+import { FORMAT_PIPES } from '@spacefly/client/format/pipes';
+import { I18n } from '@spacefly/client/i18n/i18n';
+import { BackNavigation } from '@spacefly/client/platform/back-navigation';
+import { categoryBarsOption, rankingBarsOption } from '@spacefly/client/charts/builders';
 import { Chart } from '../../shared/charts/chart';
-import { ChartCard, type ChartTable } from '../../shared/charts/chart-card';
-import { money } from '../../shared/charts/series-colors';
+import { ChartCard } from '../../shared/charts/chart-card';
+import type { ChartTable } from '@spacefly/client/charts/chart-table';
+import { money } from '@spacefly/client/charts/series-colors';
 import { CalendarGrid } from '../../shared/components/calendar-grid';
 import { DualMoney } from '../../shared/components/dual-money';
 import { EmptyState } from '../../shared/components/empty-state';
 import { KpiCard } from '../../shared/components/kpi-card';
 import { Money } from '../../shared/components/money';
 import { PageHeader } from '../../shared/components/page-header';
-import { TxDetailService } from '../../shared/components/tx-detail.service';
-import { EntityEditor } from '../editor/entity-editor.service';
+import { TxDetailService } from '@spacefly/client/state/tx-detail.service';
+import { EntityEditor } from '@spacefly/client/state/entity-editor.service';
 
 const PAGE_SIZE = 50;
 

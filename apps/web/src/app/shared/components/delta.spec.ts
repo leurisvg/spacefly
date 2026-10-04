@@ -1,8 +1,8 @@
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { NgIcon } from '@ng-icons/core';
-import { formatTestProviders } from '../../../testing/format-providers';
-import { PrivacyStore } from '../../core/state/privacy.store';
+import { formatTestProviders } from '@spacefly/client/testing';
+import { PrivacyStore } from '@spacefly/client/state/privacy.store';
 import { Delta } from './delta';
 
 function render(inputs: { value: number; previous: number | null; upIsGood?: boolean; points?: boolean }, hidden = false) {

@@ -1,8 +1,8 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { HlmToggleGroupImports } from '@spartan-ng/helm/toggle-group';
-import { FiltersStore } from '../../core/state/filters.store';
-import { MetaStore } from '../../core/state/meta.store';
+import { FiltersStore } from '@spacefly/client/state/filters.store';
+import { MetaStore } from '@spacefly/client/state/meta.store';
 
 /** RD$ / US$ — every amount in the app is re-expressed in the chosen currency. */
 @Component({

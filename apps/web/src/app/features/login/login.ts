@@ -3,7 +3,7 @@ import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideLock, lucideRocket } from '@ng-icons/lucide';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { HlmButton } from '@spartan-ng/helm/button';
-import { AuthService } from '../../core/auth/auth.service';
+import { AuthService } from '@spacefly/client/auth/auth.service';
 
 @Component({
   selector: 'sf-login',

@@ -83,13 +83,36 @@
         "test": {
           "builder": "@angular/build:unit-test",
           "options": {
-            "tsConfig": "apps/web/tsconfig.spec.json"
+            "tsConfig": "apps/web/tsconfig.spec.json",
+            "providersFile": "apps/web/src/testing/providers.ts"
           }
         },
         "lint": {
           "builder": "@angular-eslint/builder:lint",
           "options": {
             "lintFilePatterns": ["apps/web/src/**/*.ts", "apps/web/src/**/*.html"]
+          }
+        }
+      }
+    },
+    "client": {
+      "projectType": "library",
+      "root": "libs/client",
+      "sourceRoot": "libs/client/src",
+      "prefix": "sf",
+      "architect": {
+        "test": {
+          "builder": "@angular/build:unit-test",
+          "options": {
+            "buildTarget": "SpaceFly:build:development",
+            "tsConfig": "libs/client/tsconfig.spec.json",
+            "providersFile": "libs/client/testing/providers.ts"
+          }
+        },
+        "lint": {
+          "builder": "@angular-eslint/builder:lint",
+          "options": {
+            "lintFilePatterns": ["libs/client/src/**/*.ts", "libs/client/testing/**/*.ts"]
           }
         }
       }

@@ -1,10 +1,10 @@
 import { afterNextRender, Directive, effect, ElementRef, inject, input, output, signal, untracked, type WritableSignal } from '@angular/core';
 import { submit, type FieldTree, type ValidationError } from '@angular/forms/signals';
 import { toast } from '@spartan-ng/brain/sonner';
-import { WriteApi, WriteError } from '../../core/api/write-api';
-import { I18n } from '../../core/i18n/i18n';
+import { WriteApi, WriteError } from '@spacefly/client/api/write-api';
+import { I18n } from '@spacefly/client/i18n/i18n';
 import { ConfirmService } from '../../shared/forms/confirm.service';
-import type { EntityKind } from './entity-editor.service';
+import type { EntityKind } from '@spacefly/client/state/entity-editor.service';
 
 /**
  * What every side-panel form does: load the record to edit, save (create or update) with field errors

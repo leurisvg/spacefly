@@ -1,0 +1,6 @@
+{
+  "name": "@spacefly/client",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Platform-agnostic Angular code shared by apps/web and apps/mobile: API, auth, state, formatting, chart builders and view-models. Platform differences go through the tokens in src/platform."
+}

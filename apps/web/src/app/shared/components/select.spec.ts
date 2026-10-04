@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { formatTestProviders } from '../../../testing/format-providers';
+import { formatTestProviders } from '@spacefly/client/testing';
 import { Select, type SelectOption } from './select';
 
 const T = { common: { search: 'Search…', noResults: 'No results' } };

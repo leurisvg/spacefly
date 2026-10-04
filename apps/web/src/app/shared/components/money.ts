@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
 import type { FxPart } from '@spacefly/shared';
 import { HlmTooltip } from '@spartan-ng/helm/tooltip';
-import { FormatService } from '../../core/format/format.service';
+import { FormatService } from '@spacefly/client/format/format.service';
 
 /**
  * An amount in the display currency. When it was converted, hovering shows the original

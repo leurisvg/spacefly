@@ -5,7 +5,7 @@ import { lucideArrowRightLeft, lucideFolderTree, lucidePiggyBank, lucidePlus, lu
 import { TranslocoPipe } from '@jsverse/transloco';
 import { HlmButton } from '@spartan-ng/helm/button';
 import { HlmDropdownMenuImports } from '@spartan-ng/helm/dropdown-menu';
-import { EntityEditor } from '../features/editor/entity-editor.service';
+import { EntityEditor } from '@spacefly/client/state/entity-editor.service';
 
 /** The "+ New" button of the top bar: starts a transaction or any other record. */
 @Component({

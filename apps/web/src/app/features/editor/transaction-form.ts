@@ -19,12 +19,12 @@ import { HlmButton } from '@spartan-ng/helm/button';
 import { HlmSkeleton } from '@spartan-ng/helm/skeleton';
 import { HlmSwitch } from '@spartan-ng/helm/switch';
 import { HlmTextarea } from '@spartan-ng/helm/textarea';
-import { WriteApi, WriteError } from '../../core/api/write-api';
-import { I18n } from '../../core/i18n/i18n';
-import { BackNavigation } from '../../core/nav/back-navigation';
-import { EditorLookupsStore } from '../../core/state/editor-lookups.store';
-import { localPref } from '../../core/state/local-pref';
-import { MetaStore } from '../../core/state/meta.store';
+import { WriteApi, WriteError } from '@spacefly/client/api/write-api';
+import { I18n } from '@spacefly/client/i18n/i18n';
+import { BackNavigation } from '@spacefly/client/platform/back-navigation';
+import { EditorLookupsStore } from '@spacefly/client/state/editor-lookups.store';
+import { localPref } from '@spacefly/client/state/local-pref';
+import { MetaStore } from '@spacefly/client/state/meta.store';
 import { PageHeader } from '../../shared/components/page-header';
 import { Section } from '../../shared/components/section';
 import { Select } from '../../shared/components/select';
@@ -36,7 +36,8 @@ import { FormField } from '../../shared/forms/form-field';
 import { FormFooter } from '../../shared/forms/form-footer';
 import { MoneyInput } from '../../shared/forms/money-input';
 import { TagInput } from '../../shared/forms/tag-input';
-import { nowTime, parseTime, TimeInput } from '../../shared/forms/time-input';
+import { nowTime, parseTime } from '@spacefly/client/ui-logic/time';
+import { TimeInput } from '../../shared/forms/time-input';
 import { TxTypeBadge } from '../../shared/forms/tx-type-badge';
 
 /** The form's own shape: strings everywhere so every control binds directly. */

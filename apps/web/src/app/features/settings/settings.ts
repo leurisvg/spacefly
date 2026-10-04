@@ -10,9 +10,9 @@ import { HlmButton } from '@spartan-ng/helm/button';
 import { HlmInput } from '@spartan-ng/helm/input';
 import { HlmLabel } from '@spartan-ng/helm/label';
 import { HlmSwitch } from '@spartan-ng/helm/switch';
-import { FORMAT_PIPES } from '../../core/format/pipes';
-import { I18n } from '../../core/i18n/i18n';
-import { FiltersStore } from '../../core/state/filters.store';
+import { FORMAT_PIPES } from '@spacefly/client/format/pipes';
+import { I18n } from '@spacefly/client/i18n/i18n';
+import { FiltersStore } from '@spacefly/client/state/filters.store';
 import { PageHeader } from '../../shared/components/page-header';
 import { Section } from '../../shared/components/section';
 

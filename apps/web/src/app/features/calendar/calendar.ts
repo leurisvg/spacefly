@@ -2,24 +2,26 @@ import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/c
 import { TranslocoPipe } from '@jsverse/transloco';
 import { endOfMonth, isFullMonth, startOfMonth, type CalendarReport, type YearHeatmapReport } from '@spacefly/shared';
 import { HlmToggleGroupImports } from '@spartan-ng/helm/toggle-group';
-import { reportResource } from '../../core/api/report-resource';
-import { FormatService } from '../../core/format/format.service';
-import { FORMAT_PIPES } from '../../core/format/pipes';
-import { I18n } from '../../core/i18n/i18n';
-import { FiltersStore } from '../../core/state/filters.store';
-import { MetaStore } from '../../core/state/meta.store';
-import { yearHeatmapOption } from '../../shared/charts/builders';
+import { reportResource } from '@spacefly/client/api/report-resource';
+import { FormatService } from '@spacefly/client/format/format.service';
+import { FORMAT_PIPES } from '@spacefly/client/format/pipes';
+import { I18n } from '@spacefly/client/i18n/i18n';
+import { FiltersStore } from '@spacefly/client/state/filters.store';
+import { MetaStore } from '@spacefly/client/state/meta.store';
+import { yearHeatmapOption } from '@spacefly/client/charts/builders';
 import { BreakpointService } from '../../shared/charts/breakpoint';
 import { Chart } from '../../shared/charts/chart';
-import { ChartCard, type ChartTable } from '../../shared/charts/chart-card';
-import { cssVar, tooltipRow, tooltipTitle } from '../../shared/charts/chart-theme';
-import { money } from '../../shared/charts/series-colors';
+import { ChartCard } from '../../shared/charts/chart-card';
+import type { ChartTable } from '@spacefly/client/charts/chart-table';
+import { palette } from '@spacefly/client/charts/palette';
+import { tooltipRow, tooltipTitle } from '@spacefly/client/charts/chart-theme';
+import { money } from '@spacefly/client/charts/series-colors';
 import { CalendarGrid } from '../../shared/components/calendar-grid';
 import { KpiCard } from '../../shared/components/kpi-card';
 import { Money } from '../../shared/components/money';
 import { PageHeader } from '../../shared/components/page-header';
 import { Select } from '../../shared/components/select';
-import { TxDetailService } from '../../shared/components/tx-detail.service';
+import { TxDetailService } from '@spacefly/client/state/tx-detail.service';
 
 @Component({
   selector: 'sf-calendar-page',
@@ -154,7 +156,7 @@ export class CalendarPage {
           lineStyle: { color, width: 2 },
           itemStyle: { color },
           areaStyle: { color, opacity: 0.1 },
-          markLine: { silent: true, symbol: 'none', lineStyle: { color: cssVar('--chart-axis'), type: 'solid' }, label: { show: false }, data: [{ yAxis: 0 }] },
+          markLine: { silent: true, symbol: 'none', lineStyle: { color: palette.chartAxis, type: 'solid' }, label: { show: false }, data: [{ yAxis: 0 }] },
         },
       ],
     };

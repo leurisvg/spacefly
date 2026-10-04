@@ -2,15 +2,9 @@ import { ChangeDetectionStrategy, Component, computed, inject, input } from '@an
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideCircleCheck, lucideOctagonAlert, lucideTriangleAlert } from '@ng-icons/lucide';
 import { TranslocoPipe } from '@jsverse/transloco';
-import { FormatService } from '../../core/format/format.service';
-import { PctPipe } from '../../core/format/pipes';
-
-export type MeterStatus = 'good' | 'warning' | 'critical';
-
-export function budgetStatus(ratio: number | null): MeterStatus {
-  if (ratio === null) return 'good';
-  return ratio >= 1 ? 'critical' : ratio >= 0.8 ? 'warning' : 'good';
-}
+import { FormatService } from '@spacefly/client/format/format.service';
+import { PctPipe } from '@spacefly/client/format/pipes';
+import { meterModel } from '@spacefly/client/ui-logic/budget-status';
 
 /**
  * Budget meter (green / amber at 80 % / red at 100 %, as in the email). Status colors are
@@ -59,9 +53,10 @@ export class Meter {
   readonly showLabel = input(true);
   readonly label = input<string>('');
 
-  protected readonly status = computed(() => budgetStatus(this.ratio()));
-  protected readonly fill = computed(() => (this.hidden() ? 0 : Math.min((this.ratio() ?? 0) * 100, 100)));
-  protected readonly pctValue = computed(() => (this.hidden() ? 0 : Math.round((this.ratio() ?? 0) * 100)));
+  private readonly model = computed(() => meterModel(this.ratio(), this.hidden()));
+  protected readonly status = computed(() => this.model().status);
+  protected readonly fill = computed(() => this.model().fill);
+  protected readonly pctValue = computed(() => this.model().percent);
   protected readonly color = computed(() => (this.hidden() ? 'var(--muted-foreground)' : `var(--status-${this.status()})`));
   protected readonly track = computed(() => `color-mix(in oklab, ${this.hidden() ? 'var(--muted-foreground)' : `var(--status-${this.status()})`} 18%, transparent)`);
   protected readonly icon = computed(

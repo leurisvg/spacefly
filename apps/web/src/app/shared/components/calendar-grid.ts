@@ -1,21 +1,9 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input, output } from '@angular/core';
 import { TranslocoPipe } from '@jsverse/transloco';
-import { todayIso, weekdayMon0, type CalendarDay, type ScheduledItem } from '@spacefly/shared';
+import type { CalendarDay, ScheduledItem } from '@spacefly/shared';
+import { buildCalendarCells, calendarBlanks, shortAmount } from '@spacefly/client/ui-logic/calendar-cells';
 import { HlmTooltip } from '@spartan-ng/helm/tooltip';
-import { FormatService } from '../../core/format/format.service';
-
-interface Cell {
-  day: CalendarDay;
-  num: number;
-  incH: number;
-  expH: number;
-  incInside: boolean;
-  expInside: boolean;
-  future: boolean;
-  today: boolean;
-  scheduled: ScheduledItem[];
-  tip: string;
-}
+import { FormatService } from '@spacefly/client/format/format.service';
 
 /**
  * The email's "Daily Cash Flow" calendar rebuilt in CSS grid: per day an income bar (left)
@@ -109,42 +97,11 @@ export class CalendarGrid {
   readonly dayClick = output<string>();
 
   protected readonly weekdays = computed(() => this.f.weekdayNames());
-  protected readonly blanks = computed(() => Array.from({ length: this.days().length ? weekdayMon0(this.days()[0].date) : 0 }));
+  protected readonly blanks = computed(() => Array.from({ length: calendarBlanks(this.days()) }));
   protected readonly hasScheduled = computed(() => this.scheduled().length > 0);
+  protected readonly cells = computed(() => buildCalendarCells(this.f, this.days(), this.scheduled(), this.scale()));
 
-  protected readonly cells = computed<Cell[]>(() => {
-    const days = this.days();
-    const max = this.scale() ?? Math.max(1, ...days.map((d) => Math.max(d.income, d.expense)));
-    const today = todayIso();
-    const byDate = new Map<string, ScheduledItem[]>();
-    for (const s of this.scheduled()) byDate.set(s.date, [...(byDate.get(s.date) ?? []), s]);
-    return days.map((day) => {
-      const incH = (day.income / max) * 100;
-      const expH = (day.expense / max) * 100;
-      const scheduled = byDate.get(day.date) ?? [];
-      const parts = [this.f.date(day.date, 'full')];
-      if (day.income) parts.push(`+${this.f.money(day.income)}`);
-      if (day.expense) parts.push(`−${this.f.money(day.expense)}`);
-      if (day.balance !== null) parts.push(`= ${this.f.money(day.balance)}`);
-      for (const s of scheduled) parts.push(`• ${s.name} ${this.f.money(s.amount)}`);
-      return {
-        day,
-        num: Number(day.date.slice(8, 10)),
-        incH,
-        expH,
-        incInside: incH >= 28,
-        expInside: expH >= 28,
-        future: day.date > today,
-        today: day.date === today,
-        scheduled,
-        tip: parts.join('\n'),
-      };
-    });
-  });
-
-  /** Same compact labels as the email: 950 / 1.2k. */
   protected short(v: number): string {
-    if (this.f.hidden()) return '0';
-    return v >= 1000 ? `${(v / 1000).toFixed(1)}k` : String(Math.round(v));
+    return shortAmount(v, this.f.hidden());
   }
 }

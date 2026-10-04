@@ -1,8 +1,8 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input, output } from '@angular/core';
 import type { SankeyNode, SankeyReport } from '@spacefly/shared';
-import { FormatService } from '../../core/format/format.service';
-import { I18n } from '../../core/i18n/i18n';
-import { sankeyOption } from './builders';
+import { FormatService } from '@spacefly/client/format/format.service';
+import { I18n } from '@spacefly/client/i18n/i18n';
+import { sankeyOption } from '@spacefly/client/charts/builders';
 import { Chart } from './chart';
 import { BreakpointService } from './breakpoint';
 

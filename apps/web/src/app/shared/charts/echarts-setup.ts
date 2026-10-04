@@ -16,7 +16,7 @@ import {
   VisualMapComponent,
 } from 'echarts/components';
 import { CanvasRenderer } from 'echarts/renderers';
-import { buildTheme } from './chart-theme';
+import { buildTheme } from '@spacefly/client/charts/chart-theme';
 
 echarts.use([
   BarChart,

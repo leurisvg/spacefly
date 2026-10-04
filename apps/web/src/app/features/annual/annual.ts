@@ -1,19 +1,21 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { endOfMonth, type AnnualReport } from '@spacefly/shared';
-import { reportResource } from '../../core/api/report-resource';
-import { FormatService } from '../../core/format/format.service';
-import { FORMAT_PIPES } from '../../core/format/pipes';
-import { I18n } from '../../core/i18n/i18n';
-import { FiltersStore } from '../../core/state/filters.store';
-import { incomeExpenseOption, matrixHeatmapOption } from '../../shared/charts/builders';
+import { reportResource } from '@spacefly/client/api/report-resource';
+import { FormatService } from '@spacefly/client/format/format.service';
+import { FORMAT_PIPES } from '@spacefly/client/format/pipes';
+import { I18n } from '@spacefly/client/i18n/i18n';
+import { FiltersStore } from '@spacefly/client/state/filters.store';
+import { incomeExpenseOption, matrixHeatmapOption } from '@spacefly/client/charts/builders';
 import { Chart } from '../../shared/charts/chart';
-import { ChartCard, type ChartTable } from '../../shared/charts/chart-card';
-import { cssVar, tooltipRow, tooltipTitle } from '../../shared/charts/chart-theme';
-import { money } from '../../shared/charts/series-colors';
+import { ChartCard } from '../../shared/charts/chart-card';
+import type { ChartTable } from '@spacefly/client/charts/chart-table';
+import { palette } from '@spacefly/client/charts/palette';
+import { tooltipRow, tooltipTitle } from '@spacefly/client/charts/chart-theme';
+import { money } from '@spacefly/client/charts/series-colors';
 import { KpiCard } from '../../shared/components/kpi-card';
 import { PageHeader } from '../../shared/components/page-header';
-import { TxDetailService } from '../../shared/components/tx-detail.service';
+import { TxDetailService } from '@spacefly/client/state/tx-detail.service';
 
 @Component({
   selector: 'sf-annual',
@@ -98,7 +100,7 @@ export class Annual {
         {
           type: 'bar',
           data: r.savingsRate.map((v) => (v === null ? null : { value: v, itemStyle: { color: v >= 0 ? color : money.expense(), borderRadius: v >= 0 ? [4, 4, 0, 0] : [0, 0, 4, 4] } })),
-          markLine: { silent: true, symbol: 'none', label: { show: false }, lineStyle: { color: cssVar('--chart-axis'), type: 'solid' }, data: [{ yAxis: 0 }] },
+          markLine: { silent: true, symbol: 'none', label: { show: false }, lineStyle: { color: palette.chartAxis, type: 'solid' }, data: [{ yAxis: 0 }] },
         },
       ],
     };

@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
-import { formatTestProviders, loadTranslations } from '../../../testing/format-providers';
-import { EN } from '../../../testing/translations';
+import { formatTestProviders, loadTranslations } from '@spacefly/client/testing';
+import { EN } from '@spacefly/client/testing';
 import { ConfirmService, type ConfirmOptions } from './confirm.service';
 
 async function setup() {

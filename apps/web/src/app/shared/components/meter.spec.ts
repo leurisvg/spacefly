@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
-import { formatTestProviders } from '../../../testing/format-providers';
-import { PrivacyStore } from '../../core/state/privacy.store';
+import { formatTestProviders } from '@spacefly/client/testing';
+import { PrivacyStore } from '@spacefly/client/state/privacy.store';
 import { Meter } from './meter';
 
 const T = { budget: { status: { good: 'On track', warning: 'Near limit', critical: 'Over budget' } } };

@@ -1,8 +1,8 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { form, FormField } from '@angular/forms/signals';
-import { formatTestProviders, loadTranslations } from '../../../testing/format-providers';
-import { EN } from '../../../testing/translations';
+import { formatTestProviders, loadTranslations } from '@spacefly/client/testing';
+import { EN } from '@spacefly/client/testing';
 import { Combobox, type ComboOption } from './combobox';
 
 @Component({

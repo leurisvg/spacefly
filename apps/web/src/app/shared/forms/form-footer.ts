@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, inject, input, output } f
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideTrash2 } from '@ng-icons/lucide';
 import { HlmButton } from '@spartan-ng/helm/button';
-import { I18n } from '../../core/i18n/i18n';
+import { I18n } from '@spacefly/client/i18n/i18n';
 
 /**
  * Sticky action bar of a form: Cancel, Delete (when editing) and Save. Ctrl/Cmd+Enter saves from anywhere

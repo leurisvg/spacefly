@@ -3,8 +3,8 @@ import type { FormValueControl } from '@angular/forms/signals';
 import { BrnCalendarI18nService } from '@spartan-ng/brain/calendar';
 import { addDays, isIsoDate, todayIso } from '@spacefly/shared';
 import { HlmDatePickerImports } from '@spartan-ng/helm/date-picker';
-import { FormatService } from '../../core/format/format.service';
-import { I18n } from '../../core/i18n/i18n';
+import { FormatService } from '@spacefly/client/format/format.service';
+import { I18n } from '@spacefly/client/i18n/i18n';
 
 /** `YYYY-MM-DD` → a local `Date` (the calendar works in local time). */
 const toDate = (iso: string): Date | undefined => {

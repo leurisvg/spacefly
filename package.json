@@ -9,8 +9,8 @@
     "build": "ng build && npm run build:server",
     "build:server": "npm run build -w @spacefly/server",
     "start": "node dist/server/main.mjs",
-    "test": "ng test --watch=false && npm run test:server",
-    "test:web": "ng test",
+    "test": "ng test SpaceFly --watch=false && ng test client --watch=false && npm run test:server",
+    "test:web": "ng test SpaceFly",
     "test:server": "vitest run --config apps/server/vitest.config.ts",
     "typecheck:server": "tsc -p apps/server/tsconfig.json",
     "lint": "ng lint",
@@ -18,7 +18,8 @@
     "dev:mock": "concurrently -k -n mock,api,web -c yellow,magenta,cyan \"npm:mock:firefly\" \"npm:dev:server:mock\" \"npm:dev:web\"",
     "dev:server:mock": "tsx watch --tsconfig apps/server/tsconfig.json --env-file=.env.mock apps/server/src/main.ts",
     "mock:firefly": "tsx --tsconfig apps/server/tsconfig.json apps/server/scripts/mock-firefly.ts",
-    "check:deps": "node scripts/check-single-angular.mjs"
+    "check:deps": "node scripts/check-single-angular.mjs",
+    "test:client": "ng test client"
   },
   "private": true,
   "packageManager": "npm@11.6.2",

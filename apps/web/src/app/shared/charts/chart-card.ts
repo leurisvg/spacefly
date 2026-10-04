@@ -6,15 +6,8 @@ import { HlmButton } from '@spartan-ng/helm/button';
 import { HlmTooltip } from '@spartan-ng/helm/tooltip';
 import { HlmSkeleton } from '@spartan-ng/helm/skeleton';
 import type { ECharts } from 'echarts/core';
-import { cssVar } from './chart-theme';
-
-/** Pre-formatted rows for the accessible table view of a chart. */
-export interface ChartTable {
-  columns: string[];
-  rows: string[][];
-  /** Column indexes that hold numbers (right-aligned, mono). */
-  numeric?: number[];
-}
+import { palette } from '@spacefly/client/charts/palette';
+import type { ChartTable } from '@spacefly/client/charts/chart-table';
 
 /**
  * Card around a chart: title, subtitle, a table view toggle (every chart has one), and PNG export.
@@ -109,7 +102,7 @@ export class ChartCard {
 
   protected downloadPng(): void {
     if (!this.chart) return;
-    const url = this.chart.getDataURL({ type: 'png', pixelRatio: 2, backgroundColor: cssVar('--chart-surface') });
+    const url = this.chart.getDataURL({ type: 'png', pixelRatio: 2, backgroundColor: palette.chartSurface });
     const a = document.createElement('a');
     a.href = url;
     a.download = `${this.fileName()}.png`;

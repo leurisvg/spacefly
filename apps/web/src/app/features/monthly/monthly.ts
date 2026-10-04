@@ -5,10 +5,10 @@ import { lucideChevronRight } from '@ng-icons/lucide';
 import { TranslocoPipe } from '@jsverse/transloco';
 import type { CalendarReport, CategoryRow, MonthlyReport, SankeyNode, SankeyReport } from '@spacefly/shared';
 import { HlmButton } from '@spartan-ng/helm/button';
-import { reportResource } from '../../core/api/report-resource';
-import { FormatService } from '../../core/format/format.service';
-import { FORMAT_PIPES } from '../../core/format/pipes';
-import { I18n } from '../../core/i18n/i18n';
+import { reportResource } from '@spacefly/client/api/report-resource';
+import { FormatService } from '@spacefly/client/format/format.service';
+import { FORMAT_PIPES } from '@spacefly/client/format/pipes';
+import { I18n } from '@spacefly/client/i18n/i18n';
 import { SankeyChart } from '../../shared/charts/sankey-chart';
 import { SavingsMultiples } from '../../shared/charts/savings-multiples';
 import { CalendarGrid } from '../../shared/components/calendar-grid';
@@ -18,7 +18,7 @@ import { Meter } from '../../shared/components/meter';
 import { Money } from '../../shared/components/money';
 import { PageHeader } from '../../shared/components/page-header';
 import { TransactionList } from '../../shared/components/transaction-list';
-import { TxDetailService } from '../../shared/components/tx-detail.service';
+import { TxDetailService } from '@spacefly/client/state/tx-detail.service';
 import { Section } from '../../shared/components/section';
 
 /** The email report, interactive: same sections, same order, any period. */

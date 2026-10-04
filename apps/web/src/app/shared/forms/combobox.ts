@@ -4,8 +4,8 @@ import type { FormValueControl } from '@angular/forms/signals';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideCheck, lucideChevronDown, lucidePlus } from '@ng-icons/lucide';
 import { HlmInput } from '@spartan-ng/helm/input';
-import { I18n } from '../../core/i18n/i18n';
-import { fold } from './fold';
+import { I18n } from '@spacefly/client/i18n/i18n';
+import { fold } from '@spacefly/client/ui-logic/fold';
 
 export interface ComboOption {
   value: string;

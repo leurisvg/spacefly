@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
-import { FiltersStore } from '../../core/state/filters.store';
+import { FiltersStore } from '@spacefly/client/state/filters.store';
 import { Money } from './money';
 
 /**

@@ -1,8 +1,8 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { HlmSkeleton } from '@spartan-ng/helm/skeleton';
-import { FormatService } from '../../core/format/format.service';
-import { FORMAT_PIPES } from '../../core/format/pipes';
+import { FormatService } from '@spacefly/client/format/format.service';
+import { FORMAT_PIPES } from '@spacefly/client/format/pipes';
 import { Delta } from './delta';
 import { Sparkline } from './sparkline';
 

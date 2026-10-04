@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import type { AccountSlot } from '@spacefly/shared';
-import { formatTestProviders, loadTranslations } from '../../../testing/format-providers';
-import { EN } from '../../../testing/translations';
+import { formatTestProviders, loadTranslations } from '@spacefly/client/testing';
+import { EN } from '@spacefly/client/testing';
 import { TxTypeBadge } from './tx-type-badge';
 
 async function render(source: AccountSlot, destination: AccountSlot) {

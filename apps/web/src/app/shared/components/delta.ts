@@ -1,8 +1,9 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideArrowDown, lucideArrowUp, lucideMinus } from '@ng-icons/lucide';
-import { FormatService } from '../../core/format/format.service';
-import { PctPipe } from '../../core/format/pipes';
+import { FormatService } from '@spacefly/client/format/format.service';
+import { PctPipe } from '@spacefly/client/format/pipes';
+import { deltaModel, type Tone } from '@spacefly/client/ui-logic/delta';
 
 /**
  * Signed change vs a reference. Color = direction × whether "up" is good; the arrow icon
@@ -31,17 +32,11 @@ export class Delta {
   /** Show the absolute difference in percentage points instead of a ratio (for rates). */
   readonly points = input(false);
 
-  protected readonly diff = computed(() => (this.previous() === null ? 0 : this.value() - this.previous()!));
-  protected readonly ratio = computed(() => {
-    const p = this.previous();
-    return p === null || p === 0 ? null : Math.abs(this.diff() / p);
-  });
-  protected readonly diffLabel = computed(() => `${(this.f.hidden() ? 0 : Math.abs(this.diff())).toFixed(1)} pp`);
-  // In privacy mode direction and color would give away the hidden change: show it as neutral.
-  protected readonly icon = computed(() => (this.f.hidden() ? 'lucideMinus' : this.diff() > 0 ? 'lucideArrowUp' : this.diff() < 0 ? 'lucideArrowDown' : 'lucideMinus'));
-  protected readonly tone = computed(() => {
-    const d = this.diff();
-    if (d === 0 || this.previous() === null || this.f.hidden()) return 'text-muted-foreground';
-    return d > 0 === this.upIsGood() ? 'text-positive' : 'text-negative';
-  });
+  private readonly model = computed(() => deltaModel(this.value(), this.previous(), this.upIsGood(), this.f.hidden()));
+  protected readonly ratio = computed(() => this.model().ratio);
+  protected readonly diffLabel = computed(() => this.model().pointsLabel);
+  protected readonly icon = computed(() => ({ up: 'lucideArrowUp', down: 'lucideArrowDown', flat: 'lucideMinus' })[this.model().direction]);
+  protected readonly tone = computed(() => TONE_CLASS[this.model().tone]);
 }
+
+const TONE_CLASS: Record<Tone, string> = { positive: 'text-positive', negative: 'text-negative', neutral: 'text-muted-foreground' };

@@ -1,8 +1,8 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { HlmBadge } from '@spartan-ng/helm/badge';
-import { I18n } from '../../core/i18n/i18n';
-import { MetaStore } from '../../core/state/meta.store';
+import { I18n } from '@spacefly/client/i18n/i18n';
+import { MetaStore } from '@spacefly/client/state/meta.store';
 import { PageHeader } from '../../shared/components/page-header';
 import { Section } from '../../shared/components/section';
 

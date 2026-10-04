@@ -2,8 +2,8 @@ import { ChangeDetectionStrategy, Component, computed, inject, input, model, out
 import type { FormValueControl } from '@angular/forms/signals';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideX } from '@ng-icons/lucide';
-import { I18n } from '../../core/i18n/i18n';
-import { fold } from './fold';
+import { I18n } from '@spacefly/client/i18n/i18n';
+import { fold } from '@spacefly/client/ui-logic/fold';
 import { Combobox, type ComboSelection } from './combobox';
 
 /** Tags as chips: pick a suggestion or type a new one and press Enter; Backspace on an empty field removes the last. */

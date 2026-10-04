@@ -3,12 +3,12 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NavigationStart, Router } from '@angular/router';
 import { filter } from 'rxjs';
 import { HlmSheetImports } from '@spartan-ng/helm/sheet';
-import { I18n } from '../../core/i18n/i18n';
+import { I18n } from '@spacefly/client/i18n/i18n';
 import { AccountForm } from './account-form';
 import { BillForm } from './bill-form';
 import { BudgetForm } from './budget-form';
 import { CategoryForm } from './category-form';
-import { EntityEditor } from './entity-editor.service';
+import { EntityEditor } from '@spacefly/client/state/entity-editor.service';
 import { PiggyForm } from './piggy-form';
 import { TagForm } from './tag-form';
 

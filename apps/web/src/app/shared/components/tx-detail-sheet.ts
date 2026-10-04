@@ -7,11 +7,11 @@ import { TranslocoPipe } from '@jsverse/transloco';
 import type { Report, TxListResponse, TxRow } from '@spacefly/shared';
 import { HlmSheetImports } from '@spartan-ng/helm/sheet';
 import { HlmSkeleton } from '@spartan-ng/helm/skeleton';
-import { FORMAT_PIPES } from '../../core/format/pipes';
-import { FiltersStore } from '../../core/state/filters.store';
+import { FORMAT_PIPES } from '@spacefly/client/format/pipes';
+import { FiltersStore } from '@spacefly/client/state/filters.store';
 import { Money } from './money';
 import { TransactionList } from './transaction-list';
-import { TxDetailService, type BreakdownRow } from './tx-detail.service';
+import { TxDetailService, type BreakdownRow } from '@spacefly/client/state/tx-detail.service';
 
 interface Group {
   key: string;

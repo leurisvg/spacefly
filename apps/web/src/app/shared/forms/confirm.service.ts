@@ -5,18 +5,9 @@ import { HlmButton } from '@spartan-ng/helm/button';
 import { HlmDialogImports, HlmDialogService } from '@spartan-ng/helm/dialog';
 import { HlmInput } from '@spartan-ng/helm/input';
 import { firstValueFrom } from 'rxjs';
-import { I18n } from '../../core/i18n/i18n';
-import { fold } from './fold';
-
-export interface ConfirmOptions {
-  title: string;
-  message: string;
-  confirmLabel?: string;
-  /** Styles the confirm button as destructive (deletes). */
-  destructive?: boolean;
-  /** Makes the user type this text (an account's name) before the button enables. */
-  requireText?: string;
-}
+import { Confirm, type ConfirmOptions } from '@spacefly/client/platform/confirm';
+import { I18n } from '@spacefly/client/i18n/i18n';
+import { fold } from '@spacefly/client/ui-logic/fold';
 
 @Component({
   selector: 'sf-confirm-dialog',
@@ -56,11 +47,13 @@ export class ConfirmDialog {
 
 /** Promise-based confirmation dialog (deletes). Resolves `false` on cancel, Esc or outside click. */
 @Injectable({ providedIn: 'root' })
-export class ConfirmService {
+export class ConfirmService extends Confirm {
   private readonly dialogs = inject(HlmDialogService);
 
-  async confirm(options: ConfirmOptions): Promise<boolean> {
+  override async confirm(options: ConfirmOptions): Promise<boolean> {
     const ref = this.dialogs.open<boolean, ConfirmOptions>(ConfirmDialog, { context: options, showCloseButton: false });
     return (await firstValueFrom(ref.closed$, { defaultValue: false })) === true;
   }
 }
+
+export type { ConfirmOptions };

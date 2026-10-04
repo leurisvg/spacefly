@@ -9,8 +9,8 @@ import { HlmInput } from '@spartan-ng/helm/input';
 import { HlmLabel } from '@spartan-ng/helm/label';
 import { HlmPopoverImports } from '@spartan-ng/helm/popover';
 import { HlmSeparator } from '@spartan-ng/helm/separator';
-import { FormatService } from '../../core/format/format.service';
-import { FiltersStore } from '../../core/state/filters.store';
+import { FormatService } from '@spacefly/client/format/format.service';
+import { FiltersStore } from '@spacefly/client/state/filters.store';
 
 interface PresetOption {
   key: string;

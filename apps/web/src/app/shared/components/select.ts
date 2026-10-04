@@ -4,7 +4,7 @@ import { lucideCheck, lucideChevronDown, lucideSearch } from '@ng-icons/lucide';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { HlmInput } from '@spartan-ng/helm/input';
 import { HlmPopoverImports } from '@spartan-ng/helm/popover';
-import { fold } from '../forms/fold';
+import { fold } from '@spacefly/client/ui-logic/fold';
 
 export interface SelectOption {
   value: string;

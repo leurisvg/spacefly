@@ -1,10 +1,10 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
 import type { SavingsSeries } from '@spacefly/shared';
-import { FormatService } from '../../core/format/format.service';
+import { FormatService } from '@spacefly/client/format/format.service';
 import { Money } from '../components/money';
-import { linesOption } from './builders';
+import { linesOption } from '@spacefly/client/charts/builders';
 import { Chart } from './chart';
-import { SeriesColors } from './series-colors';
+import { SeriesColors } from '@spacefly/client/charts/series-colors';
 
 /** One small chart per account (the email's 6-month savings grid), each on its own scale. */
 @Component({

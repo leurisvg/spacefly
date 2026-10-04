@@ -4,25 +4,8 @@ import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideClock } from '@ng-icons/lucide';
 import { HlmButton } from '@spartan-ng/helm/button';
 import { HlmPopoverImports } from '@spartan-ng/helm/popover';
-import { I18n } from '../../core/i18n/i18n';
-
-/**
- * Reads what a person types as a time: `9`, `930`, `9:30`, `0930`, `21.05`. Returns `HH:mm` (24 hours)
- * or `null` when it isn't a time.
- */
-export function parseTime(input: string): string | null {
-  const m = /^(\d{1,2})(?:[:.]?(\d{2}))?$/.exec(input.trim());
-  if (!m) return null;
-  const hours = Number(m[1]);
-  const minutes = Number(m[2] ?? 0);
-  if (hours > 23 || minutes > 59) return null;
-  return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
-}
-
-export function nowTime(): string {
-  const d = new Date();
-  return `${pad(d.getHours())}:${pad(d.getMinutes())}`;
-}
+import { I18n } from '@spacefly/client/i18n/i18n';
+import { nowTime, parseTime } from '@spacefly/client/ui-logic/time';
 
 const pad = (n: number): string => String(n).padStart(2, '0');
 const HOURS = Array.from({ length: 24 }, (_, i) => pad(i));

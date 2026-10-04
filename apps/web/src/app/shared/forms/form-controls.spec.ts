@@ -3,13 +3,14 @@ import { TestBed } from '@angular/core/testing';
 import { form, FormField as Field, required, validate } from '@angular/forms/signals';
 import { BrnCalendarI18nService } from '@spartan-ng/brain/calendar';
 import { addDays, todayIso } from '@spacefly/shared';
-import { formatTestProviders, loadTranslations } from '../../../testing/format-providers';
-import { EN } from '../../../testing/translations';
+import { formatTestProviders, loadTranslations } from '@spacefly/client/testing';
+import { EN } from '@spacefly/client/testing';
 import { Select } from '../components/select';
 import { DateInput } from './date-input';
 import { FormField } from './form-field';
 import { FormFooter } from './form-footer';
-import { parseTime, TimeInput } from './time-input';
+import { parseTime } from '@spacefly/client/ui-logic/time';
+import { TimeInput } from './time-input';
 
 const settleOf = (fixture: { detectChanges(): void }) => async () => {
   for (let i = 0; i < 4; i++) {

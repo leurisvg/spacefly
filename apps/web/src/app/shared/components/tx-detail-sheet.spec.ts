@@ -2,9 +2,9 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { formatTestProviders } from '../../../testing/format-providers';
-import { FiltersStore } from '../../core/state/filters.store';
-import { TxDetailService } from './tx-detail.service';
+import { formatTestProviders } from '@spacefly/client/testing';
+import { FiltersStore } from '@spacefly/client/state/filters.store';
+import { TxDetailService } from '@spacefly/client/state/tx-detail.service';
 import { TxDetailSheet } from './tx-detail-sheet';
 
 const T = { tx: { breakdown: 'Categories in this group', none: 'No transactions', count: 'Transactions' }, common: { uncategorized: 'Uncategorized' }, txType: {} };

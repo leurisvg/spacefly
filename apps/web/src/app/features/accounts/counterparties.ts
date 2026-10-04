@@ -5,20 +5,21 @@ import { lucidePencil, lucidePlus } from '@ng-icons/lucide';
 import { TranslocoPipe } from '@jsverse/transloco';
 import type { CounterpartiesReport, CounterpartyItem, CounterpartyKind } from '@spacefly/shared';
 import { HlmButton } from '@spartan-ng/helm/button';
-import { reportResource } from '../../core/api/report-resource';
-import { FormatService } from '../../core/format/format.service';
-import { FORMAT_PIPES } from '../../core/format/pipes';
-import { I18n } from '../../core/i18n/i18n';
-import { categoryBarsOption, rankingBarsOption } from '../../shared/charts/builders';
+import { reportResource } from '@spacefly/client/api/report-resource';
+import { FormatService } from '@spacefly/client/format/format.service';
+import { FORMAT_PIPES } from '@spacefly/client/format/pipes';
+import { I18n } from '@spacefly/client/i18n/i18n';
+import { categoryBarsOption, rankingBarsOption } from '@spacefly/client/charts/builders';
 import { Chart } from '../../shared/charts/chart';
-import { ChartCard, type ChartTable } from '../../shared/charts/chart-card';
-import { money } from '../../shared/charts/series-colors';
+import { ChartCard } from '../../shared/charts/chart-card';
+import type { ChartTable } from '@spacefly/client/charts/chart-table';
+import { money } from '@spacefly/client/charts/series-colors';
 import { Delta } from '../../shared/components/delta';
 import { EmptyState } from '../../shared/components/empty-state';
 import { KpiCard } from '../../shared/components/kpi-card';
 import { Money } from '../../shared/components/money';
 import { PageHeader } from '../../shared/components/page-header';
-import { EntityEditor } from '../editor/entity-editor.service';
+import { EntityEditor } from '@spacefly/client/state/entity-editor.service';
 
 /** Expense accounts (where money goes) or revenue accounts (where it comes from), picked by the route's `kind`. */
 @Component({

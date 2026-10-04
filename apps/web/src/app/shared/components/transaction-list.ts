@@ -5,8 +5,8 @@ import { lucideArrowRightLeft, lucideExternalLink, lucidePencil } from '@ng-icon
 import { TranslocoPipe } from '@jsverse/transloco';
 import type { TxRow } from '@spacefly/shared';
 import { HlmBadge } from '@spartan-ng/helm/badge';
-import { FORMAT_PIPES } from '../../core/format/pipes';
-import { MetaStore } from '../../core/state/meta.store';
+import { FORMAT_PIPES } from '@spacefly/client/format/pipes';
+import { MetaStore } from '@spacefly/client/state/meta.store';
 import { Money } from './money';
 
 /** Transactions as a responsive list (cards on mobile, aligned columns from `sm`). */

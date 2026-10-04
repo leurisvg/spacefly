@@ -1,8 +1,8 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input, model, output } from '@angular/core';
 import type { FormValueControl } from '@angular/forms/signals';
 import { inferTransactionType, type AccountInput, type AccountKind, type AccountSlot, type EditorAccount } from '@spacefly/shared';
-import { FormatService } from '../../core/format/format.service';
-import { I18n } from '../../core/i18n/i18n';
+import { FormatService } from '@spacefly/client/format/format.service';
+import { I18n } from '@spacefly/client/i18n/i18n';
 import { Combobox, type ComboOption, type ComboSelection } from './combobox';
 
 const SOURCE_GROUPS: AccountKind[] = ['asset', 'liability', 'revenue', 'cash'];

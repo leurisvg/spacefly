@@ -4,10 +4,10 @@ import { Component, signal } from '@angular/core';
 import { TestBed, type ComponentFixture } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
 import { todayIso, type EditorLookups, type TxEditPayload } from '@spacefly/shared';
-import { FiltersStore } from '../../core/state/filters.store';
-import { MetaStore } from '../../core/state/meta.store';
-import { formatTestProviders, loadTranslations } from '../../../testing/format-providers';
-import { EN } from '../../../testing/translations';
+import { FiltersStore } from '@spacefly/client/state/filters.store';
+import { MetaStore } from '@spacefly/client/state/meta.store';
+import { formatTestProviders, loadTranslations } from '@spacefly/client/testing';
+import { EN } from '@spacefly/client/testing';
 import { TransactionForm } from './transaction-form';
 
 @Component({ template: '' })

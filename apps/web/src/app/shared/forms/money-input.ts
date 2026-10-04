@@ -2,8 +2,8 @@ import { ChangeDetectionStrategy, Component, computed, effect, ElementRef, injec
 import type { FormValueControl } from '@angular/forms/signals';
 import { parseAmount } from '@spacefly/shared';
 import { HlmInput } from '@spartan-ng/helm/input';
-import { FormatService } from '../../core/format/format.service';
-import { MetaStore } from '../../core/state/meta.store';
+import { FormatService } from '@spacefly/client/format/format.service';
+import { MetaStore } from '@spacefly/client/state/meta.store';
 
 /**
  * Amount field. The model is a canonical decimal string ("1234.5", "" when empty) so the digits typed

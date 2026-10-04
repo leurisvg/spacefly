@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
+import { sparklineGeometry } from '@spacefly/client/ui-logic/sparkline';
 
 /** 12-point trend in the de-emphasis hue with the current period in the accent (stat-tile contract). */
 @Component({
@@ -21,15 +22,5 @@ export class Sparkline {
   protected readonly width = 100;
   protected readonly height = 32;
 
-  protected readonly geometry = computed(() => {
-    const v = this.values();
-    if (v.length < 2) return null;
-    const min = Math.min(...v);
-    const max = Math.max(...v);
-    const span = max - min || 1;
-    const pts = v.map((y, i) => [(i / (v.length - 1)) * this.width, this.height - 2 - ((y - min) / span) * (this.height - 4)]);
-    const line = pts.map((p) => p.join(',')).join(' ');
-    const area = `M0,${this.height} L${pts.map((p) => p.join(',')).join(' L')} L${this.width},${this.height} Z`;
-    return { line, area, last: pts[pts.length - 1] };
-  });
+  protected readonly geometry = computed(() => sparklineGeometry(this.values(), this.width, this.height));
 }

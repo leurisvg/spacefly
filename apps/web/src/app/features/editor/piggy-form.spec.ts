@@ -1,4 +1,4 @@
-import { EDITOR_LOOKUPS } from '../../../testing/lookups';
+import { EDITOR_LOOKUPS } from '@spacefly/client/testing';
 import { mountEditor, verifyNoPendingRequests } from '../../../testing/editor-harness';
 import { PiggyForm } from './piggy-form';
 

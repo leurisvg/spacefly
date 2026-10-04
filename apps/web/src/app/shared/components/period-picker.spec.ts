@@ -1,8 +1,8 @@
 import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import type { Period, PeriodPreset } from '@spacefly/shared';
-import { formatTestProviders } from '../../../testing/format-providers';
-import { FiltersStore } from '../../core/state/filters.store';
+import { formatTestProviders } from '@spacefly/client/testing';
+import { FiltersStore } from '@spacefly/client/state/filters.store';
 import { PeriodPicker } from './period-picker';
 
 const T = { period: { previous: 'Previous period', next: 'Next period', quarterShort: 'Q', ytdShort: 'YTD' } };

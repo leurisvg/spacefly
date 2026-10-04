@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, inject, input, output } f
 import { NgxEchartsDirective } from 'ngx-echarts';
 import { HlmSkeleton } from '@spartan-ng/helm/skeleton';
 import type { ECElementEvent, ECharts, EChartsCoreOption } from 'echarts/core';
-import { PrivacyStore } from '../../core/state/privacy.store';
+import { PrivacyStore } from '@spacefly/client/state/privacy.store';
 import { ChartCard } from './chart-card';
 
 /**

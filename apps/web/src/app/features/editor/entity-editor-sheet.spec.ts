@@ -3,7 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
 import { mountEditor, verifyNoPendingRequests } from '../../../testing/editor-harness';
 import { EntityEditorSheet } from './entity-editor-sheet';
-import { EntityEditor } from './entity-editor.service';
+import { EntityEditor } from '@spacefly/client/state/entity-editor.service';
 
 verifyNoPendingRequests();
 

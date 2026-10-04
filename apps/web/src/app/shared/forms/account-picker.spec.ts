@@ -2,8 +2,8 @@ import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { form, FormField } from '@angular/forms/signals';
 import type { AccountInput, AccountSlot, EditorAccount } from '@spacefly/shared';
-import { formatTestProviders, loadTranslations } from '../../../testing/format-providers';
-import { EN } from '../../../testing/translations';
+import { formatTestProviders, loadTranslations } from '@spacefly/client/testing';
+import { EN } from '@spacefly/client/testing';
 import { AccountPicker } from './account-picker';
 
 const acc = (id: string, name: string, kind: EditorAccount['kind'], currency = 'DOP', balance = 0): EditorAccount => ({

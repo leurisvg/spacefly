@@ -4,18 +4,19 @@ import type { SankeyNode, SankeyReport } from '@spacefly/shared';
 import { HlmLabel } from '@spartan-ng/helm/label';
 import { HlmSwitch } from '@spartan-ng/helm/switch';
 import { HlmToggleGroupImports } from '@spartan-ng/helm/toggle-group';
-import { reportResource } from '../../core/api/report-resource';
-import { FormatService } from '../../core/format/format.service';
-import { FORMAT_PIPES } from '../../core/format/pipes';
-import { I18n } from '../../core/i18n/i18n';
-import { FiltersStore } from '../../core/state/filters.store';
-import { SANKEY_COLORS } from '../../shared/charts/builders';
-import { ChartCard, type ChartTable } from '../../shared/charts/chart-card';
+import { reportResource } from '@spacefly/client/api/report-resource';
+import { FormatService } from '@spacefly/client/format/format.service';
+import { FORMAT_PIPES } from '@spacefly/client/format/pipes';
+import { I18n } from '@spacefly/client/i18n/i18n';
+import { FiltersStore } from '@spacefly/client/state/filters.store';
+import { SANKEY_COLORS } from '@spacefly/client/charts/builders';
+import { ChartCard } from '../../shared/charts/chart-card';
+import type { ChartTable } from '@spacefly/client/charts/chart-table';
 import { SankeyChart } from '../../shared/charts/sankey-chart';
 import { EmptyState } from '../../shared/components/empty-state';
 import { KpiCard } from '../../shared/components/kpi-card';
 import { PageHeader } from '../../shared/components/page-header';
-import { TxDetailService } from '../../shared/components/tx-detail.service';
+import { TxDetailService } from '@spacefly/client/state/tx-detail.service';
 
 @Component({
   selector: 'sf-flow',

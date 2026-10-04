@@ -1,6 +1,6 @@
 import { afterRenderEffect, ChangeDetectionStrategy, Component, computed, ElementRef, inject, input, signal, type Signal } from '@angular/core';
 import { HlmLabel } from '@spartan-ng/helm/label';
-import { I18n } from '../../core/i18n/i18n';
+import { I18n } from '@spacefly/client/i18n/i18n';
 
 let nextId = 0;
 

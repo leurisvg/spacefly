@@ -4,15 +4,15 @@ import { lucideCircleCheck, lucidePencil, lucidePlus, lucideTriangleAlert } from
 import { TranslocoPipe } from '@jsverse/transloco';
 import type { PiggyBanksReport } from '@spacefly/shared';
 import { HlmButton } from '@spartan-ng/helm/button';
-import { reportResource } from '../../core/api/report-resource';
-import { FormatService } from '../../core/format/format.service';
-import { FORMAT_PIPES } from '../../core/format/pipes';
-import { I18n } from '../../core/i18n/i18n';
+import { reportResource } from '@spacefly/client/api/report-resource';
+import { FormatService } from '@spacefly/client/format/format.service';
+import { FORMAT_PIPES } from '@spacefly/client/format/pipes';
+import { I18n } from '@spacefly/client/i18n/i18n';
 import { EmptyState } from '../../shared/components/empty-state';
 import { KpiCard } from '../../shared/components/kpi-card';
 import { Money } from '../../shared/components/money';
 import { PageHeader } from '../../shared/components/page-header';
-import { EntityEditor } from '../editor/entity-editor.service';
+import { EntityEditor } from '@spacefly/client/state/entity-editor.service';
 
 @Component({
   selector: 'sf-goals',

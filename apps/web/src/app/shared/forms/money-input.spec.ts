@@ -2,8 +2,8 @@ import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { form, FormField } from '@angular/forms/signals';
 import { isPositiveAmount } from '@spacefly/shared';
-import { formatTestProviders } from '../../../testing/format-providers';
-import { PrivacyStore } from '../../core/state/privacy.store';
+import { formatTestProviders } from '@spacefly/client/testing';
+import { PrivacyStore } from '@spacefly/client/state/privacy.store';
 import { MoneyInput } from './money-input';
 
 @Component({
