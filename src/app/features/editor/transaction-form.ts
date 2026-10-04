@@ -1,5 +1,5 @@
 import { httpResource } from '@angular/common/http';
-import { ChangeDetectionStrategy, Component, computed, DestroyRef, effect, inject, input, signal, untracked } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, DestroyRef, effect, inject, input, linkedSignal, signal, untracked } from '@angular/core';
 import { form, FormField as Field, maxLength, submit, validate, type FieldTree, type ValidationError } from '@angular/forms/signals';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideArrowRightLeft, lucideExternalLink, lucideInfo } from '@ng-icons/lucide';
@@ -402,9 +402,11 @@ export class TransactionForm {
   private readonly suggestionsRes = httpResource<string[]>(() =>
     this.descriptionTerm() ? { url: '/api/lookups/descriptions', params: { q: this.descriptionTerm() } } : undefined,
   );
-  protected readonly descriptionOptions = computed(() =>
-    (this.descriptionTerm() && this.suggestionsRes.hasValue() ? (this.suggestionsRes.value() ?? []) : []).map((d) => ({ value: d, label: d })),
-  );
+  /** Keeps the previous suggestions while the next ones load (the list filters them by what is typed), so it doesn't blink on every key. */
+  protected readonly descriptionOptions = linkedSignal<{ term: string; found: string[] | undefined }, { value: string; label: string }[]>({
+    source: () => ({ term: this.descriptionTerm(), found: this.suggestionsRes.hasValue() ? this.suggestionsRes.value() : undefined }),
+    computation: ({ term, found }, previous) => (!term ? [] : found ? found.map((d) => ({ value: d, label: d })) : (previous?.value ?? [])),
+  });
 
   protected onDescriptionTyped(text: string): void {
     clearTimeout(this.descriptionTimer);

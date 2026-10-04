@@ -223,6 +223,25 @@ describe('TransactionForm · new', () => {
     expect(s.model()['description']).toBe('Compra quincenal');
   });
 
+  it('keeps showing the previous suggestions while the next ones load, and drops them once the field is emptied', async () => {
+    const s = await setup();
+    const shown = () => [...document.body.querySelectorAll('[role=option]')].map((o) => o.textContent!.trim());
+    await s.type('Comp');
+    await new Promise((r) => setTimeout(r, 260));
+    s.http.expectOne((r) => r.url === '/api/lookups/descriptions').flush(['Compra quincenal', 'Compra rápida']);
+    await s.settle();
+    await s.type('Compra');
+    await new Promise((r) => setTimeout(r, 260));
+    const next = s.http.expectOne((r) => r.url === '/api/lookups/descriptions' && r.params.get('q') === 'Compra'); // not answered yet
+    expect(shown()).toEqual(['Compra quincenal', 'Compra rápida']);
+    next.flush(['Compra quincenal']);
+    await s.settle();
+    expect(shown()).toEqual(['Compra quincenal']);
+    await s.type('');
+    await s.settle();
+    expect(shown()).toEqual([]);
+  });
+
   it('asks again only for the last text typed, and not at all when the field is emptied', async () => {
     const s = await setup();
     await s.type('C');
