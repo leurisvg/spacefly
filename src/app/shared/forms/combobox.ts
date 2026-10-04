@@ -84,11 +84,11 @@ let nextId = 0;
     <ng-template
       cdkConnectedOverlay
       [cdkConnectedOverlayOrigin]="origin"
-      [cdkConnectedOverlayOpen]="open() && !disabled() && (!freeText() || entries().length > 0)"
+      [cdkConnectedOverlayOpen]="listVisible()"
       [cdkConnectedOverlayWidth]="width()"
       [cdkConnectedOverlayOffsetY]="4"
       (overlayOutsideClick)="onOutside($event)"
-      (detach)="open.set(false)"
+      (detach)="onDetach()"
     >
       <ul
         role="listbox"
@@ -228,6 +228,8 @@ export class Combobox implements FormValueControl<string> {
     return { entries, hidden: matches.length - shown.length };
   });
   protected readonly entries = computed(() => this.built().entries);
+  /** A free-text field with nothing to suggest shows no list (but stays open: suggestions may still arrive). */
+  protected readonly listVisible = computed(() => this.open() && !this.disabled() && (!this.freeText() || this.entries().length > 0));
   protected readonly hiddenCount = computed(() => this.built().hidden);
   protected readonly activeId = computed(() =>
     this.open() && this.active() >= 0 && this.entries()[this.active()] && this.entries()[this.active()]!.kind !== 'group' ? this.optionId(this.active()) : null,
@@ -245,6 +247,11 @@ export class Combobox implements FormValueControl<string> {
       const id = this.activeId();
       if (id) queueMicrotask(() => document.getElementById(id)?.scrollIntoView?.({ block: 'nearest' }));
     });
+  }
+
+  /** The overlay closed by itself (scroll, outside event…), not because there was nothing to list. */
+  protected onDetach(): void {
+    if (this.listVisible()) this.open.set(false);
   }
 
   protected optionId(i: number): string {

@@ -61,6 +61,23 @@ describe('Combobox (free text with suggestions)', () => {
     expect(s.options()).toEqual([]);
   });
 
+  it('shows the next suggestions after the list went empty while they were being fetched', async () => {
+    const s = await setup();
+    await s.type('Co');
+    s.host.options.set([{ value: 'Compra quincenal', label: 'Compra quincenal' }]);
+    await s.settle();
+    expect(s.options()).toHaveLength(1);
+    // Typing more: the suggestions are re-fetched, so for a moment there are none…
+    await s.type('Com');
+    s.host.options.set([]);
+    await s.settle();
+    expect(s.options()).toEqual([]);
+    // …and the list must come back when they arrive.
+    s.host.options.set([{ value: 'Compra rápida', label: 'Compra rápida' }]);
+    await s.settle();
+    expect(s.options().map((o) => o.textContent!.trim())).toEqual(['Compra rápida']);
+  });
+
   it('shows suggestions as they arrive and fills the field when one is clicked', async () => {
     const s = await setup();
     await s.type('Comp');
