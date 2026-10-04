@@ -434,6 +434,7 @@
     "outflow": "Salidas"
   },
   "explorer": {
+    "allTypes": "Todos",
     "description": "Busca, filtra, ordena y exporta tus transacciones.",
     "search": "Buscar",
     "clear": "Limpiar",
@@ -448,6 +449,22 @@
     "page": "Página {{page}} de {{pages}}"
   },
   "settings": {
+    "mobile": {
+      "signedIn": "Sesión iniciada",
+      "server": "Servidor",
+      "serverUrl": "URL del servidor",
+      "invalidUrl": "Introduce una URL válida (https://…).",
+      "access": "Cloudflare Access",
+      "accessHint": "Solo si tu servidor está detrás de Cloudflare Access: un service token (client ID y secret).",
+      "clientId": "Client ID",
+      "clientSecret": "Client secret",
+      "save": "Guardar",
+      "saved": "Ajustes del servidor guardados",
+      "test": "Probar conexión",
+      "testOk": "Conexión correcta",
+      "testBlocked": "Bloqueado por Cloudflare Access: revisa el service token.",
+      "testFailed": "No se pudo contactar con el servidor."
+    },
     "description": "Preferencias de SpaceFly (se guardan en SpaceFly, nunca en Firefly).",
     "save": "Guardar",
     "saved": "Ajustes guardados",

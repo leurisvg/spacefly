@@ -11,6 +11,10 @@ import { nowTime, parseTime } from './time';
 describe('ui-logic', () => {
   it('folds case and accents', () => expect(fold('Café ÑANDÚ')).toBe('cafe nandu'));
 
+  it('folds decomposed accents and leaves other characters alone', () => {
+    expect(fold('Cafe\u0301 Åre, Łódź 100%')).toBe('cafe are, lodz 100%');
+  });
+
   it('reads typed times', () => {
     expect(parseTime('930')).toBe('09:30');
     expect(parseTime('21.05')).toBe('21:05');

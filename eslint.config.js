@@ -106,6 +106,10 @@ module.exports = defineConfig([
           selector: "Decorator[expression.callee.name='Component']",
           message: 'Components are platform-specific: libs/client exposes view-models instead.',
         },
+        {
+          selector: "Literal[regex.pattern=/\\\\[pP]\\{/]",
+          message: 'The NativeScript Android V8 has no ICU: regex Unicode property escapes throw at parse time. Use an explicit character class.',
+        },
       ],
     },
   },
@@ -173,6 +177,13 @@ module.exports = defineConfig([
               message: 'Web-only dependency: not available in NativeScript.',
             },
           ],
+        },
+      ],
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: "Literal[regex.pattern=/\\\\[pP]\\{/]",
+          message: 'The NativeScript Android V8 has no ICU: regex Unicode property escapes throw at parse time. Use an explicit character class.',
         },
       ],
     },

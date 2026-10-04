@@ -1,8 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Dialogs } from '@nativescript/core';
 import { Confirm, type ConfirmOptions } from '@spacefly/client/platform/confirm';
-
-const fold = (s: string): string => s.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase();
+import { fold } from '@spacefly/client/ui-logic/fold';
 
 /** Native confirm dialog; when the action needs a typed confirmation (`requireText`) a prompt asks for it. */
 @Injectable()

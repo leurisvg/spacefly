@@ -434,6 +434,7 @@
     "outflow": "Outflows"
   },
   "explorer": {
+    "allTypes": "All",
     "description": "Search, filter, sort and export your transactions.",
     "search": "Search",
     "clear": "Clear",
@@ -448,6 +449,22 @@
     "page": "Page {{page}} of {{pages}}"
   },
   "settings": {
+    "mobile": {
+      "signedIn": "Signed in",
+      "server": "Server",
+      "serverUrl": "Server URL",
+      "invalidUrl": "Enter a valid URL (https://…).",
+      "access": "Cloudflare Access",
+      "accessHint": "Only needed if your server sits behind Cloudflare Access: a service token (client ID and secret).",
+      "clientId": "Client ID",
+      "clientSecret": "Client secret",
+      "save": "Save",
+      "saved": "Server settings saved",
+      "test": "Test connection",
+      "testOk": "Connection OK",
+      "testBlocked": "Blocked by Cloudflare Access: check the service token.",
+      "testFailed": "Could not reach the server."
+    },
     "description": "SpaceFly preferences (stored in SpaceFly, never in Firefly).",
     "save": "Save",
     "saved": "Settings saved",
