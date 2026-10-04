@@ -1,4 +1,4 @@
-import { daysInRange, todayIso, type CalendarDay, type CalendarReport, type Period, type ScheduledItem, type YearHeatmapReport } from '@shared';
+import { daysInRange, todayIso, type CalendarDay, type CalendarReport, type Period, type ScheduledItem, type YearHeatmapReport } from '@spacefly/shared';
 import { isExpense, isIncome, round, type ReportContext, type Split } from '../core/ledger';
 import type { FfBill, FfRecurrence, FfResource } from '../firefly/firefly.types';
 

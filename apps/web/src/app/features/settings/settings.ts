@@ -3,7 +3,7 @@ import { ChangeDetectionStrategy, Component, inject, linkedSignal, signal } from
 import { FormsModule } from '@angular/forms';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { firstValueFrom } from 'rxjs';
-import type { SettingsResponse, UserSettings } from '@shared';
+import type { SettingsResponse, UserSettings } from '@spacefly/shared';
 import { toast } from '@spartan-ng/brain/sonner';
 import { HlmBadge } from '@spartan-ng/helm/badge';
 import { HlmButton } from '@spartan-ng/helm/button';

@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input, output } from '@angular/core';
-import type { SankeyNode, SankeyReport } from '@shared';
+import type { SankeyNode, SankeyReport } from '@spacefly/shared';
 import { FormatService } from '../../core/format/format.service';
 import { I18n } from '../../core/i18n/i18n';
 import { sankeyOption } from './builders';

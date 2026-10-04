@@ -10,7 +10,7 @@ import {
   type InterestPeriod,
   type LiabilityDirection,
   type LiabilityType,
-} from '@shared';
+} from '@spacefly/shared';
 import { HlmButton } from '@spartan-ng/helm/button';
 import { HlmInput } from '@spartan-ng/helm/input';
 import { HlmSkeleton } from '@spartan-ng/helm/skeleton';

@@ -8,7 +8,7 @@ import {
   type AccountSlot,
   type TxEditPayload,
   type TxKind,
-} from '@shared';
+} from '@spacefly/shared';
 import type { FfAccount, FfBill, FfBudget, FfCategory, FfPiggyBank, FfResource, FfTag, FfTransactionGroup } from '../firefly/firefly.types';
 import { NotEditable, ValidationFailed } from '../routes/errors';
 import type {
@@ -31,7 +31,7 @@ import type {
   RepeatFreq,
   TagEditPayload,
   TagWrite,
-} from '@shared';
+} from '@spacefly/shared';
 import type { TxWriteBody } from '../routes/write.schemas';
 import type { Account } from './firefly-data';
 

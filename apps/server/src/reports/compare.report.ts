@@ -1,4 +1,4 @@
-import type { AnnualReport, CompareReport, CompareRow, GroupBy, Period } from '@shared';
+import type { AnnualReport, CompareReport, CompareRow, GroupBy, Period } from '@spacefly/shared';
 import { isExpense, isIncome, round, type ReportContext, type Split } from '../core/ledger';
 import { totals } from './helpers';
 import { aggregate, keyFns, kindFilter } from './ranking.report';

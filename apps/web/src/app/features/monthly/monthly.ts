@@ -3,7 +3,7 @@ import { RouterLink } from '@angular/router';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideChevronRight } from '@ng-icons/lucide';
 import { TranslocoPipe } from '@jsverse/transloco';
-import type { CalendarReport, CategoryRow, MonthlyReport, SankeyNode, SankeyReport } from '@shared';
+import type { CalendarReport, CategoryRow, MonthlyReport, SankeyNode, SankeyReport } from '@spacefly/shared';
 import { HlmButton } from '@spartan-ng/helm/button';
 import { reportResource } from '../../core/api/report-resource';
 import { FormatService } from '../../core/format/format.service';

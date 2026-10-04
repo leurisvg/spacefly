@@ -14,7 +14,7 @@
     "resolveJsonModule": true,
     "noEmit": true,
     "paths": {
-      "@shared": ["../../libs/shared/src/index.ts"]
+      "@spacefly/shared": ["../../libs/shared/src/index.ts"]
     }
   },
   "include": ["src/**/*.ts", "test/**/*.ts", "scripts/**/*.ts", "../../libs/shared/src/**/*.ts", "vitest.config.ts", "tsup.config.ts"]

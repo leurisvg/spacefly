@@ -3,7 +3,7 @@ import { HttpTestingController, provideHttpClientTesting, type TestRequest } fro
 import { Component, signal } from '@angular/core';
 import { TestBed, type ComponentFixture } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
-import { todayIso, type EditorLookups, type TxEditPayload } from '@shared';
+import { todayIso, type EditorLookups, type TxEditPayload } from '@spacefly/shared';
 import { FiltersStore } from '../../core/state/filters.store';
 import { MetaStore } from '../../core/state/meta.store';
 import { formatTestProviders, loadTranslations } from '../../../testing/format-providers';

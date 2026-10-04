@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { TranslocoPipe } from '@jsverse/transloco';
-import type { RecurrencesReport } from '@shared';
+import type { RecurrencesReport } from '@spacefly/shared';
 import { HlmBadge } from '@spartan-ng/helm/badge';
 import { reportResource } from '../../core/api/report-resource';
 import { FORMAT_PIPES } from '../../core/format/pipes';

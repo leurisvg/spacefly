@@ -1,6 +1,6 @@
 import { httpResource } from '@angular/common/http';
 import { computed, effect, inject, Injectable } from '@angular/core';
-import type { CurrencyInfo, MetaResponse } from '@shared';
+import type { CurrencyInfo, MetaResponse } from '@spacefly/shared';
 import { FiltersStore } from './filters.store';
 
 export interface Lookups {

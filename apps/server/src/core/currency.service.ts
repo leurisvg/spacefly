@@ -1,4 +1,4 @@
-import type { RateInUse } from '@shared';
+import type { RateInUse } from '@spacefly/shared';
 import type { FfExchangeRate } from '../firefly/firefly.types';
 
 /** One known rate: `value` primary-currency units per 1 unit of the foreign currency. */

@@ -1,7 +1,7 @@
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { firstValueFrom, type Observable } from 'rxjs';
-import type { TxEditPayload, TxWriteRequest, TxWriteResult, ValidationErrorBody } from '@shared';
+import type { TxEditPayload, TxWriteRequest, TxWriteResult, ValidationErrorBody } from '@spacefly/shared';
 import { FiltersStore } from '../state/filters.store';
 
 /** A failed write, with what the server said: field errors (422), "not editable" (409)… */

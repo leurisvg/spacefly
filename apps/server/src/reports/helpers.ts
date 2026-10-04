@@ -1,4 +1,4 @@
-import { daysBetween, monthsInRange, type Amount, type Period } from '@shared';
+import { daysBetween, monthsInRange, type Amount, type Period } from '@spacefly/shared';
 import type { Account } from '../core/firefly-data';
 import { isExpense, isIncome, round, signOf, type ReportContext, type Split } from '../core/ledger';
 import type { FfBudget, FfBudgetLimit, FfResource } from '../firefly/firefly.types';

@@ -1,4 +1,4 @@
-import { daysInRange, weekdayMon0, type AccountDetailReport, type AccountTxRow, type RankedItem } from '@shared';
+import { daysInRange, weekdayMon0, type AccountDetailReport, type AccountTxRow, type RankedItem } from '@spacefly/shared';
 import type { Account } from '../core/firefly-data';
 import { groupBy, isExpense, isIncome, isTransfer, round, type ReportContext, type Split } from '../core/ledger';
 import { balanceIn } from './helpers';

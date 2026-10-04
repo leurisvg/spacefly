@@ -17,7 +17,7 @@ import {
   lucideX,
 } from '@ng-icons/lucide';
 import { TranslocoPipe } from '@jsverse/transloco';
-import type { Report, SearchResponse, TxListResponse, TxRow } from '@shared';
+import type { Report, SearchResponse, TxListResponse, TxRow } from '@spacefly/shared';
 import { HlmBadge } from '@spartan-ng/helm/badge';
 import { toast } from '@spartan-ng/brain/sonner';
 import { HlmButton } from '@spartan-ng/helm/button';

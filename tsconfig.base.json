@@ -13,7 +13,7 @@
     "target": "ES2022",
     "module": "preserve",
     "paths": {
-      "@shared": ["./libs/shared/src/index.ts"],
+      "@spacefly/shared": ["./libs/shared/src/index.ts"],
       "@spartan-ng/helm/button": ["./apps/web/src/libs/ui/button/src/index.ts"],
       "@spartan-ng/helm/utils": ["./apps/web/src/libs/ui/utils/src/index.ts"],
       "@spartan-ng/helm/sidebar": ["./apps/web/src/libs/ui/sidebar/src/index.ts"],

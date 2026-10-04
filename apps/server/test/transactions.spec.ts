@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { EditorLookups, Report, TxEditPayload, TxListResponse, TxWriteResult, MonthlyReport } from '@shared';
+import type { EditorLookups, Report, TxEditPayload, TxListResponse, TxWriteResult, MonthlyReport } from '@spacefly/shared';
 import { call, login, setup, writesTo } from './harness';
 
 const base = {

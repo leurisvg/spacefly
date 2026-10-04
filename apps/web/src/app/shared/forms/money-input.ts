@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, effect, ElementRef, inject, input, model, output, signal, untracked, viewChild } from '@angular/core';
 import type { FormValueControl } from '@angular/forms/signals';
-import { parseAmount } from '@shared';
+import { parseAmount } from '@spacefly/shared';
 import { HlmInput } from '@spartan-ng/helm/input';
 import { FormatService } from '../../core/format/format.service';
 import { MetaStore } from '../../core/state/meta.store';

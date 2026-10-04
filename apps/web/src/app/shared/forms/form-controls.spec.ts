@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { form, FormField as Field, required, validate } from '@angular/forms/signals';
 import { BrnCalendarI18nService } from '@spartan-ng/brain/calendar';
-import { addDays, todayIso } from '@shared';
+import { addDays, todayIso } from '@spacefly/shared';
 import { formatTestProviders, loadTranslations } from '../../../testing/format-providers';
 import { EN } from '../../../testing/translations';
 import { Select } from '../components/select';

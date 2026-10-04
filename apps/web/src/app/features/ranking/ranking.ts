@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, inject, input } from '@an
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucidePencil, lucidePlus } from '@ng-icons/lucide';
 import { TranslocoPipe } from '@jsverse/transloco';
-import type { BudgetsReport, GroupBy, RankingReport } from '@shared';
+import type { BudgetsReport, GroupBy, RankingReport } from '@spacefly/shared';
 import { HlmButton } from '@spartan-ng/helm/button';
 import { HlmToggleGroupImports } from '@spartan-ng/helm/toggle-group';
 import { reportResource } from '../../core/api/report-resource';

@@ -1,4 +1,4 @@
-import { todayIso } from '@shared';
+import { todayIso } from '@spacefly/shared';
 import { EDITOR_LOOKUPS } from '../../../testing/lookups';
 import { mountEditor, verifyNoPendingRequests } from '../../../testing/editor-harness';
 import { BillForm } from './bill-form';

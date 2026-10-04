@@ -1,5 +1,5 @@
 import { Injectable, signal } from '@angular/core';
-import type { TxFilter } from '@shared';
+import type { TxFilter } from '@spacefly/shared';
 
 /** One member of a grouped slice (e.g. a category folded into "Others") with its amount. */
 export interface BreakdownRow {

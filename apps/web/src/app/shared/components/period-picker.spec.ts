@@ -1,6 +1,6 @@
 import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import type { Period, PeriodPreset } from '@shared';
+import type { Period, PeriodPreset } from '@spacefly/shared';
 import { formatTestProviders } from '../../../testing/format-providers';
 import { FiltersStore } from '../../core/state/filters.store';
 import { PeriodPicker } from './period-picker';

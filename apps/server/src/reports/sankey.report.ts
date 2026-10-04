@@ -1,4 +1,4 @@
-import type { SankeyLink, SankeyNode, SankeyNodeKind, SankeyOptions, SankeyReport } from '@shared';
+import type { SankeyLink, SankeyNode, SankeyNodeKind, SankeyOptions, SankeyReport } from '@spacefly/shared';
 import { isExpense, isIncome, round, type ReportContext, type Split } from '../core/ledger';
 
 export const DEFAULT_SANKEY_OPTIONS: SankeyOptions = {

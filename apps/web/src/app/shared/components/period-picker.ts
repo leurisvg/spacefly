@@ -3,7 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideCalendarRange, lucideCheck, lucideChevronLeft, lucideChevronRight } from '@ng-icons/lucide';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
-import { addMonths, isIsoDate, presetPeriod, todayIso, type PeriodPreset } from '@shared';
+import { addMonths, isIsoDate, presetPeriod, todayIso, type PeriodPreset } from '@spacefly/shared';
 import { HlmButton } from '@spartan-ng/helm/button';
 import { HlmInput } from '@spartan-ng/helm/input';
 import { HlmLabel } from '@spartan-ng/helm/label';

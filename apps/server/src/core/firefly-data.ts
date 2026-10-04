@@ -1,4 +1,4 @@
-import { monthsInRange, startOfMonth, todayIso, type Period } from '@shared';
+import { monthsInRange, startOfMonth, todayIso, type Period } from '@spacefly/shared';
 import type { Config } from '../config';
 import type { Db } from '../db/sqlite';
 import type { FireflyReader } from '../firefly/firefly.client';

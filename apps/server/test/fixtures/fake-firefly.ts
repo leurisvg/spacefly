@@ -7,7 +7,7 @@
  * everything else in per-instance overlays, so a dataset's accounts/bills/… stay reusable.
  * Validation errors use Firefly's 422 shape: `{ message, errors: { field: [..] } }`.
  */
-import { accountKind, inferTransactionType, isPositiveAmount, type AccountKind, type AccountSlot } from '@shared';
+import { accountKind, inferTransactionType, isPositiveAmount, type AccountKind, type AccountSlot } from '@spacefly/shared';
 
 type Resource = { type: string; id: string; attributes: Record<string, unknown> };
 type Attrs = Record<string, unknown>;

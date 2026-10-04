@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { TranslocoPipe } from '@jsverse/transloco';
-import type { ProjectionReport } from '@shared';
+import type { ProjectionReport } from '@spacefly/shared';
 import { HlmToggleGroupImports } from '@spartan-ng/helm/toggle-group';
 import { reportResource } from '../../core/api/report-resource';
 import { FormatService } from '../../core/format/format.service';

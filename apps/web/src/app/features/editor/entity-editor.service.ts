@@ -1,5 +1,5 @@
 import { Injectable, signal } from '@angular/core';
-import type { AccountWriteType } from '@shared';
+import type { AccountWriteType } from '@spacefly/shared';
 
 export type EntityKind = 'category' | 'tag' | 'budget' | 'bill' | 'account' | 'piggy';
 

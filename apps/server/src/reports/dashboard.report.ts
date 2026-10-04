@@ -1,4 +1,4 @@
-import { addDays, todayIso, type DashboardReport, type Kpi, type NamedValue, type TopCategory } from '@shared';
+import { addDays, todayIso, type DashboardReport, type Kpi, type NamedValue, type TopCategory } from '@spacefly/shared';
 import type { Account } from '../core/firefly-data';
 import { isExpense, round, type ReportContext, type Split } from '../core/ledger';
 import type { FfBill, FfBudget, FfBudgetLimit, FfResource } from '../firefly/firefly.types';

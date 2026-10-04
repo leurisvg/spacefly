@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { form, FormField as Field, max, maxLength, min, validate } from '@angular/forms/signals';
-import { isIsoDate, isPositiveAmount, todayIso, type BillEditPayload, type BillWrite, type RepeatFreq } from '@shared';
+import { isIsoDate, isPositiveAmount, todayIso, type BillEditPayload, type BillWrite, type RepeatFreq } from '@spacefly/shared';
 import { HlmButton } from '@spartan-ng/helm/button';
 import { HlmInput } from '@spartan-ng/helm/input';
 import { HlmSkeleton } from '@spartan-ng/helm/skeleton';

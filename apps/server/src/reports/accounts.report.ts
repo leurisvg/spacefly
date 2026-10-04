@@ -1,4 +1,4 @@
-import type { AccountsReport, NetWorthReport } from '@shared';
+import type { AccountsReport, NetWorthReport } from '@spacefly/shared';
 import type { Account } from '../core/firefly-data';
 import { isExpense, isIncome, round, type ReportContext, type Split } from '../core/ledger';
 import { balanceIn, netWorthOf } from './helpers';

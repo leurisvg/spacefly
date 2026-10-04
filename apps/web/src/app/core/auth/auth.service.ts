@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
-import type { MeResponse } from '@shared';
+import type { MeResponse } from '@spacefly/shared';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {

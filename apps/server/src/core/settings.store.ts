@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import type { UserSettings } from '@shared';
+import type { UserSettings } from '@spacefly/shared';
 import type { Db } from '../db/sqlite';
 
 export const settingsSchema = z.object({

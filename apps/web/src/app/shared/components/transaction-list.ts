@@ -3,7 +3,7 @@ import { NgIcon, provideIcons } from '@ng-icons/core';
 import { RouterLink } from '@angular/router';
 import { lucideArrowRightLeft, lucideExternalLink, lucidePencil } from '@ng-icons/lucide';
 import { TranslocoPipe } from '@jsverse/transloco';
-import type { TxRow } from '@shared';
+import type { TxRow } from '@spacefly/shared';
 import { HlmBadge } from '@spartan-ng/helm/badge';
 import { FORMAT_PIPES } from '../../core/format/pipes';
 import { MetaStore } from '../../core/state/meta.store';

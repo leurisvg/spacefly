@@ -1,7 +1,7 @@
 import { HttpClient, httpResource } from '@angular/common/http';
 import { computed, inject, Injectable, linkedSignal, type Signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
-import type { Report, ReportMeta } from '@shared';
+import type { Report, ReportMeta } from '@spacefly/shared';
 import { FiltersStore } from '../state/filters.store';
 
 export type Params = Record<string, string | number | boolean>;

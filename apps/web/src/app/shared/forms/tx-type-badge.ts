@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
-import { inferTransactionType, type AccountSlot } from '@shared';
+import { inferTransactionType, type AccountSlot } from '@spacefly/shared';
 import { I18n } from '../../core/i18n/i18n';
 
 /**

@@ -3,7 +3,7 @@ import { Router, RouterLink } from '@angular/router';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucidePencil, lucidePlus } from '@ng-icons/lucide';
 import { TranslocoPipe } from '@jsverse/transloco';
-import type { CounterpartiesReport, CounterpartyItem, CounterpartyKind } from '@shared';
+import type { CounterpartiesReport, CounterpartyItem, CounterpartyKind } from '@spacefly/shared';
 import { HlmButton } from '@spartan-ng/helm/button';
 import { reportResource } from '../../core/api/report-resource';
 import { FormatService } from '../../core/format/format.service';

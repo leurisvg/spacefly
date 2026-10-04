@@ -16,7 +16,7 @@ import {
   type Report,
   type SettingsResponse,
   type TxListResponse,
-} from '@shared';
+} from '@spacefly/shared';
 import type { AppEnv, Services } from '../app.types';
 import { monthEnds, type FireflyData } from '../core/firefly-data';
 import { applyFilter, counterpartySide, isExpense, isIncome, isTransfer, ReportContext, round } from '../core/ledger';

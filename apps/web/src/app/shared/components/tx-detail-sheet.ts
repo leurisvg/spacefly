@@ -4,7 +4,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NavigationStart, Router } from '@angular/router';
 import { filter } from 'rxjs';
 import { TranslocoPipe } from '@jsverse/transloco';
-import type { Report, TxListResponse, TxRow } from '@shared';
+import type { Report, TxListResponse, TxRow } from '@spacefly/shared';
 import { HlmSheetImports } from '@spartan-ng/helm/sheet';
 import { HlmSkeleton } from '@spartan-ng/helm/skeleton';
 import { FORMAT_PIPES } from '../../core/format/pipes';

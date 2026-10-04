@@ -6,7 +6,7 @@ import { lucideCheck, lucideChevronDown, lucideChevronUp, lucideGripVertical, lu
 import { toast } from '@spartan-ng/brain/sonner';
 import { firstValueFrom } from 'rxjs';
 import { TranslocoPipe } from '@jsverse/transloco';
-import type { AccountsReport } from '@shared';
+import type { AccountsReport } from '@spacefly/shared';
 import { HlmBadge } from '@spartan-ng/helm/badge';
 import { HlmButton } from '@spartan-ng/helm/button';
 import { reportResource } from '../../core/api/report-resource';

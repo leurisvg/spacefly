@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
-import type { NetWorthReport } from '@shared';
+import type { NetWorthReport } from '@spacefly/shared';
 import { reportResource } from '../../core/api/report-resource';
 import { FormatService } from '../../core/format/format.service';
 import { I18n } from '../../core/i18n/i18n';

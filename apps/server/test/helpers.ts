@@ -1,4 +1,4 @@
-import type { Period } from '@shared';
+import type { Period } from '@spacefly/shared';
 import { CurrencyService } from '../src/core/currency.service';
 import { normalizeGroups, ReportContext, type Split } from '../src/core/ledger';
 import type { FfResource, FfTransactionGroup } from '../src/firefly/firefly.types';

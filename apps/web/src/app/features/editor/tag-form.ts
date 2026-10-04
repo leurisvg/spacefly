@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { form, FormField as Field, maxLength, validate } from '@angular/forms/signals';
-import { isIsoDate, type TagEditPayload, type TagWrite } from '@shared';
+import { isIsoDate, type TagEditPayload, type TagWrite } from '@spacefly/shared';
 import { HlmButton } from '@spartan-ng/helm/button';
 import { HlmInput } from '@spartan-ng/helm/input';
 import { HlmSkeleton } from '@spartan-ng/helm/skeleton';

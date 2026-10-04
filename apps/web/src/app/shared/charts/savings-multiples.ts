@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
-import type { SavingsSeries } from '@shared';
+import type { SavingsSeries } from '@spacefly/shared';
 import { FormatService } from '../../core/format/format.service';
 import { Money } from '../components/money';
 import { linesOption } from './builders';

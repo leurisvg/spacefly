@@ -1,7 +1,7 @@
 import type { Context } from 'hono';
 import type { ContentfulStatusCode } from 'hono/utils/http-status';
 import { z } from 'zod';
-import type { ValidationErrorBody } from '@shared';
+import type { ValidationErrorBody } from '@spacefly/shared';
 import type { AppEnv } from '../app.types';
 import { FireflyError } from '../firefly/firefly.client';
 

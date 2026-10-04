@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { SankeyReport } from '@shared';
+import type { SankeyReport } from '@spacefly/shared';
 import { isExpense, isIncome, type ReportContext, type Split } from '../src/core/ledger';
 import type { FfBudget, FfBudgetLimit, FfResource } from '../src/firefly/firefly.types';
 import { buildCalendar } from '../src/reports/calendar.report';

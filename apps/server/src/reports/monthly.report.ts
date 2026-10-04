@@ -1,4 +1,4 @@
-import type { AssetActivityRow, BudgetRow, CategoryRow, MonthlyReport, Period, SavingsSeries } from '@shared';
+import type { AssetActivityRow, BudgetRow, CategoryRow, MonthlyReport, Period, SavingsSeries } from '@spacefly/shared';
 import type { Account } from '../core/firefly-data';
 import { isExpense, isIncome, round, type ReportContext, type Split } from '../core/ledger';
 import type { FfBudget, FfBudgetLimit, FfResource } from '../firefly/firefly.types';

@@ -1,4 +1,4 @@
-import type { FxPart, Period, Ref, TxFilter, TxRow } from '@shared';
+import type { FxPart, Period, Ref, TxFilter, TxRow } from '@spacefly/shared';
 import type { FfResource, FfTransactionGroup } from '../firefly/firefly.types';
 import type { CurrencyService } from './currency.service';
 

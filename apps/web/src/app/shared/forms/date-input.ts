@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, effect, inject, input, model, output, untracked } from '@angular/core';
 import type { FormValueControl } from '@angular/forms/signals';
 import { BrnCalendarI18nService } from '@spartan-ng/brain/calendar';
-import { addDays, isIsoDate, todayIso } from '@shared';
+import { addDays, isIsoDate, todayIso } from '@spacefly/shared';
 import { HlmDatePickerImports } from '@spartan-ng/helm/date-picker';
 import { FormatService } from '../../core/format/format.service';
 import { I18n } from '../../core/i18n/i18n';

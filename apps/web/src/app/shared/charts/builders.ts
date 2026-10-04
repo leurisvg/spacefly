@@ -1,5 +1,5 @@
 import type { EChartsCoreOption } from 'echarts/core';
-import type { AccountDay, SankeyReport } from '@shared';
+import type { AccountDay, SankeyReport } from '@spacefly/shared';
 import type { FormatService } from '../../core/format/format.service';
 import { cssVar, esc, tooltipRow, tooltipTitle } from './chart-theme';
 import { money } from './series-colors';

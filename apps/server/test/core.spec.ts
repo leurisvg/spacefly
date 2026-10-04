@@ -8,7 +8,7 @@ import {
   samePeriodLastYear,
   shiftPeriod,
   weekdayMon0,
-} from '@shared';
+} from '@spacefly/shared';
 import { Sealer } from '../src/auth/crypto';
 import { CurrencyService } from '../src/core/currency.service';
 import { applyFilter } from '../src/core/ledger';

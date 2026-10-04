@@ -78,7 +78,7 @@ Browser ──(Cloudflare Zero Trust)──► SpaceFly (Node container)
 SpaceFly/                         # npm workspaces: apps/*, libs/*
 ├─ package.json                 # scripts + all Angular/rxjs/echarts deps (a single Angular copy)
 ├─ angular.json                 # project SpaceFly (apps/web)
-├─ tsconfig.base.json           # compilerOptions + ALL path aliases (@shared, @spartan-ng/helm/*)
+├─ tsconfig.base.json           # compilerOptions + ALL path aliases (@spacefly/shared, @spartan-ng/helm/*)
 ├─ tsconfig.json                # solution file (references)
 ├─ components.json              # spartan CLI config
 ├─ Dockerfile                   # multi-stage: build web + build server → node:24-alpine

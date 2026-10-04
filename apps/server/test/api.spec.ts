@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { exportJWK, generateKeyPair, SignJWT } from 'jose';
-import type { AccountDetailReport, CounterpartiesReport, CounterpartyDetailReport, MonthlyReport, Report, SankeyReport, TxListResponse } from '@shared';
+import type { AccountDetailReport, CounterpartiesReport, CounterpartyDetailReport, MonthlyReport, Report, SankeyReport, TxListResponse } from '@spacefly/shared';
 import { login, setup } from './harness';
 
 describe('auth', () => {

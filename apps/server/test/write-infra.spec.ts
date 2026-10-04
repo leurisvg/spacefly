@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it, vi } from 'vitest';
-import { accountKind, amountSide, inferTransactionType, isPositiveAmount, parseAmount, type AccountSlot } from '@shared';
+import { accountKind, amountSide, inferTransactionType, isPositiveAmount, parseAmount, type AccountSlot } from '@spacefly/shared';
 import { Cache } from '../src/core/cache';
 import { FireflyClient, FireflyError, type TokenProvider } from '../src/firefly/firefly.client';
 import { translateFields } from '../src/routes/errors';

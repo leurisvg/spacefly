@@ -1,4 +1,4 @@
-import type { GroupBy, RankingReport } from '@shared';
+import type { GroupBy, RankingReport } from '@spacefly/shared';
 import { counterpartySide, isExpense, isIncome, round, assetSide, type ReportContext, type Split } from '../core/ledger';
 
 export interface Key {

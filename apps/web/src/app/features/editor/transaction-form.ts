@@ -13,7 +13,7 @@ import {
   type AccountSlot,
   type TxEditPayload,
   type TxWriteRequest,
-} from '@shared';
+} from '@spacefly/shared';
 import { toast } from '@spartan-ng/brain/sonner';
 import { HlmButton } from '@spartan-ng/helm/button';
 import { HlmSkeleton } from '@spartan-ng/helm/skeleton';

@@ -1,4 +1,4 @@
-import { daysInRange, weekdayMon0, type CounterpartiesReport, type CounterpartyDetailReport, type CounterpartyKind, type RankedItem } from '@shared';
+import { daysInRange, weekdayMon0, type CounterpartiesReport, type CounterpartyDetailReport, type CounterpartyKind, type RankedItem } from '@spacefly/shared';
 import type { Account } from '../core/firefly-data';
 import { assetSide, counterpartySide, groupBy, round, type ReportContext, type Split } from '../core/ledger';
 import { kindFilter } from './ranking.report';

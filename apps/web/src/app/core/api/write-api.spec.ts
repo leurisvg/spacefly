@@ -1,7 +1,7 @@
 import { HttpErrorResponse, provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import type { TxWriteRequest } from '@shared';
+import type { TxWriteRequest } from '@spacefly/shared';
 import { FiltersStore } from '../state/filters.store';
 import { WriteApi, WriteError } from './write-api';
 

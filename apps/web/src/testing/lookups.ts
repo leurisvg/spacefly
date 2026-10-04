@@ -1,4 +1,4 @@
-import type { EditorLookups } from '@shared';
+import type { EditorLookups } from '@spacefly/shared';
 
 /** What `/api/lookups/editor` would answer for the specs. */
 export const EDITOR_LOOKUPS: EditorLookups = {

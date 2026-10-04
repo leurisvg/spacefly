@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import type { AccountSlot } from '@shared';
+import type { AccountSlot } from '@spacefly/shared';
 import { formatTestProviders, loadTranslations } from '../../../testing/format-providers';
 import { EN } from '../../../testing/translations';
 import { TxTypeBadge } from './tx-type-badge';

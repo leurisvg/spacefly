@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
-import type { FxPart } from '@shared';
+import type { FxPart } from '@spacefly/shared';
 import { HlmTooltip } from '@spartan-ng/helm/tooltip';
 import { FormatService } from '../../core/format/format.service';
 

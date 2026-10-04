@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { TranslocoPipe } from '@jsverse/transloco';
-import { endOfMonth, isFullMonth, startOfMonth, type CalendarReport, type YearHeatmapReport } from '@shared';
+import { endOfMonth, isFullMonth, startOfMonth, type CalendarReport, type YearHeatmapReport } from '@spacefly/shared';
 import { HlmToggleGroupImports } from '@spartan-ng/helm/toggle-group';
 import { reportResource } from '../../core/api/report-resource';
 import { FormatService } from '../../core/format/format.service';

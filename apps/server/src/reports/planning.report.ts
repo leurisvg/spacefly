@@ -11,7 +11,7 @@ import {
   type ProjectionReport,
   type RecurrenceRow,
   type RecurrencesReport,
-} from '@shared';
+} from '@spacefly/shared';
 import { round, type ReportContext, type Split } from '../core/ledger';
 import type { FfBill, FfPiggyBank, FfPiggyBankEvent, FfRecurrence, FfResource } from '../firefly/firefly.types';
 

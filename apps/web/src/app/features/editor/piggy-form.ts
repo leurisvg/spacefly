@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@a
 import { applyEach, form, FormField as Field, maxLength, validate } from '@angular/forms/signals';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideMinus, lucidePlus, lucideX } from '@ng-icons/lucide';
-import { isIsoDate, isPositiveAmount, parseAmount, type PiggyEditPayload, type PiggyWrite } from '@shared';
+import { isIsoDate, isPositiveAmount, parseAmount, type PiggyEditPayload, type PiggyWrite } from '@spacefly/shared';
 import { HlmButton } from '@spartan-ng/helm/button';
 import { HlmInput } from '@spartan-ng/helm/input';
 import { HlmSkeleton } from '@spartan-ng/helm/skeleton';

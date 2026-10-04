@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { AccountEditPayload, BillEditPayload, BudgetEditPayload, CategoryEditPayload, EditorLookups, PiggyEditPayload, TagEditPayload, TxWriteResult } from '@shared';
+import type { AccountEditPayload, BillEditPayload, BudgetEditPayload, CategoryEditPayload, EditorLookups, PiggyEditPayload, TagEditPayload, TxWriteResult } from '@spacefly/shared';
 import { call, login, setup, writesTo } from './harness';
 
 async function start() {

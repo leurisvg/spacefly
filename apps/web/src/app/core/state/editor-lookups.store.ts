@@ -1,6 +1,6 @@
 import { httpResource } from '@angular/common/http';
 import { computed, inject, Injectable } from '@angular/core';
-import type { EditorLookups } from '@shared';
+import type { EditorLookups } from '@spacefly/shared';
 import { FiltersStore } from './filters.store';
 
 /** Everything the editors pick from (accounts of every kind, categories, tags…), refetched after each write. */

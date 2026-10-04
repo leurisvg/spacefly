@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { TranslocoPipe } from '@jsverse/transloco';
-import { isIsoDate, previousPeriod, samePeriodLastYear, type CompareReport, type CompareRow, type GroupBy, type Period } from '@shared';
+import { isIsoDate, previousPeriod, samePeriodLastYear, type CompareReport, type CompareRow, type GroupBy, type Period } from '@spacefly/shared';
 import { HlmInput } from '@spartan-ng/helm/input';
 import { HlmToggleGroupImports } from '@spartan-ng/helm/toggle-group';
 import { reportResource } from '../../core/api/report-resource';

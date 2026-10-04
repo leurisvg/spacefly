@@ -10,7 +10,7 @@ import {
   type PiggyWrite,
   type TagWrite,
   type TxWriteRequest,
-} from '@shared';
+} from '@spacefly/shared';
 import type { AppEnv } from '../app.types';
 import { BadRequest, ValidationFailed } from './errors';
 

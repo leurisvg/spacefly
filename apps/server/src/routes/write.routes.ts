@@ -17,7 +17,7 @@ import {
   type TagEditPayload,
   type TagWrite,
   type TxWriteResult,
-} from '@shared';
+} from '@spacefly/shared';
 import type { AppEnv, Services } from '../app.types';
 import { accountBody, assertEditable, billBody, budgetBody, categoryBody, momentOf, piggyBody, resolveTransaction, tagBody, toAccountEdit, toBillEdit, toBudgetEdit, toCategoryEdit, toEditPayload, toPiggyEdit, toTagEdit, transactionBody } from '../core/firefly-payloads';
 import type { FireflyData } from '../core/firefly-data';

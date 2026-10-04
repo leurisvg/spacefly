@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input, output } from '@angular/core';
 import { TranslocoPipe } from '@jsverse/transloco';
-import { todayIso, weekdayMon0, type CalendarDay, type ScheduledItem } from '@shared';
+import { todayIso, weekdayMon0, type CalendarDay, type ScheduledItem } from '@spacefly/shared';
 import { HlmTooltip } from '@spartan-ng/helm/tooltip';
 import { FormatService } from '../../core/format/format.service';
 
