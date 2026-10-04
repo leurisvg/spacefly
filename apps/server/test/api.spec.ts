@@ -262,6 +262,12 @@ describe('reports API', () => {
     // Newest first: the USD 50 dinner, then the USD 500 freelance deposit, each with its balance in USD.
     expect(d.rows.map((r) => [r.flowOriginal, r.balanceOriginal])).toEqual([[-50, 2900], [500, 2950]]);
     expect(d.rows[0].flow).toBeCloseTo(-3050, 0);
+    // Daily balance, monthly trend, weekdays and rankings come in USD too, ending on the real USD balance.
+    expect(d.days.at(-1)!.balanceOriginal).toBe(2900);
+    expect(d.days[0].balanceOriginal).toBe(d.openingOriginal);
+    expect(d.months.at(-1)).toMatchObject({ incomeOriginal: 500, expenseOriginal: 50 });
+    expect(d.byWeekdayOriginal.reduce((x, y) => x + y, 0)).toBe(50);
+    expect(d.topMerchants.map((m) => m.valueOriginal)).toEqual([50]);
   });
 
   it('lists expense and revenue accounts with period, previous period and last activity', async () => {

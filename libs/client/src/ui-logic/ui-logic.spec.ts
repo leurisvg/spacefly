@@ -64,6 +64,7 @@ describe('ui-logic', () => {
       expect(calendarBlanks(days)).toBe(2); // 2026-09-02 is a Wednesday
       expect([950, 1200].map((v) => shortAmount(v, false))).toEqual(['950', '1.2k']);
       expect(shortAmount(1200, true)).toBe('0');
+      expect([12400, 950].map((v) => shortAmount(v, false, true))).toEqual(['12k', '950']);
     });
   });
 });

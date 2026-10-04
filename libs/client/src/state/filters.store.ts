@@ -23,12 +23,22 @@ export class FiltersStore {
   /** Bumped by "Refresh" so every report resource refetches. */
   readonly refreshTick = signal(0);
 
+  /**
+   * A period owned by the screen being shown: it wins over the query string and is dropped when the
+   * screen releases it, so it never leaks to the next page through preserved query params.
+   */
+  private readonly pageScope = signal<{ preset: PeriodPreset; period: Period } | null>(null);
+
   readonly preset = computed<PeriodPreset>(() => {
+    const scoped = this.pageScope();
+    if (scoped) return scoped.preset;
     const p = this.params()['p'] as PeriodPreset | undefined;
     return p && PRESETS.includes(p) ? p : 'month';
   });
 
   readonly period = computed<Period>(() => {
+    const scoped = this.pageScope();
+    if (scoped) return scoped.period;
     const { start, end } = this.params();
     if (isIsoDate(start) && isIsoDate(end) && start <= end) return { start, end };
     const preset = this.preset();
@@ -61,16 +71,30 @@ export class FiltersStore {
     return computed(() => this.params()[name] ?? null);
   }
 
+  /**
+   * Shows `period` as a custom range until the returned function is called (call it when the screen
+   * is destroyed). While it is held the period picker edits it instead of the URL.
+   */
+  scopePeriod(period: Period): () => void {
+    this.pageScope.set({ preset: 'custom', period });
+    return () => this.pageScope.set(null);
+  }
+
   setPreset(preset: Exclude<PeriodPreset, 'custom'>, anchor = todayIso()): void {
-    this.navigate({ p: preset, ...presetPeriod(preset, anchor) });
+    this.setPeriod(preset, presetPeriod(preset, anchor));
   }
 
   setCustom(period: Period): void {
-    this.navigate({ p: 'custom', ...period });
+    this.setPeriod('custom', period);
   }
 
   shift(steps: number): void {
-    this.navigate({ p: this.preset(), ...shiftPeriod(this.preset(), this.period(), steps) });
+    this.setPeriod(this.preset(), shiftPeriod(this.preset(), this.period(), steps));
+  }
+
+  private setPeriod(preset: PeriodPreset, period: Period): void {
+    if (this.pageScope()) this.pageScope.set({ preset, period });
+    else this.navigate({ p: preset, ...period });
   }
 
   setCurrency(code: string): void {

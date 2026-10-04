@@ -17,17 +17,17 @@ type Fmt = FormatService;
 const GRID = { left: 8, right: 16, top: 40, bottom: 8, containLabel: true };
 const legendTop = (names: string[]) => ({ top: 0, left: 0, data: names });
 
-/** `f.compact` as a portable formatter. `field: 'value'` reads `{ value }` (series labels) instead of the bare number (axes). */
-const compactFmt = (f: Fmt, field: 'self' | 'value' = 'self', blankZero = false) =>
-  tagged({ k: 'compact', ...f.compactParts(), field, blankZero }, (arg: number | { value: number }) => {
+/** `f.compact` as a portable formatter. `field: 'value'` reads `{ value }` (series labels) instead of the bare number (axes). `currency` picks the symbol (default: the display currency). */
+const compactFmt = (f: Fmt, field: 'self' | 'value' = 'self', blankZero = false, currency?: string) =>
+  tagged({ k: 'compact', ...f.compactParts(currency), field, blankZero }, (arg: number | { value: number }) => {
     const v = field === 'self' ? (arg as number) : (arg as { value: number }).value;
-    return blankZero && !v ? '' : f.compact(v);
+    return blankZero && !v ? '' : f.compact(v, currency);
   });
 
-function moneyAxis(f: Fmt) {
+function moneyAxis(f: Fmt, currency?: string) {
   return {
     type: 'value' as const,
-    axisLabel: { formatter: compactFmt(f) },
+    axisLabel: { formatter: compactFmt(f, 'self', false, currency) },
     splitNumber: 4,
   };
 }
@@ -36,8 +36,11 @@ function moneyAxis(f: Fmt) {
 export function incomeExpenseOption(
   f: Fmt,
   t: (k: string) => string,
-  rows: { month: string; income: number; expense: number; net?: number }[],
+  rows: { month: string; income: number; expense: number; net?: number; own?: { income: number; expense: number } }[],
+  /** Currency the account keeps its money in: when given (and rows carry `own`) it is plotted and the conversion goes in the tooltip. */
+  own?: string,
 ): EChartsCoreOption {
+  const mine = (r: (typeof rows)[number]) => (own && r.own ? r.own : r);
   const names = [t('common.income'), t('common.expenses'), ...(rows.some((r) => r.net !== undefined) ? [t('common.net')] : [])];
   return {
     grid: GRID,
@@ -47,25 +50,28 @@ export function incomeExpenseOption(
       axisPointer: { type: 'shadow', shadowStyle: { color: 'rgba(148,163,184,0.06)' } },
       formatter: byIndex(rows.length, (i) => {
         const r = rows[i];
+        const m = mine(r);
+        const ownNet = own && r.own ? r.own.income - r.own.expense : r.net;
+        const conv = (v: number) => (m === r ? undefined : f.money(v));
         return (
           tooltipTitle(f.date(r.month, 'month')) +
-          tooltipRow(money.income(), names[0], f.money(r.income)) +
-          tooltipRow(money.expense(), names[1], f.money(-r.expense)) +
-          (r.net !== undefined ? tooltipRow(money.net(), names[2], f.money(r.net, undefined, { signed: true })) : '')
+          tooltipRow(money.income(), names[0], f.money(m.income, own), conv(r.income)) +
+          tooltipRow(money.expense(), names[1], f.money(-m.expense, own), conv(-r.expense)) +
+          (r.net !== undefined ? tooltipRow(money.net(), names[2], f.money(ownNet, own, { signed: true }), conv(r.net)) : '')
         );
       }),
     },
     xAxis: { type: 'category', data: rows.map((r) => f.monthLabel(r.month)) },
-    yAxis: moneyAxis(f),
+    yAxis: moneyAxis(f, own),
     series: [
-      { name: names[0], type: 'bar', data: rows.map((r) => r.income), itemStyle: { color: money.income() }, barGap: '8%' },
-      { name: names[1], type: 'bar', data: rows.map((r) => r.expense), itemStyle: { color: money.expense() } },
+      { name: names[0], type: 'bar', data: rows.map((r) => mine(r).income), itemStyle: { color: money.income() }, barGap: '8%' },
+      { name: names[1], type: 'bar', data: rows.map((r) => mine(r).expense), itemStyle: { color: money.expense() } },
       ...(names[2]
         ? [
             {
               name: names[2],
               type: 'line',
-              data: rows.map((r) => r.net ?? 0),
+              data: rows.map((r) => (own && r.own ? r.own.income - r.own.expense : (r.net ?? 0))),
               itemStyle: { color: money.net(), borderColor: money.surface(), borderWidth: 2 },
               lineStyle: { color: money.net(), width: 2 },
               symbolSize: 8,
@@ -207,20 +213,27 @@ export function divergingOption(
 }
 
 /** Horizontal ranking bars (single series → one hue, no legend). */
-export function rankingBarsOption(f: Fmt, rows: { name: string; value: number }[], color: string): EChartsCoreOption {
+export function rankingBarsOption(f: Fmt, rows: { name: string; value: number; own?: number }[], color: string, own?: string): EChartsCoreOption {
   const shown = rows.slice(0, 12).reverse();
+  const plotted = (r: (typeof shown)[number]) => (own && r.own !== undefined ? r.own : r.value);
   return {
     grid: { left: 8, right: 64, top: 4, bottom: 4, containLabel: true },
-    tooltip: { trigger: 'item', formatter: byIndex(shown.length, (i) => tooltipRow(color, shown[i].name, f.money(shown[i].value))) },
+    tooltip: {
+      trigger: 'item',
+      formatter: byIndex(shown.length, (i) => {
+        const r = shown[i];
+        return own && r.own !== undefined ? tooltipRow(color, r.name, f.money(r.own, own), f.money(r.value)) : tooltipRow(color, r.name, f.money(r.value));
+      }),
+    },
     xAxis: { type: 'value', show: false },
     yAxis: { type: 'category', data: shown.map((r) => r.name), axisLabel: { width: 130, overflow: 'truncate', color: money.ink2() }, axisLine: { show: false } },
     series: [
       {
         type: 'bar',
         barMaxWidth: 16,
-        data: shown.map((r) => r.value),
+        data: shown.map(plotted),
         itemStyle: { color, borderRadius: [0, 4, 4, 0] },
-        label: { show: true, position: 'right', formatter: compactFmt(f, 'value'), color: money.ink2(), fontSize: 11 },
+        label: { show: true, position: 'right', formatter: compactFmt(f, 'value', false, own), color: money.ink2(), fontSize: 11 },
       },
     ],
   };
@@ -454,38 +467,43 @@ const dayLabel = (f: Fmt, days: { date: string }[]) => (d: { date: string }) => 
 const zoomFor = (count: number) => (count > 60 ? [{ type: 'inside', zoomLock: false }] : []);
 
 /** Balance at the end of each day (future days stay empty), with a zero line when it dips below it. */
-export function dailyBalanceOption(f: Fmt, label: string, days: AccountDay[]): EChartsCoreOption {
+export function dailyBalanceOption(f: Fmt, label: string, days: AccountDay[], own?: string): EChartsCoreOption {
   const color = money.net();
   const known = days.filter((d) => d.balance !== null);
+  const plotted = (d: AccountDay) => (own ? d.balanceOriginal : d.balance);
   return {
     grid: { left: 8, right: 16, top: 16, bottom: days.length > 60 ? 28 : 8, containLabel: true },
     tooltip: {
       trigger: 'axis',
       formatter: byIndex(days.length, (i) => {
         const d = days[i];
-        if (d.balance === null) return '';
+        const now = plotted(d);
+        if (now === null || d.balance === null) return '';
+        const before = i > 0 ? plotted(days[i - 1]) : null;
         const prev = i > 0 ? days[i - 1].balance : null;
         return (
           tooltipTitle(f.date(d.date, 'full')) +
-          tooltipRow(color, label, f.money(d.balance)) +
-          (prev !== null ? tooltipRow(money.ink2(), 'Δ', f.money(d.balance - prev, undefined, { signed: true })) : '')
+          tooltipRow(color, label, f.money(now, own), own ? f.money(d.balance) : undefined) +
+          (before !== null && prev !== null
+            ? tooltipRow(money.ink2(), 'Δ', f.money(now - before, own, { signed: true }), own ? f.money(d.balance - prev, undefined, { signed: true }) : undefined)
+            : '')
         );
       }),
     },
     dataZoom: zoomFor(days.length),
     xAxis: { type: 'category', data: days.map(dayLabel(f, days)), boundaryGap: false },
-    yAxis: { ...moneyAxis(f), scale: true },
+    yAxis: { ...moneyAxis(f, own), scale: true },
     series: [
       {
         name: label,
         type: 'line',
-        data: days.map((d) => d.balance),
+        data: days.map(plotted),
         showSymbol: days.length <= 31,
         symbolSize: 8,
         itemStyle: { color, borderColor: money.surface(), borderWidth: 2 },
         lineStyle: { color, width: 2 },
         areaStyle: { color, opacity: 0.1 },
-        markLine: known.some((d) => (d.balance ?? 0) < 0)
+        markLine: known.some((d) => (plotted(d) ?? 0) < 0)
           ? { silent: true, symbol: 'none', lineStyle: { color: palette.chartAxis, type: 'solid' }, label: { show: false }, data: [{ yAxis: 0 }] }
           : undefined,
       },
@@ -494,19 +512,24 @@ export function dailyBalanceOption(f: Fmt, label: string, days: AccountDay[]): E
 }
 
 /** One series over fixed categories (weekdays): single hue, value labels, no legend. */
-export function categoryBarsOption(f: Fmt, labels: string[], values: number[], color: string, name: string): EChartsCoreOption {
+export function categoryBarsOption(f: Fmt, labels: string[], values: number[], color: string, name: string, own?: { currency: string; values: number[] }): EChartsCoreOption {
+  const plotted = own?.values ?? values;
   return {
     grid: { left: 8, right: 16, top: 24, bottom: 8, containLabel: true },
-    tooltip: { trigger: 'axis', axisPointer: { type: 'shadow', shadowStyle: { color: 'rgba(148,163,184,0.06)' } }, formatter: byIndex(labels.length, (i) => tooltipRow(color, `${name} · ${labels[i]}`, f.money(values[i]))) },
+    tooltip: {
+      trigger: 'axis',
+      axisPointer: { type: 'shadow', shadowStyle: { color: 'rgba(148,163,184,0.06)' } },
+      formatter: byIndex(labels.length, (i) => tooltipRow(color, `${name} · ${labels[i]}`, f.money(plotted[i], own?.currency), own ? f.money(values[i]) : undefined)),
+    },
     xAxis: { type: 'category', data: labels },
-    yAxis: moneyAxis(f),
+    yAxis: moneyAxis(f, own?.currency),
     series: [
       {
         name,
         type: 'bar',
-        data: values,
+        data: plotted,
         itemStyle: { color },
-        label: { show: true, position: 'top', formatter: compactFmt(f, 'value', true), color: money.ink2(), fontSize: 11 },
+        label: { show: true, position: 'top', formatter: compactFmt(f, 'value', true, own?.currency), color: money.ink2(), fontSize: 11 },
       },
     ],
   };

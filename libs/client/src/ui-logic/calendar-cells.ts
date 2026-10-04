@@ -52,8 +52,9 @@ export function buildCalendarCells(f: FormatService, days: CalendarDay[], schedu
   });
 }
 
-/** Same compact labels as the email: 950 / 1.2k. */
-export function shortAmount(v: number, hidden: boolean): string {
+/** Same compact labels as the email: 950 / 1.2k (`small` cells drop the decimal from 10k up). */
+export function shortAmount(v: number, hidden: boolean, small = false): string {
   if (hidden) return '0';
+  if (small && v >= 10000) return `${Math.round(v / 1000)}k`;
   return v >= 1000 ? `${(v / 1000).toFixed(1)}k` : String(Math.round(v));
 }

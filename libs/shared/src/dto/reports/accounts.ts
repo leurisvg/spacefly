@@ -50,6 +50,8 @@ export interface AccountDay {
   count: number;
   /** Balance at the end of the day (null for future days). */
   balance: number | null;
+  /** The same balance in the account's own currency. */
+  balanceOriginal: number | null;
 }
 
 export interface AccountMonth {
@@ -58,6 +60,10 @@ export interface AccountMonth {
   expense: number;
   /** Closing balance of the month. */
   balance: number;
+  /** The same three numbers in the account's own currency. */
+  incomeOriginal: number;
+  expenseOriginal: number;
+  balanceOriginal: number;
 }
 
 export interface RankedItem {
@@ -65,6 +71,8 @@ export interface RankedItem {
   name: string;
   value: number;
   count: number;
+  /** The same total in the account's own currency (account detail only). */
+  valueOriginal?: number;
 }
 
 /** One asset account over the selected period: daily series, totals, rankings and every record. */
@@ -91,6 +99,8 @@ export interface AccountDetailReport {
   months: AccountMonth[];
   /** Expenses per weekday, Monday first. */
   byWeekday: number[];
+  /** The same, in the account's own currency. */
+  byWeekdayOriginal: number[];
   topCategories: RankedItem[];
   topMerchants: RankedItem[];
   topIncomeSources: RankedItem[];
