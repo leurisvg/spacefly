@@ -32,6 +32,7 @@ export const idParam = z.string().regex(/^[\w-]{1,40}$/, 'Invalid id');
 export const txWriteSchema = z.object({
   description: text(1000).min(1, 'The description is required.'),
   date: dateStr,
+  time: nullable(z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, 'The time is not valid.')),
   source: accountInput,
   destination: accountInput,
   amount: z.string().max(40),

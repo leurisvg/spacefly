@@ -62,6 +62,8 @@ export type AccountInput = { id: string } | { name: string };
 export interface TxWriteRequest {
   description: string;
   date: string;
+  /** `HH:mm` in the user's timezone; `null` keeps the old behaviour (noon, or the stored time when the day is unchanged). */
+  time: string | null;
   source: AccountInput;
   destination: AccountInput;
   /** In the currency of the account on the amount side (see `amountSide`). */

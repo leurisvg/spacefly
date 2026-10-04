@@ -193,6 +193,46 @@ describe('creating transactions', () => {
   });
 });
 
+describe('the time of a transaction', () => {
+  it('sends the chosen time with the date, and noon when there is none', async () => {
+    const { post, log } = await start();
+    await post({ ...base, time: '18:45' });
+    await post({ ...base, time: null });
+    const [withTime, withoutTime] = writesTo(log, 'POST').map((r) => r.body!['transactions'][0]);
+    expect(withTime.date).toBe('2026-09-20T18:45:00');
+    expect(withoutTime.date).toBe('2026-09-20T12:00:00');
+  });
+
+  it('rejects a time that is not HH:mm', async () => {
+    const { post, log } = await start();
+    for (const time of ['24:00', '9:30', '12:60', 'noon']) {
+      const res = await post({ ...base, time });
+      expect(res.status, time).toBe(422);
+      expect(await res.json()).toMatchObject({ fields: { time: [expect.any(String)] } });
+    }
+    expect(writesTo(log)).toHaveLength(0);
+  });
+
+  it('loads the stored time into the edit payload', async () => {
+    const { app, cookie } = await start();
+    const rows = (await (await call(app, cookie, 'GET', '/api/transactions?start=2026-09-01&end=2026-09-30&category=2')).json()) as Report<TxListResponse>;
+    const edit = (await (await call(app, cookie, 'GET', `/api/transactions/${rows.data.rows[0]!.groupId}`)).json()) as TxEditPayload;
+    expect(edit.time).toBe('12:00');
+  });
+
+  it('keeps the stored moment when neither the day nor the time changed, and uses the new time otherwise', async () => {
+    const { app, cookie, log } = await start();
+    const rows = (await (await call(app, cookie, 'GET', '/api/transactions?start=2026-09-01&end=2026-09-30&category=2')).json()) as Report<TxListResponse>;
+    const row = rows.data.rows.find((r) => r.description === 'Compra quincenal')!;
+    const edit = { ...base, description: 'Compra quincenal', date: '2026-09-03' };
+    await call(app, cookie, 'PUT', `/api/transactions/${row.groupId}`, { ...edit, time: '12:00' });
+    await call(app, cookie, 'PUT', `/api/transactions/${row.groupId}`, { ...edit, time: '07:15' });
+    await call(app, cookie, 'PUT', `/api/transactions/${row.groupId}`, { ...edit, date: '2026-09-04', time: '07:15' });
+    const dates = writesTo(log, 'PUT').map((r) => r.body!['transactions'][0].date);
+    expect(dates).toEqual(['2026-09-03T12:00:00-04:00', '2026-09-03T07:15:00', '2026-09-04T07:15:00']);
+  });
+});
+
 describe('editing transactions', () => {
   it('loads the edit payload', async () => {
     const { app, cookie } = await start();

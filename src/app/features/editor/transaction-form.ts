@@ -36,6 +36,7 @@ import { FormField } from '../../shared/forms/form-field';
 import { FormFooter } from '../../shared/forms/form-footer';
 import { MoneyInput } from '../../shared/forms/money-input';
 import { TagInput } from '../../shared/forms/tag-input';
+import { nowTime, parseTime, TimeInput } from '../../shared/forms/time-input';
 import { TxTypeBadge } from '../../shared/forms/tx-type-badge';
 
 /** The form's own shape: strings everywhere so every control binds directly. */
@@ -49,6 +50,8 @@ interface TxModel {
   foreignCurrency: string;
   otherCurrency: boolean;
   date: string;
+  /** `HH:mm`, or empty to let the server decide (noon, or the stored time when editing an unchanged day). */
+  time: string;
   category: string;
   budgetId: string;
   billId: string;
@@ -73,6 +76,7 @@ const blank = (): TxModel => ({
   foreignCurrency: '',
   otherCurrency: false,
   date: todayIso(),
+  time: nowTime(),
   category: '',
   budgetId: '',
   billId: '',
@@ -107,6 +111,7 @@ const isAfterSave = (v: unknown): v is AfterSave =>
     FormFooter,
     MoneyInput,
     TagInput,
+    TimeInput,
     TxTypeBadge,
   ],
   providers: [provideIcons({ lucideArrowRightLeft, lucideExternalLink, lucideInfo })],
@@ -205,9 +210,14 @@ const isAfterSave = (v: unknown): v is AfterSave =>
                   <sf-money-input [formField]="f.foreignAmount" [currency]="receivedCurrency()" />
                 </sf-form-field>
               }
-              <sf-form-field [label]="i18n.t('editor.tx.date')" [required]="true" [field]="f.date">
-                <sf-date-input [formField]="f.date" />
-              </sf-form-field>
+              <div class="flex flex-wrap items-start gap-3 sm:col-span-2">
+                <sf-form-field class="min-w-0 flex-1" [label]="i18n.t('editor.tx.date')" [required]="true" [field]="f.date">
+                  <sf-date-input [formField]="f.date" [ariaLabel]="i18n.t('editor.tx.date')" />
+                </sf-form-field>
+                <sf-form-field [label]="i18n.t('editor.tx.time')" [field]="f.time">
+                  <sf-time-input [formField]="f.time" [ariaLabel]="i18n.t('editor.tx.time')" />
+                </sf-form-field>
+              </div>
             </div>
 
             @if (showOtherCurrency()) {
@@ -334,6 +344,7 @@ export class TransactionForm {
     });
     validate(p.foreignCurrency, (c) => (this.foreignRequired() && !this.crossCurrency() && !c.value() ? { kind: 'required' } : undefined));
     validate(p.date, (c) => (isIsoDate(c.value()) ? undefined : { kind: 'date' }));
+    validate(p.time, (c) => (!c.value().trim() || parseTime(c.value()) ? undefined : { kind: 'time' }));
   });
 
   // ── What the chosen accounts mean ───────────────────────────────────────────
@@ -437,6 +448,7 @@ export class TransactionForm {
       source: asAccount(q?.source) ?? (defaultId ? { id: defaultId } : null),
       destination: asAccount(q?.destination),
       date: q?.date && isIsoDate(q.date) ? q.date : todayIso(),
+      time: nowTime(),
       description: q?.description ?? m.description,
       amount: q?.amount && isPositiveAmount(q.amount) ? q.amount : m.amount,
       category: q?.category ?? m.category,
@@ -492,6 +504,7 @@ export class TransactionForm {
       foreignCurrency: tx.foreignCurrency ?? '',
       otherCurrency: hasForeign,
       date: tx.date,
+      time: tx.time ?? '',
       category: tx.category ?? '',
       budgetId: tx.budgetId ?? '',
       billId: tx.billId ?? '',
@@ -532,6 +545,7 @@ export class TransactionForm {
     return {
       description: m.description.trim(),
       date: m.date,
+      time: parseTime(m.time),
       source: m.source!,
       destination: m.destination!,
       amount: m.amount,
@@ -598,6 +612,7 @@ export class TransactionForm {
       foreignAmount: this.f.foreignAmount,
       foreignCurrency: this.f.foreignCurrency,
       date: this.f.date,
+      time: this.f.time,
       category: this.f.category,
       budgetId: this.f.budgetId,
       billId: this.f.billId,
