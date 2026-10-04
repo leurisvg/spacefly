@@ -19,6 +19,11 @@ import { normalizeServerUrl, ServerConfig } from '../platform/server-config';
         <Label [text]="vm.i18n.t('settings.mobile.serverUrl')" class="field-label"></Label>
         <TextField class="field" hint="https://spacefly.example.com" autocapitalizationType="none" autocorrect="false" keyboardType="url" [text]="url()" (textChange)="url.set($any($event).value)"></TextField>
 
+        <Label [text]="vm.i18n.t('settings.mobile.access')" class="field-label"></Label>
+        <Label [text]="vm.i18n.t('settings.mobile.accessHint')" class="muted small" textWrap="true" marginBottom="6"></Label>
+        <TextField class="field" [hint]="vm.i18n.t('settings.mobile.clientId')" autocapitalizationType="none" autocorrect="false" [text]="clientId()" (textChange)="clientId.set($any($event).value)"></TextField>
+        <TextField class="field" [hint]="vm.i18n.t('settings.mobile.clientSecret')" secure="true" autocapitalizationType="none" autocorrect="false" [text]="clientSecret()" (textChange)="clientSecret.set($any($event).value)"></TextField>
+
         @if (message()) {
           <Label [text]="message()" class="field-error" textWrap="true"></Label>
         }
@@ -35,6 +40,8 @@ export class Login {
   private readonly route = inject(ActivatedRoute);
 
   protected readonly url = signal(this.config.apiUrl());
+  protected readonly clientId = signal(this.config.accessClientId);
+  protected readonly clientSecret = signal(this.config.accessClientSecret);
   protected readonly message = signal('');
   private readonly error = signal<string | undefined>(undefined);
   protected readonly vm = loginViewModel({ returnTo: signal(this.route.snapshot.queryParamMap.get('returnTo') ?? '/'), error: this.error });
@@ -45,6 +52,8 @@ export class Login {
       this.message.set(this.vm.i18n.t('settings.mobile.invalidUrl'));
       return;
     }
+    // Saved before the browser opens: the code exchange that follows already needs them when the server is behind Cloudflare Access.
+    this.config.setAccessCredentials(this.clientId(), this.clientSecret());
     this.error.set(undefined);
     try {
       if (await this.vm.login()) await this.router.navigate(['/'], { clearHistory: true });

@@ -4,6 +4,7 @@ import { RouterExtensions } from '@nativescript/angular';
 import { AuthPlatform } from '@spacefly/client/platform/auth-platform';
 import { firstValueFrom } from 'rxjs';
 import { AuthBrowserCancelled, openAuthBrowser } from './auth-browser';
+import { isAccessLoginPage } from './bearer.interceptor';
 import { createPkce, randomState } from './pkce';
 import { ServerConfig } from './server-config';
 
@@ -11,7 +12,7 @@ import { ServerConfig } from './server-config';
 export const REDIRECT_URI = 'spacefly://auth/callback';
 export const CALLBACK_SCHEME = 'spacefly';
 
-/** A sign-in that failed; `code` is a `login.errors.*` key (`access_denied`, `invalid_state`, `token_exchange`, `generic`). */
+/** A sign-in that failed; `code` is a `login.errors.*` key (`access_denied`, `invalid_state`, `token_exchange`, `cf_access`, `generic`). */
 export class SignInError extends Error {
   constructor(readonly code: string) {
     super(code);
@@ -55,9 +56,12 @@ export class MobileAuthPlatform extends AuthPlatform {
     try {
       const http = this.injector.get(HttpClient);
       const grant = await firstValueFrom(http.post<{ token: string }>('/auth/mobile/token', { code: result.code, code_verifier: verifier }));
+      if (!grant?.token) throw new SignInError('token_exchange');
       this.config.setToken(grant.token);
-    } catch {
-      throw new SignInError('token_exchange');
+    } catch (error) {
+      if (error instanceof SignInError) throw error;
+      // Cloudflare Access (no/wrong service token) answers 403 or its HTML login page; only a rejected code is the server's token_exchange.
+      throw new SignInError(isAccessLoginPage(error) || (error as { status?: number }).status === 403 ? 'cf_access' : 'token_exchange');
     }
     return 'done';
   }

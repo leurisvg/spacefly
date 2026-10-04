@@ -2,7 +2,7 @@ import { computed, inject, signal, type Signal } from '@angular/core';
 import { AuthService } from '../../auth/auth.service';
 import { I18n } from '../../i18n/i18n';
 
-const KNOWN_ERRORS = ['invalid_state', 'token_exchange', 'access_denied'];
+const KNOWN_ERRORS = ['invalid_state', 'token_exchange', 'access_denied', 'cf_access'];
 
 /** The `login.errors.*` key for an error code the server (or the auth browser) reported. */
 export const loginErrorKey = (code: string | undefined): string => (code && KNOWN_ERRORS.includes(code) ? code : 'generic');

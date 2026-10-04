@@ -83,6 +83,7 @@
       "invalid_state": "The sign-in attempt expired or is invalid. Please try again.",
       "token_exchange": "Firefly rejected the sign-in. Check the OAuth client.",
       "access_denied": "Authorization was cancelled in Firefly.",
+      "cf_access": "Cloudflare Access blocked the app. Check the service token (client ID and secret).",
       "generic": "Could not sign in."
     }
   },

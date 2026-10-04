@@ -83,6 +83,7 @@
       "invalid_state": "La sesión de inicio expiró o no es válida. Inténtalo de nuevo.",
       "token_exchange": "Firefly rechazó el inicio de sesión. Revisa el cliente OAuth.",
       "access_denied": "Se canceló la autorización en Firefly.",
+      "cf_access": "Cloudflare Access bloqueó la app. Revisa el service token (Client ID y secret).",
       "generic": "No se pudo iniciar sesión."
     }
   },
