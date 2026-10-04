@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { form, FormField as Field, required, validate } from '@angular/forms/signals';
+import { BrnCalendarI18nService } from '@spartan-ng/brain/calendar';
 import { addDays, todayIso } from '@shared';
 import { formatTestProviders, loadTranslations } from '../../../testing/format-providers';
 import { EN } from '../../../testing/translations';
@@ -150,6 +151,16 @@ describe('DateInput', () => {
     expect(picker(el)).toContain(long('2026-09-15'));
   });
 
+  it('localizes the calendar once, without re-triggering its own effect', async () => {
+    TestBed.configureTestingModule({ providers: formatTestProviders('en', EN).providers });
+    await loadTranslations();
+    const calendar = TestBed.inject(BrnCalendarI18nService);
+    const use = vi.spyOn(calendar, 'use');
+    const fixture = TestBed.createComponent(Host);
+    await settleOf(fixture)();
+    expect(use).toHaveBeenCalledTimes(1);
+  });
+
   it('sets today and yesterday from the shortcuts', async () => {
     const { el, host, settle } = await setupHost();
     const buttons = [...el.querySelectorAll('sf-date-input button')] as HTMLButtonElement[];
@@ -227,14 +238,17 @@ describe('TimeInput', () => {
     expect(t.input.value).toBe('noon');
   });
 
-  it('moves by five minutes with the arrow keys and wraps around midnight', async () => {
+  it('moves by five minutes with the arrow keys', async () => {
     const t = await setupTime('09:30');
     await t.key('ArrowUp');
     expect(t.emitted.at(-1)).toBe('09:35');
     expect(t.input.value).toBe('09:35');
-    const midnight = await setupTime('00:00');
-    await midnight.key('ArrowDown');
-    expect(midnight.emitted.at(-1)).toBe('23:55');
+  });
+
+  it('wraps around midnight with the arrow keys', async () => {
+    const t = await setupTime('00:00');
+    await t.key('ArrowDown');
+    expect(t.emitted.at(-1)).toBe('23:55');
   });
 
   it('sets the current time from the Now shortcut', async () => {

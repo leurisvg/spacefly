@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, effect, inject, input, model, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, effect, inject, input, model, output, untracked } from '@angular/core';
 import type { FormValueControl } from '@angular/forms/signals';
 import { BrnCalendarI18nService } from '@spartan-ng/brain/calendar';
 import { addDays, isIsoDate, todayIso } from '@shared';
@@ -78,17 +78,20 @@ export class DateInput implements FormValueControl<string> {
       const month = names({ month: 'short' });
       // 2024-01-07 was a Sunday: index 0 = Sunday, like the calendar expects.
       const day = (i: number) => new Date(2024, 0, 7 + i);
-      this.calendar.use({
-        formatWeekdayName: (i) => weekday.format(day(i)).replace('.', '').slice(0, 2),
-        labelWeekday: (i) => weekdayLong.format(day(i)),
-        months: () => Array.from({ length: 12 }, (_, i) => month.format(new Date(2000, i, 1)).replace('.', '')) as never,
-        formatMonth: (i) => month.format(new Date(2000, i, 1)).replace('.', ''),
-        formatHeader: (m, y) => names({ month: 'long', year: 'numeric' }).format(new Date(y, m, 1)),
-        formatYear: (y) => String(y),
-        labelPrevious: () => this.i18n.t('forms.previousMonth'),
-        labelNext: () => this.i18n.t('forms.nextMonth'),
-        firstDayOfWeek: () => 1,
-      });
+      // `use()` reads the current config before setting it; untracked, or the effect re-triggers itself forever.
+      untracked(() =>
+        this.calendar.use({
+          formatWeekdayName: (i) => weekday.format(day(i)).replace('.', '').slice(0, 2),
+          labelWeekday: (i) => weekdayLong.format(day(i)),
+          months: () => Array.from({ length: 12 }, (_, i) => month.format(new Date(2000, i, 1)).replace('.', '')) as never,
+          formatMonth: (i) => month.format(new Date(2000, i, 1)).replace('.', ''),
+          formatHeader: (m, y) => names({ month: 'long', year: 'numeric' }).format(new Date(y, m, 1)),
+          formatYear: (y) => String(y),
+          labelPrevious: () => this.i18n.t('forms.previousMonth'),
+          labelNext: () => this.i18n.t('forms.nextMonth'),
+          firstDayOfWeek: () => 1,
+        }),
+      );
     });
   }
 
