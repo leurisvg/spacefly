@@ -13,6 +13,8 @@ export interface ComboOption {
   group?: string;
   /** Secondary text on the right (a currency, a count…). */
   hint?: string;
+  /** `negative` paints the hint red. */
+  hintTone?: 'negative';
   /** Not selectable; rendered as not valid. */
   invalid?: boolean;
   invalidReason?: string;
@@ -52,7 +54,9 @@ let nextId = 0;
         role="combobox"
         autocomplete="off"
         aria-autocomplete="list"
-        class="h-8 pr-8 text-sm"
+        class="h-8 text-sm"
+        [class.pr-8]="!showSuffix()"
+        [class.pr-28]="showSuffix()"
         [value]="text()"
         [placeholder]="placeholder()"
         [disabled]="disabled()"
@@ -67,6 +71,14 @@ let nextId = 0;
         (keydown)="onKey($event)"
         (mousedown)="openList()"
       />
+      @if (showSuffix()) {
+        <span
+          class="num pointer-events-none absolute right-8 top-1/2 max-w-24 -translate-y-1/2 truncate text-xs"
+          [class.text-muted-foreground]="!suffixNegative()"
+          [class.text-negative]="suffixNegative()"
+          >{{ suffix() }}</span
+        >
+      }
       <ng-icon name="lucideChevronDown" class="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
     </div>
     <ng-template
@@ -114,7 +126,7 @@ let nextId = 0;
                 @if (e.option.invalid && e.option.invalidReason) {
                   <span class="text-xs text-muted-foreground">{{ e.option.invalidReason }}</span>
                 } @else if (e.option.hint) {
-                  <span class="text-xs text-muted-foreground">{{ e.option.hint }}</span>
+                  <span class="num text-xs" [class.text-muted-foreground]="e.option.hintTone !== 'negative'" [class.text-negative]="e.option.hintTone === 'negative'">{{ e.option.hint }}</span>
                 }
                 @if (e.option.value === value() && !created()) {
                   <ng-icon name="lucideCheck" class="text-primary" aria-hidden="true" />
@@ -155,6 +167,9 @@ export class Combobox implements FormValueControl<string> {
   readonly clearable = input(true);
   /** After a pick, empty the field again (tag inputs). */
   readonly resetOnPick = input(false);
+  /** Text shown inside the field, right of the picked label (a balance…). Hidden while the list is open. */
+  readonly suffix = input('');
+  readonly suffixNegative = input(false);
   /** Cap on listed options; the rest is reached by typing. */
   readonly maxVisible = input(50);
   /** Emits on every choice, including clearing (`value: ''`). */
@@ -179,6 +194,8 @@ export class Combobox implements FormValueControl<string> {
   protected readonly active = signal(0);
   protected readonly width = signal(240);
   private readonly focused = signal(false);
+
+  protected readonly showSuffix = computed(() => !!this.suffix() && !this.open() && !!this.value() && !this.created());
 
   private readonly selectedLabel = computed(() => {
     const v = this.value();

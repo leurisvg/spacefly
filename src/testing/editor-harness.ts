@@ -2,9 +2,11 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting, type TestRequest } from '@angular/common/http/testing';
 import { signal, type EnvironmentProviders, type Provider, type Type } from '@angular/core';
 import { TestBed, type ComponentFixture } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
 import { provideRouter } from '@angular/router';
 import { FiltersStore } from '../app/core/state/filters.store';
 import { MetaStore } from '../app/core/state/meta.store';
+import { DateInput } from '../app/shared/forms/date-input';
 import { formatTestProviders, loadTranslations } from './format-providers';
 import { EN } from './translations';
 
@@ -18,6 +20,10 @@ export interface EditorHarness<T> {
   /** Answer the next request matching method + url. */
   answer: (method: string, url: string, body: object | null, status?: number) => TestRequest;
   type: (selector: string, text: string) => Promise<void>;
+  /** Sets the `index`-th date field (the date picker has no text box to type into). */
+  setDate: (index: number, iso: string) => Promise<void>;
+  /** The `index`-th date field's value. */
+  dateValue: (index: number) => string;
   click: (text: string, within?: string) => Promise<void>;
   text: () => string;
 }
@@ -73,6 +79,7 @@ export async function mountEditor<T extends object>(
   (fixture.componentInstance as { done?: { subscribe(fn: () => void): unknown } }).done?.subscribe(() => done.count++);
   fixture.detectChanges();
   const el = fixture.nativeElement as HTMLElement;
+  const dateInput = (index: number): DateInput => fixture.debugElement.queryAll(By.directive(DateInput))[index]!.componentInstance;
   const settle = async () => {
     for (let i = 0; i < 5; i++) {
       fixture.detectChanges();
@@ -98,6 +105,11 @@ export async function mountEditor<T extends object>(
       input.dispatchEvent(new Event('input'));
       await settle();
     },
+    setDate: async (index, iso) => {
+      dateInput(index).value.set(iso);
+      await settle();
+    },
+    dateValue: (index) => dateInput(index).value(),
     click: async (text, within = 'button') => {
       const scope = within === 'button' ? el : (document.body.querySelector(within) as HTMLElement);
       const button = [...scope.querySelectorAll('button')].find((b) => b.textContent!.trim() === text);

@@ -70,11 +70,8 @@ describe('BillForm', () => {
     const h = await mount();
     await h.type('input[type=text]', 'Gimnasio');
     await typeAt(h, 0, '2500');
-    await h.type('sf-form-field:nth-of-type(1) ~ div input[type=date], input[type=date]', '2026-10-05');
-    const dates = [...h.el.querySelectorAll('input[type=date]')] as HTMLInputElement[];
-    dates[1]!.value = '2026-09-01';
-    dates[1]!.dispatchEvent(new Event('input'));
-    await h.settle();
+    await h.setDate(0, '2026-10-05');
+    await h.setDate(1, '2026-09-01');
     await h.click('Save');
     h.http.expectNone((r) => r.method === 'POST');
     expect(h.text()).toContain('The end date must be after the start date.');

@@ -15,11 +15,11 @@ class Page {}
 
 const LOOKUPS: EditorLookups = {
   accounts: [
-    { id: '1', name: 'Banco Popular', kind: 'asset', liabilityType: null, currency: 'DOP', role: 'defaultAsset', group: null },
-    { id: '2', name: 'Cuenta USD', kind: 'asset', liabilityType: null, currency: 'USD', role: null, group: null },
-    { id: '3', name: 'Visa', kind: 'asset', liabilityType: null, currency: 'DOP', role: 'ccAsset', group: null },
-    { id: '10', name: 'Empresa SRL', kind: 'revenue', liabilityType: null, currency: 'DOP', role: null, group: null },
-    { id: '20', name: 'Supermercado', kind: 'expense', liabilityType: null, currency: 'DOP', role: null, group: null },
+    { id: '1', name: 'Banco Popular', kind: 'asset', liabilityType: null, currency: 'DOP', balance: 1500, role: 'defaultAsset', group: null },
+    { id: '2', name: 'Cuenta USD', kind: 'asset', liabilityType: null, currency: 'USD', balance: -20, role: null, group: null },
+    { id: '3', name: 'Visa', kind: 'asset', liabilityType: null, currency: 'DOP', balance: -300, role: 'ccAsset', group: null },
+    { id: '10', name: 'Empresa SRL', kind: 'revenue', liabilityType: null, currency: 'DOP', balance: 0, role: null, group: null },
+    { id: '20', name: 'Supermercado', kind: 'expense', liabilityType: null, currency: 'DOP', balance: 0, role: null, group: null },
   ],
   categories: [{ id: '1', name: 'Comida' }],
   tags: [{ id: '1', name: 'hogar' }],

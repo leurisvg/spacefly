@@ -116,12 +116,8 @@ describe('PiggyForm', () => {
     const h = await mount();
     await h.type('input[type=text]:not([role=combobox])', 'X');
     h.form.addAccount('1');
-    const dates = [...h.el.querySelectorAll('input[type=date]')] as HTMLInputElement[];
-    dates[0]!.value = '2026-10-01';
-    dates[0]!.dispatchEvent(new Event('input'));
-    dates[1]!.value = '2026-01-01';
-    dates[1]!.dispatchEvent(new Event('input'));
-    await h.settle();
+    await h.setDate(0, '2026-10-01');
+    await h.setDate(1, '2026-01-01');
     await h.click('Save');
     h.http.expectNone((r) => r.method === 'POST');
     expect(h.text()).toContain('The end date must be after the start date.');

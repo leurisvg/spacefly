@@ -1,17 +1,20 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input, model, output } from '@angular/core';
 import type { FormValueControl } from '@angular/forms/signals';
 import { inferTransactionType, type AccountInput, type AccountKind, type AccountSlot, type EditorAccount } from '@shared';
+import { FormatService } from '../../core/format/format.service';
 import { I18n } from '../../core/i18n/i18n';
 import { Combobox, type ComboOption, type ComboSelection } from './combobox';
 
 const SOURCE_GROUPS: AccountKind[] = ['asset', 'liability', 'revenue', 'cash'];
 const DESTINATION_GROUPS: AccountKind[] = ['asset', 'liability', 'expense', 'cash'];
+/** Kinds whose balance means something to the person paying from them. */
+const WITH_BALANCE: AccountKind[] = ['asset', 'liability', 'cash'];
 
 /**
  * Account chooser for one side of a transaction: accounts grouped by kind (the kinds that make sense
  * for that side), anything typed that doesn't exist can be created on the fly (a new expense account as
  * destination, a new income source as source). Options that can't be combined with the account on the
- * other side are shown as not valid. The value is `{ id }`, `{ name }` (new) or `null`.
+ * other side are shown as not valid. As a source it also shows each account's balance (red when negative). The value is `{ id }`, `{ name }` (new) or `null`.
  */
 @Component({
   selector: 'sf-account-picker',
@@ -23,6 +26,8 @@ const DESTINATION_GROUPS: AccountKind[] = ['asset', 'liability', 'expense', 'cas
       [options]="options()"
       [value]="comboValue()"
       [created]="comboCreated()"
+      [suffix]="selectedBalance()?.text ?? ''"
+      [suffixNegative]="selectedBalance()?.negative ?? false"
       [placeholder]="placeholder()"
       [ariaLabel]="ariaLabel()"
       [disabled]="disabled()"
@@ -38,6 +43,7 @@ const DESTINATION_GROUPS: AccountKind[] = ['asset', 'liability', 'expense', 'cas
 })
 export class AccountPicker implements FormValueControl<AccountInput | null> {
   protected readonly i18n = inject(I18n);
+  private readonly format = inject(FormatService);
 
   readonly value = model<AccountInput | null>(null);
   readonly accounts = input.required<EditorAccount[]>();
@@ -61,6 +67,18 @@ export class AccountPicker implements FormValueControl<AccountInput | null> {
     };
   });
 
+  /** The balance to show for an account: only on the source side, and only where it is meaningful. */
+  private balanceOf(a: EditorAccount): { text: string; negative: boolean } | null {
+    if (this.side() !== 'source' || !WITH_BALANCE.includes(a.kind)) return null;
+    return { text: this.format.money(a.balance, a.currency), negative: a.balance < 0 };
+  }
+
+  protected readonly selectedBalance = computed(() => {
+    const v = this.value();
+    const account = v && 'id' in v ? this.accounts().find((a) => a.id === v.id) : undefined;
+    return account ? this.balanceOf(account) : null;
+  });
+
   protected readonly options = computed<ComboOption[]>(() => {
     const groups = this.side() === 'source' ? SOURCE_GROUPS : DESTINATION_GROUPS;
     const fits = this.compatible();
@@ -68,14 +86,18 @@ export class AccountPicker implements FormValueControl<AccountInput | null> {
     return groups.flatMap((kind) =>
       this.accounts()
         .filter((a) => a.kind === kind)
-        .map((a) => ({
-          value: a.id,
-          label: a.name,
-          group: this.i18n.t(`forms.accountGroups.${kind}`),
-          hint: a.currency,
-          invalid: !fits(kind),
-          invalidReason: reason,
-        })),
+        .map((a) => {
+          const balance = this.balanceOf(a);
+          return {
+            value: a.id,
+            label: a.name,
+            group: this.i18n.t(`forms.accountGroups.${kind}`),
+            hint: balance?.text ?? a.currency,
+            hintTone: balance?.negative ? ('negative' as const) : undefined,
+            invalid: !fits(kind),
+            invalidReason: reason,
+          };
+        }),
     );
   });
 

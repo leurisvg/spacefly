@@ -72,7 +72,7 @@ describe('AccountForm', () => {
     await h.click('Save');
     h.http.expectNone((r) => r.method === 'POST');
     expect(h.text()).toContain('This field is required.');
-    await h.type('input[type=date]', '2026-01-01');
+    await h.setDate(0, '2026-01-01');
     await h.click('Save');
     const req = h.http.expectOne((r) => r.method === 'POST');
     expect(req.request.body).toMatchObject({ openingBalance: '2500.50', openingBalanceDate: '2026-01-01' });
@@ -104,7 +104,7 @@ describe('AccountForm', () => {
     await h.type('input[type=text]:not([role=combobox])', 'Préstamo carro');
     await h.type('input[inputmode=decimal]:not(sf-money-input input)', '12.5');
     await h.type('sf-money-input input', '420000');
-    await h.type('input[type=date]', '2026-02-01');
+    await h.setDate(0, '2026-02-01');
     await h.click('Save');
     const req = h.http.expectOne((r) => r.method === 'POST');
     expect(req.request.body).toMatchObject({

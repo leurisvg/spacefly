@@ -16,6 +16,8 @@ export interface EditorAccount {
   /** `loan`, `debt` or `mortgage` for liabilities. */
   liabilityType: string | null;
   currency: string;
+  /** Current balance in the account's own currency. */
+  balance: number;
   role: string | null;
   group: string | null;
 }

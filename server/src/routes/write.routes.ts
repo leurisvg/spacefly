@@ -58,6 +58,7 @@ export function writeRoutes(_s: Services) {
           kind,
           liabilityType: kind === 'liability' ? a.liabilityType : null,
           currency: a.currency || primary.code,
+          balance: a.balance,
           role: a.role,
           group: a.group,
         },

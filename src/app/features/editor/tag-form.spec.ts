@@ -7,7 +7,7 @@ describe('TagForm', () => {
   it('creates a tag with a date and description', async () => {
     const h = await mountEditor(TagForm);
     await h.type('input[type=text]', 'viaje-2027');
-    await h.type('input[type=date]', '2027-03-01');
+    await h.setDate(0, '2027-03-01');
     await h.type('textarea', 'Vacaciones');
     await h.click('Save');
     const req = h.http.expectOne((r) => r.method === 'POST' && r.url === '/api/tags');
@@ -31,7 +31,7 @@ describe('TagForm', () => {
     const h = await mountEditor(TagForm, { id: '2' });
     h.answer('GET', '/api/tags/2', { id: '2', tag: 'viaje', date: '2026-07-01', description: null });
     await h.settle();
-    expect((h.el.querySelector('input[type=date]') as HTMLInputElement).value).toBe('2026-07-01');
+    expect(h.dateValue(0)).toBe('2026-07-01');
     await h.click('Clear');
     await h.click('Save');
     const req = h.http.expectOne((r) => r.method === 'PUT' && r.url === '/api/tags/2');

@@ -6,19 +6,20 @@ import { formatTestProviders, loadTranslations } from '../../../testing/format-p
 import { EN } from '../../../testing/translations';
 import { AccountPicker } from './account-picker';
 
-const acc = (id: string, name: string, kind: EditorAccount['kind'], currency = 'DOP'): EditorAccount => ({
+const acc = (id: string, name: string, kind: EditorAccount['kind'], currency = 'DOP', balance = 0): EditorAccount => ({
   id,
   name,
   kind,
   liabilityType: kind === 'liability' ? 'loan' : null,
   currency,
+  balance,
   role: null,
   group: null,
 });
 const ACCOUNTS = [
-  acc('1', 'Banco Popular', 'asset'),
+  acc('1', 'Banco Popular', 'asset', 'DOP', 1500.5),
   acc('2', 'Cuenta USD', 'asset', 'USD'),
-  acc('5', 'Préstamo vehículo', 'liability'),
+  acc('5', 'Préstamo vehículo', 'liability', 'DOP', -50000),
   acc('10', 'Empresa SRL', 'revenue'),
   acc('20', 'Supermercado Nacional', 'expense'),
   acc('21', 'Netflix', 'expense'),
@@ -94,6 +95,39 @@ describe('AccountPicker', () => {
     expect(s.groups()).toEqual(['Assets', 'Liabilities', 'Income']);
     expect(s.labels()).toContain('Empresa SRL DOP');
     expect(s.labels().some((l) => l.startsWith('Netflix'))).toBe(false);
+  });
+
+  it('shows each source account balance in its own currency, red when negative', async () => {
+    const s = await setup('source');
+    await s.open();
+    expect(s.labels()).toContain('Banco Popular RD$1,500.50');
+    expect(s.labels()).toContain('Préstamo vehículo −RD$50,000.00');
+    expect(s.labels()).toContain('Cuenta USD US$0.00');
+    const hint = (name: string) => s.options().find((o) => o.textContent!.includes(name))!.querySelector('span.num')!;
+    expect(hint('Préstamo').classList).toContain('text-negative');
+    expect(hint('Banco Popular').classList).not.toContain('text-negative');
+  });
+
+  it('keeps the destination list free of balances', async () => {
+    const s = await setup('destination');
+    await s.open();
+    expect(s.labels().join(' ')).not.toContain('1,500.50');
+  });
+
+  it('shows the balance of the selected source account inside the field, red when negative', async () => {
+    const s = await setup('source');
+    const suffix = () => s.fixture.nativeElement.querySelector('span.num') as HTMLElement | null;
+    expect(suffix()).toBeNull();
+    s.host.model.set({ account: { id: '1' } });
+    await s.settle();
+    expect(suffix()!.textContent!.trim()).toBe('RD$1,500.50');
+    expect(suffix()!.classList).not.toContain('text-negative');
+    s.host.model.set({ account: { id: '5' } });
+    await s.settle();
+    expect(suffix()!.textContent!.trim()).toBe('−RD$50,000.00');
+    expect(suffix()!.classList).toContain('text-negative');
+    await s.open();
+    expect(suffix()).toBeNull();
   });
 
   it('filters while typing, ignoring case and accents, and picks an existing account by id', async () => {

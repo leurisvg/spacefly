@@ -200,63 +200,70 @@ describe('TimeInput', () => {
     const settle = settleOf(fixture);
     await settle();
     const el = fixture.nativeElement as HTMLElement;
-    const input = el.querySelector('input') as HTMLInputElement;
-    const type = async (text: string) => {
-      input.focus();
-      input.value = text;
-      input.dispatchEvent(new Event('input'));
+    const trigger = () => el.querySelector('button[hlmPopoverTrigger], button[aria-label], hlm-popover button') as HTMLButtonElement;
+    const link = (label: string) => [...el.querySelectorAll('button')].find((b) => b.textContent!.trim() === label) as HTMLButtonElement | undefined;
+    const open = async () => {
+      trigger().click();
       await settle();
     };
-    const key = async (k: string) => {
-      input.dispatchEvent(new KeyboardEvent('keydown', { key: k, bubbles: true, cancelable: true }));
-      await settle();
-    };
-    return { fixture, el, input, emitted, type, key, settle };
+    // The options render in an overlay outside the component.
+    const option = (listbox: 'Hour' | 'Minute', text: string) =>
+      [...document.querySelectorAll(`[role=listbox][aria-label="${listbox}"] [role=option]`)].find((o) => o.textContent!.trim() === text) as HTMLButtonElement;
+    return { fixture, el, emitted, trigger, link, open, option, settle };
   }
+
+  it('uses a popover picker, not a text field', async () => {
+    const t = await setupTime();
+    expect(t.el.querySelector('input')).toBeNull();
+    expect(t.el.querySelector('hlm-popover')).not.toBeNull();
+  });
+
+  it('asks to pick a time while empty', async () => {
+    const t = await setupTime();
+    expect(t.trigger().textContent).toContain('Pick a time');
+  });
 
   it('shows the model value', async () => {
     const t = await setupTime('18:30');
-    expect(t.input.value).toBe('18:30');
+    expect(t.trigger().textContent).toContain('18:30');
   });
 
-  it('models what is typed as HH:mm and tidies the text when leaving the field', async () => {
+  it('models the picked hour and minute as HH:mm', async () => {
     const t = await setupTime();
-    await t.type('930');
-    expect(t.emitted.at(-1)).toBe('09:30');
-    expect(t.input.value).toBe('930');
-    t.input.dispatchEvent(new Event('blur'));
+    await t.open();
+    t.option('Hour', '09').click();
     await t.settle();
-    expect(t.input.value).toBe('09:30');
-  });
-
-  it('keeps what is not a time as typed so the form can flag it', async () => {
-    const t = await setupTime();
-    await t.type('noon');
-    expect(t.emitted.at(-1)).toBe('noon');
-    t.input.dispatchEvent(new Event('blur'));
+    expect(t.emitted.at(-1)).toBe('09:00');
+    t.option('Minute', '35').click();
     await t.settle();
-    expect(t.input.value).toBe('noon');
-  });
-
-  it('moves by five minutes with the arrow keys', async () => {
-    const t = await setupTime('09:30');
-    await t.key('ArrowUp');
     expect(t.emitted.at(-1)).toBe('09:35');
-    expect(t.input.value).toBe('09:35');
   });
 
-  it('wraps around midnight with the arrow keys', async () => {
-    const t = await setupTime('00:00');
-    await t.key('ArrowDown');
-    expect(t.emitted.at(-1)).toBe('23:55');
+  it('keeps the minutes when only the hour changes', async () => {
+    const t = await setupTime('09:35');
+    await t.open();
+    t.option('Hour', '21').click();
+    await t.settle();
+    expect(t.emitted.at(-1)).toBe('21:35');
   });
 
   it('sets the current time from the Now shortcut', async () => {
     const t = await setupTime();
-    (t.el.querySelector('button') as HTMLButtonElement).click();
+    t.link('Now')!.click();
     await t.settle();
     expect(t.emitted.at(-1)).toMatch(/^([01]\d|2[0-3]):[0-5]\d$/);
-    expect(t.input.value).toBe(t.emitted.at(-1));
+  });
+
+  it('only offers Clear when there is a time', async () => {
+    const t = await setupTime();
+    expect(t.link('Clear')).toBeUndefined();
+  });
+
+  it('clears the time so the server decides', async () => {
+    const t = await setupTime('09:30');
+    t.link('Clear')!.click();
+    await t.settle();
+    expect(t.emitted.at(-1)).toBe('');
   });
 });
 
