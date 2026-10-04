@@ -3,7 +3,7 @@ import { RouterLink } from '@angular/router';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideArrowLeft, lucideChevronLeft, lucideChevronRight, lucidePencil } from '@ng-icons/lucide';
 import { TranslocoPipe } from '@jsverse/transloco';
-import type { AccountDetailReport, AccountTxRow } from '@shared';
+import type { AccountDetailReport, AccountTxRow, CalendarDay } from '@shared';
 import { HlmBadge } from '@spartan-ng/helm/badge';
 import { HlmButton } from '@spartan-ng/helm/button';
 import { HlmToggleGroupImports } from '@spartan-ng/helm/toggle-group';
@@ -13,14 +13,16 @@ import { FORMAT_PIPES } from '../../core/format/pipes';
 import { I18n } from '../../core/i18n/i18n';
 import { BackNavigation } from '../../core/nav/back-navigation';
 import { FiltersStore } from '../../core/state/filters.store';
-import { categoryBarsOption, dailyBalanceOption, dailyFlowOption, incomeExpenseOption, rankingBarsOption } from '../../shared/charts/builders';
+import { categoryBarsOption, dailyBalanceOption, incomeExpenseOption, rankingBarsOption } from '../../shared/charts/builders';
 import { Chart } from '../../shared/charts/chart';
 import { ChartCard, type ChartTable } from '../../shared/charts/chart-card';
 import { money } from '../../shared/charts/series-colors';
+import { CalendarGrid } from '../../shared/components/calendar-grid';
 import { EmptyState } from '../../shared/components/empty-state';
 import { KpiCard } from '../../shared/components/kpi-card';
 import { Money } from '../../shared/components/money';
 import { PageHeader } from '../../shared/components/page-header';
+import { TxDetailService } from '../../shared/components/tx-detail.service';
 import { EntityEditor } from '../editor/entity-editor.service';
 
 const PAGE_SIZE = 50;
@@ -30,7 +32,7 @@ type Tab = (typeof TABS)[number];
 /** One asset account: balance and flows per day, monthly trend, rankings and every record with its running balance. */
 @Component({
   selector: 'sf-account-detail',
-  imports: [NgIcon, RouterLink, TranslocoPipe, HlmBadge, HlmButton, HlmToggleGroupImports, Chart, ChartCard, EmptyState, KpiCard, Money, PageHeader, ...FORMAT_PIPES],
+  imports: [NgIcon, RouterLink, TranslocoPipe, HlmBadge, HlmButton, HlmToggleGroupImports, CalendarGrid, Chart, ChartCard, EmptyState, KpiCard, Money, PageHeader, ...FORMAT_PIPES],
   providers: [provideIcons({ lucideArrowLeft, lucideChevronLeft, lucideChevronRight, lucidePencil })],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'flex flex-col gap-4 sm:gap-5' },
@@ -113,10 +115,15 @@ type Tab = (typeof TABS)[number];
         }
       </sf-chart-card>
 
-      <sf-chart-card [title]="i18n.t('accounts.detail.dailyFlow')" [subtitle]="zoomHint()" [table]="flowTable()" [loading]="res.loading()" [initialLoading]="res.initialLoading()" fileName="account-daily-flow">
-        @if (flowOptions(); as o) {
-          <sf-chart [options]="o" height="16rem" />
-        }
+      <sf-chart-card [title]="i18n.t('accounts.detail.dailyFlow')" [subtitle]="i18n.t('calendar.clickDay')" [exportable]="false" [table]="flowTable()" [loading]="res.loading()" [initialLoading]="res.initialLoading()" skeletonHeight="28rem">
+        <div class="grid gap-6 px-2 pb-2" [class]="calendarGridClass()">
+          @for (m of calendarMonths(); track m.month) {
+            <section>
+              <h3 class="mb-2 text-sm font-medium capitalize">{{ m.month | fdate: 'month' }}</h3>
+              <sf-calendar-grid [days]="m.days" [scale]="calendarScale()" (dayClick)="openDay($event)" />
+            </section>
+          }
+        </div>
       </sf-chart-card>
 
       <section class="grid gap-4 lg:grid-cols-2">
@@ -242,6 +249,7 @@ export class AccountDetail {
   protected readonly editor = inject(EntityEditor);
   private readonly f = inject(FormatService);
   private readonly back = inject(BackNavigation);
+  private readonly detail = inject(TxDetailService);
 
   /** Bound from the `:id` route param. */
   readonly id = input.required<string>();
@@ -300,10 +308,18 @@ export class AccountDetail {
     const d = this.r();
     return d?.days.length ? dailyBalanceOption(this.f, this.i18n.t('accounts.balance'), d.days) : null;
   });
-  protected readonly flowOptions = computed(() => {
-    const d = this.r();
-    return d?.days.length ? dailyFlowOption(this.f, this.i18n.t, d.days) : null;
+  /** One calendar per month of the period, all on the same scale. */
+  protected readonly calendarMonths = computed(() => {
+    const byMonth = new Map<string, CalendarDay[]>();
+    for (const d of this.r()?.days ?? []) {
+      const month = d.date.slice(0, 7);
+      byMonth.set(month, [...(byMonth.get(month) ?? []), { date: d.date, income: d.income, expense: d.expense, count: d.count, balance: d.balance }]);
+    }
+    return [...byMonth].map(([month, days]) => ({ month, days }));
   });
+  protected readonly calendarScale = computed(() => Math.max(1, ...(this.r()?.days ?? []).map((d) => Math.max(d.income, d.expense))));
+  protected readonly calendarGridClass = computed(() => (this.calendarMonths().length > 1 ? 'lg:grid-cols-2 2xl:grid-cols-3' : 'max-w-2xl'));
+
   protected readonly monthlyOptions = computed(() => {
     const d = this.r();
     return d ? incomeExpenseOption(this.f, this.i18n.t, d.months.map((m) => ({ ...m, net: m.income - m.expense }))) : null;
@@ -377,6 +393,10 @@ export class AccountDetail {
   /** Only single-part expenses, income and transfers are edited in SpaceFly. */
   protected editable(tx: AccountTxRow): boolean {
     return tx.splitCount === 1 && ['withdrawal', 'deposit', 'transfer'].includes(tx.type);
+  }
+
+  protected openDay(date: string): void {
+    this.detail.open(this.f.date(date, 'full'), { start: date, end: date, account: this.id() });
   }
 
   protected goBack(): void {

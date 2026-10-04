@@ -462,37 +462,6 @@ export function dailyBalanceOption(f: Fmt, label: string, days: AccountDay[]): E
   };
 }
 
-/** Income and expenses per day side by side on one axis; transfers only show in the tooltip. */
-export function dailyFlowOption(f: Fmt, t: (k: string) => string, days: AccountDay[]): EChartsCoreOption {
-  const names = [t('common.income'), t('common.expenses')];
-  return {
-    grid: { ...GRID, bottom: days.length > 60 ? 28 : 8 },
-    legend: legendTop(names),
-    tooltip: {
-      trigger: 'axis',
-      axisPointer: { type: 'shadow', shadowStyle: { color: 'rgba(148,163,184,0.06)' } },
-      formatter: (p: { dataIndex: number }[]) => {
-        const d = days[p[0].dataIndex];
-        return (
-          tooltipTitle(f.date(d.date, 'full')) +
-          tooltipRow(money.income(), names[0], f.money(d.income)) +
-          tooltipRow(money.expense(), names[1], f.money(-d.expense)) +
-          (d.transferIn ? tooltipRow(money.ink2(), t('accounts.detail.transferIn'), f.money(d.transferIn)) : '') +
-          (d.transferOut ? tooltipRow(money.ink2(), t('accounts.detail.transferOut'), f.money(-d.transferOut)) : '') +
-          (d.balance !== null ? tooltipRow(money.net(), t('accounts.balance'), f.money(d.balance)) : '')
-        );
-      },
-    },
-    dataZoom: zoomFor(days.length),
-    xAxis: { type: 'category', data: days.map(dayLabel(f, days)) },
-    yAxis: moneyAxis(f),
-    series: [
-      { name: names[0], type: 'bar', data: days.map((d) => d.income), itemStyle: { color: money.income() }, barGap: '8%' },
-      { name: names[1], type: 'bar', data: days.map((d) => d.expense), itemStyle: { color: money.expense() } },
-    ],
-  };
-}
-
 /** One series over fixed categories (weekdays): single hue, value labels, no legend. */
 export function categoryBarsOption(f: Fmt, labels: string[], values: number[], color: string, name: string): EChartsCoreOption {
   return {

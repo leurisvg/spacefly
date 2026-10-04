@@ -104,6 +104,8 @@ export class CalendarGrid {
   readonly days = input.required<CalendarDay[]>();
   readonly scheduled = input<ScheduledItem[]>([]);
   readonly compact = input(false);
+  /** Value that fills a cell; defaults to the largest day shown (pass one to compare several months). */
+  readonly scale = input<number | null>(null);
   readonly dayClick = output<string>();
 
   protected readonly weekdays = computed(() => this.f.weekdayNames());
@@ -112,7 +114,7 @@ export class CalendarGrid {
 
   protected readonly cells = computed<Cell[]>(() => {
     const days = this.days();
-    const max = Math.max(1, ...days.map((d) => Math.max(d.income, d.expense)));
+    const max = this.scale() ?? Math.max(1, ...days.map((d) => Math.max(d.income, d.expense)));
     const today = todayIso();
     const byDate = new Map<string, ScheduledItem[]>();
     for (const s of this.scheduled()) byDate.set(s.date, [...(byDate.get(s.date) ?? []), s]);
