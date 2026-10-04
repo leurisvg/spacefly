@@ -3,6 +3,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { TranslocoService } from '@jsverse/transloco';
 import { ApiService } from '../../api/report-resource';
 import { AuthService } from '../../auth/auth.service';
+import { I18n } from '../../i18n/i18n';
 import { LANG_KEY, LANGS, type Lang } from '../../i18n/lang';
 import { KeyValueStorage } from '../../platform/key-value-storage';
 import { Toast } from '../../platform/toast';
@@ -20,11 +21,13 @@ export function preferencesViewModel() {
   const filters = inject(FiltersStore);
   const privacy = inject(PrivacyStore);
   const toast = inject(Toast);
+  const i18n = inject(I18n);
 
   const lang = toSignal(transloco.langChanges$, { initialValue: transloco.getActiveLang() });
   const refreshing = signal(false);
 
   return {
+    i18n,
     langs: LANGS,
     lang,
     privacy,

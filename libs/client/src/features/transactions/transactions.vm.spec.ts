@@ -1,13 +1,15 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import type { TxRow } from '@spacefly/shared';
-import { FakeConfirm, RecordingToast } from '../../../testing/fakes';
+import { FakeBackNavigation, FakeConfirm, RecordingToast } from '../../../testing/fakes';
 import { EN, formatTestProviders, loadTranslations } from '../../../testing';
 import { I18n } from '../../i18n/i18n';
 import { MetaStore } from '../../state/meta.store';
 import { buildTransactionsCsv, defaultSortDir, explorerViewModel, isEditable, signedAmount, sortTransactions } from './explorer.vm';
 import { groupTransactions } from './tx-detail.vm';
+import { txViewViewModel } from './tx-view.vm';
 
 const ref = (id: string, name: string) => ({ id, name });
 const tx = (over: Partial<TxRow>): TxRow => ({
@@ -146,5 +148,53 @@ describe('explorerViewModel', () => {
     expect(vm.csv()).not.toBeNull();
     vm.privacy.set(true);
     expect(vm.csv()).toBeNull();
+  });
+});
+
+describe('txViewViewModel', () => {
+  async function setup(idValue: string | undefined) {
+    TestBed.configureTestingModule({ providers: [...formatTestProviders('en', EN, { realStores: true }).providers, provideHttpClient(), provideHttpClientTesting()] });
+    TestBed.overrideProvider(MetaStore, { useValue: { fireflyUrl: (p: string) => `https://ff.test${p}` } });
+    await loadTranslations('en');
+    const id = signal<string | undefined>(idValue);
+    const vm = TestBed.runInInjectionContext(() => txViewViewModel(id));
+    TestBed.tick();
+    return { vm, id, http: TestBed.inject(HttpTestingController), toast: TestBed.inject(RecordingToast), confirm: TestBed.inject(FakeConfirm), back: TestBed.inject(FakeBackNavigation) };
+  }
+
+  it('loads the transaction and shows it', async () => {
+    const { vm, http } = await setup('5');
+    expect(vm.state()).toBe('loading');
+    http.expectOne('/api/transactions/5').flush({ groupId: '5', description: 'Cena' });
+    await vi.waitFor(() => expect(vm.state()).toBe('ready'));
+    expect(vm.tx()?.description).toBe('Cena');
+    expect(vm.fireflyUrl()).toBe('https://ff.test/transactions/show/5');
+  });
+
+  it.each([
+    [409, { reason: 'splits' }, 'notEditable'],
+    [404, {}, 'missing'],
+    [500, {}, 'error'],
+  ])('maps a %i answer to the %s state', async (status, body, expected) => {
+    const { vm, http } = await setup('5');
+    http.expectOne('/api/transactions/5').flush(body, { status, statusText: 'x' });
+    await vi.waitFor(() => expect(vm.state()).toBe(expected));
+    if (expected === 'notEditable') expect(vm.blockedReason()).toBe('splits');
+  });
+
+  it('deletes after confirming, tells the user and goes back', async () => {
+    const { vm, http, toast, confirm, back } = await setup('5');
+    http.expectOne('/api/transactions/5').flush({ groupId: '5', description: 'Cena' });
+    await vi.waitFor(() => expect(vm.state()).toBe('ready'));
+    confirm.answer = false;
+    await vm.remove();
+    http.expectNone({ method: 'DELETE', url: '/api/transactions/5' });
+
+    confirm.answer = true;
+    const done = vm.remove();
+    await vi.waitFor(() => http.expectOne({ method: 'DELETE', url: '/api/transactions/5' }).flush(null));
+    await done;
+    expect(toast.messages[0].kind).toBe('success');
+    expect(back.fallbacks).toEqual(['/transactions']);
   });
 });

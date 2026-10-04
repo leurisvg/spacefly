@@ -1,5 +1,6 @@
 import { computed, inject, signal, type Signal } from '@angular/core';
 import { AuthService } from '../../auth/auth.service';
+import { I18n } from '../../i18n/i18n';
 
 const KNOWN_ERRORS = ['invalid_state', 'token_exchange', 'access_denied'];
 
@@ -9,9 +10,11 @@ export const loginErrorKey = (code: string | undefined): string => (code && KNOW
 /** Sign-in screen: the localized error to show and the sign-in action. */
 export function loginViewModel(inputs: { returnTo: Signal<string | undefined>; error: Signal<string | undefined> }) {
   const auth = inject(AuthService);
+  const i18n = inject(I18n);
   const busy = signal(false);
 
   return {
+    i18n,
     busy,
     errorKey: computed(() => loginErrorKey(inputs.error())),
 

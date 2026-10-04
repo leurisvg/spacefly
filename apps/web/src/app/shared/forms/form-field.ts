@@ -1,5 +1,6 @@
 import { afterRenderEffect, ChangeDetectionStrategy, Component, computed, ElementRef, inject, input, signal, type Signal } from '@angular/core';
 import { HlmLabel } from '@spartan-ng/helm/label';
+import { fieldErrorMessages } from '@spacefly/client/features/editor/field-errors';
 import { I18n } from '@spacefly/client/i18n/i18n';
 
 let nextId = 0;
@@ -58,12 +59,7 @@ export class FormField {
 
   protected readonly messages = computed<string[]>(() => {
     const state = this.field()?.();
-    const own = state
-      ? state
-          .errors()
-          .filter((e) => e.kind === 'server' || state.touched())
-          .map((e) => this.text(e))
-      : [];
+    const own = state ? fieldErrorMessages(this.i18n, state) : [];
     return [...own, ...this.errors()];
   });
   protected readonly labelFor = signal(this.controlId);
@@ -83,12 +79,5 @@ export class FormField {
         else control.removeAttribute('aria-describedby');
       },
     });
-  }
-
-  private text(e: { kind: string; message?: string }): string {
-    if (e.message) return e.message;
-    const key = `forms.errors.${e.kind}`;
-    const translated = this.i18n.t(key);
-    return translated === key ? this.i18n.t('forms.errors.invalid') : translated;
   }
 }
