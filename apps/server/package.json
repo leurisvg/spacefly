@@ -1,0 +1,9 @@
+{
+  "name": "@spacefly/server",
+  "version": "0.1.0",
+  "private": true,
+  "description": "SpaceFly BFF (Hono). Bundled with tsup; depends only on libs/shared.",
+  "scripts": {
+    "build": "tsup"
+  }
+}

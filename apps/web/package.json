@@ -1,0 +1,6 @@
+{
+  "name": "@spacefly/web",
+  "version": "0.1.0",
+  "private": true,
+  "description": "SpaceFly web app (Angular). Dependencies live in the root package.json so there is a single Angular copy."
+}

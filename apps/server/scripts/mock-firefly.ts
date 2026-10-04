@@ -9,7 +9,7 @@
  * (in memory, reset on restart) through the shared fake Firefly.
  */
 import { createServer } from 'node:http';
-import { addDays, addMonths, daysInMonth, monthsInRange, startOfMonth, todayIso } from '../../shared/utils/dates';
+import { addDays, addMonths, daysInMonth, monthsInRange, startOfMonth, todayIso } from '../../../libs/shared/src/utils/dates';
 import { createFakeFirefly, type FakeDataset } from '../test/fixtures/fake-firefly';
 
 const PORT = Number(process.env['MOCK_PORT'] ?? 8081);

@@ -2,7 +2,7 @@ import { defineConfig } from 'tsup';
 
 export default defineConfig({
   entry: { main: 'src/main.ts' },
-  outDir: '../dist/server',
+  outDir: '../../dist/server',
   format: ['esm'],
   platform: 'node',
   target: 'node24',

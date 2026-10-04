@@ -5,19 +5,20 @@
     "ng": "ng",
     "dev": "concurrently -k -n web,api -c cyan,magenta \"npm:dev:web\" \"npm:dev:server\"",
     "dev:web": "ng serve",
-    "dev:server": "tsx watch --tsconfig server/tsconfig.json --env-file-if-exists=.env server/src/main.ts",
+    "dev:server": "tsx watch --tsconfig apps/server/tsconfig.json --env-file-if-exists=.env apps/server/src/main.ts",
     "build": "ng build && npm run build:server",
-    "build:server": "cd server && tsup",
+    "build:server": "npm run build -w @spacefly/server",
     "start": "node dist/server/main.mjs",
     "test": "ng test --watch=false && npm run test:server",
     "test:web": "ng test",
-    "test:server": "vitest run --config server/vitest.config.ts",
-    "typecheck:server": "tsc -p server/tsconfig.json",
+    "test:server": "vitest run --config apps/server/vitest.config.ts",
+    "typecheck:server": "tsc -p apps/server/tsconfig.json",
     "lint": "ng lint",
-    "fixtures:capture": "tsx --tsconfig server/tsconfig.json --env-file-if-exists=.env server/scripts/capture-fixtures.ts",
+    "fixtures:capture": "tsx --tsconfig apps/server/tsconfig.json --env-file-if-exists=.env apps/server/scripts/capture-fixtures.ts",
     "dev:mock": "concurrently -k -n mock,api,web -c yellow,magenta,cyan \"npm:mock:firefly\" \"npm:dev:server:mock\" \"npm:dev:web\"",
-    "dev:server:mock": "tsx watch --tsconfig server/tsconfig.json --env-file=.env.mock server/src/main.ts",
-    "mock:firefly": "tsx --tsconfig server/tsconfig.json server/scripts/mock-firefly.ts"
+    "dev:server:mock": "tsx watch --tsconfig apps/server/tsconfig.json --env-file=.env.mock apps/server/src/main.ts",
+    "mock:firefly": "tsx --tsconfig apps/server/tsconfig.json apps/server/scripts/mock-firefly.ts",
+    "check:deps": "node scripts/check-single-angular.mjs"
   },
   "private": true,
   "packageManager": "npm@11.6.2",
@@ -72,5 +73,9 @@
     "typescript": "~6.0.2",
     "typescript-eslint": "8.69.0",
     "vitest": "^5.0.0"
-  }
+  },
+  "workspaces": [
+    "apps/*",
+    "libs/*"
+  ]
 }

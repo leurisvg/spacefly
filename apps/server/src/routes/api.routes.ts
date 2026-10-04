@@ -33,7 +33,7 @@ import { buildRanking, keyFns, kindFilter } from '../reports/ranking.report';
 import { buildSankey } from '../reports/sankey.report';
 import { savingsAccounts } from '../reports/helpers';
 import { BadRequest, handleApiError } from './errors';
-import packageJson from '../../../package.json' with { type: 'json' };
+import packageJson from '../../../../package.json' with { type: 'json' };
 
 const date = z.string().refine(isIsoDate, 'expected YYYY-MM-DD');
 const bool = z.enum(['1', '0', 'true', 'false']).transform((v) => v === '1' || v === 'true');

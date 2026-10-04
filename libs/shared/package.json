@@ -1,0 +1,6 @@
+{
+  "name": "@spacefly/shared",
+  "version": "0.1.0",
+  "private": true,
+  "description": "DTOs and pure utilities shared by every app. No Angular, no rxjs."
+}

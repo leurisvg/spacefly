@@ -315,7 +315,7 @@ describe('i18n', () => {
     o && typeof o === 'object'
       ? Object.entries(o).flatMap(([k, v]) => flatten(v, prefix ? `${prefix}.${k}` : k))
       : [prefix];
-  const load = (lang: string) => JSON.parse(readFileSync(new URL(`../../public/i18n/${lang}.json`, import.meta.url), 'utf8')) as unknown;
+  const load = (lang: string) => JSON.parse(readFileSync(new URL(`../../../libs/i18n/src/${lang}.json`, import.meta.url), 'utf8')) as unknown;
 
   it('has the same keys in es and en', () => {
     const es = new Set(flatten(load('es')));

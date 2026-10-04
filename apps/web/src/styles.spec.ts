@@ -2,9 +2,9 @@ import { readFileSync } from 'node:fs';
 
 /** The hand-cursor rule lives in styles.css; read the real selector and check what it matches. */
 function cursorRuleSelector(): string {
-  const css = readFileSync('src/styles.css', 'utf8');
+  const css = readFileSync('apps/web/src/styles.css', 'utf8');
   const m = css.match(/\n(:is\([\s\S]*?\):not\([\s\S]*?\))\s*\{\s*cursor:\s*pointer;\s*\}/);
-  expect(m, 'cursor:pointer rule not found in src/styles.css').not.toBeNull();
+  expect(m, 'cursor:pointer rule not found in apps/web/src/styles.css').not.toBeNull();
   return m![1].replace(/\s+/g, ' ');
 }
 

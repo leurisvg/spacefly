@@ -3,7 +3,13 @@
 # ── Build: Angular SPA + bundled Hono BFF ─────────────────────────────────────
 FROM node:24-alpine AS build
 WORKDIR /app
+# Every workspace manifest must be present before `npm ci`, or the lockfile and workspaces disagree.
+# A new workspace under apps/ or libs/ needs its own COPY line here.
 COPY package.json package-lock.json ./
+COPY apps/web/package.json apps/web/
+COPY apps/server/package.json apps/server/
+COPY libs/shared/package.json libs/shared/
+COPY libs/i18n/package.json libs/i18n/
 RUN npm ci --no-audit --no-fund
 COPY . .
 RUN npm run build
