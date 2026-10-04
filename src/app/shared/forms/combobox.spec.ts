@@ -74,20 +74,6 @@ describe('Combobox (free text with suggestions)', () => {
     expect(s.options()).toEqual([]); // closed
   });
 
-  it('shows suggestions that arrive after the list was empty, even after it had been emptied again', async () => {
-    const s = await setup();
-    await s.type('Comp');
-    s.host.options.set([{ value: 'Compra', label: 'Compra' }]);
-    await s.settle();
-    expect(s.options()).toHaveLength(1);
-    s.host.options.set([]); // e.g. the next request is loading
-    await s.settle();
-    expect(s.options()).toHaveLength(0);
-    s.host.options.set([{ value: 'Compra rápida', label: 'Compra rápida' }]);
-    await s.type('Compra');
-    expect(s.options().map((o) => o.textContent!.trim())).toEqual(['Compra rápida']);
-  });
-
   it('narrows the suggestions to the text while new ones are on the way', async () => {
     const s = await setup();
     s.host.options.set([{ value: 'Compra quincenal', label: 'Compra quincenal' }, { value: 'Netflix', label: 'Netflix' }]);

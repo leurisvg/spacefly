@@ -15,11 +15,11 @@ class Page {}
 
 const LOOKUPS: EditorLookups = {
   accounts: [
-    { id: '1', name: 'Banco Popular', kind: 'asset', liabilityType: null, currency: 'DOP', role: 'defaultAsset', group: null, balance: 0 },
-    { id: '2', name: 'Cuenta USD', kind: 'asset', liabilityType: null, currency: 'USD', role: null, group: null, balance: 0 },
-    { id: '3', name: 'Visa', kind: 'asset', liabilityType: null, currency: 'DOP', role: 'ccAsset', group: null, balance: 0 },
-    { id: '10', name: 'Empresa SRL', kind: 'revenue', liabilityType: null, currency: 'DOP', role: null, group: null, balance: 0 },
-    { id: '20', name: 'Supermercado', kind: 'expense', liabilityType: null, currency: 'DOP', role: null, group: null, balance: 0 },
+    { id: '1', name: 'Banco Popular', kind: 'asset', liabilityType: null, currency: 'DOP', role: 'defaultAsset', group: null },
+    { id: '2', name: 'Cuenta USD', kind: 'asset', liabilityType: null, currency: 'USD', role: null, group: null },
+    { id: '3', name: 'Visa', kind: 'asset', liabilityType: null, currency: 'DOP', role: 'ccAsset', group: null },
+    { id: '10', name: 'Empresa SRL', kind: 'revenue', liabilityType: null, currency: 'DOP', role: null, group: null },
+    { id: '20', name: 'Supermercado', kind: 'expense', liabilityType: null, currency: 'DOP', role: null, group: null },
   ],
   categories: [{ id: '1', name: 'Comida' }],
   tags: [{ id: '1', name: 'hogar' }],
@@ -221,23 +221,6 @@ describe('TransactionForm · new', () => {
     (document.body.querySelectorAll('[role=option]')[0] as HTMLElement).click();
     await s.settle();
     expect(s.model()['description']).toBe('Compra quincenal');
-  });
-
-  it('keeps the suggestion list open while the next ones load', async () => {
-    const s = await setup();
-    await s.type('Comp');
-    await new Promise((r) => setTimeout(r, 260));
-    s.http.expectOne((r) => r.url === '/api/lookups/descriptions').flush(['Compra quincenal', 'Compra rápida']);
-    await s.settle();
-    expect(document.body.querySelectorAll('[role=option]')).toHaveLength(2);
-    await s.type('Compra rap'); // a new request starts; the old list must not vanish while it is on the way
-    await new Promise((r) => setTimeout(r, 260));
-    const next = s.http.expectOne((r) => r.url === '/api/lookups/descriptions');
-    await s.settle();
-    expect([...document.body.querySelectorAll('[role=option]')].map((o) => o.textContent!.trim())).toEqual(['Compra rápida']);
-    next.flush(['Compra rápida', 'Compra rápida del mes']);
-    await s.settle();
-    expect([...document.body.querySelectorAll('[role=option]')].map((o) => o.textContent!.trim())).toEqual(['Compra rápida', 'Compra rápida del mes']);
   });
 
   it('asks again only for the last text typed, and not at all when the field is emptied', async () => {

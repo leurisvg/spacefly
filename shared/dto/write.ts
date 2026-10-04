@@ -18,8 +18,6 @@ export interface EditorAccount {
   currency: string;
   role: string | null;
   group: string | null;
-  /** Current balance, in the account's own currency. */
-  balance: number;
 }
 
 export interface EditorBill {

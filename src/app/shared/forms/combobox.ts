@@ -76,7 +76,7 @@ let nextId = 0;
       [cdkConnectedOverlayWidth]="width()"
       [cdkConnectedOverlayOffsetY]="4"
       (overlayOutsideClick)="onOutside($event)"
-      (detach)="onDetach()"
+      (detach)="open.set(false)"
     >
       <ul
         role="listbox"
@@ -295,14 +295,6 @@ export class Combobox implements FormValueControl<string> {
       else this.text.set(this.selectedLabel());
     }
     this.close();
-  }
-
-  /**
-   * The overlay detaches whenever it has nothing to show. A free-text field has nothing to show until
-   * suggestions arrive, and must still be "open" then so they appear.
-   */
-  protected onDetach(): void {
-    if (!this.freeText()) this.open.set(false);
   }
 
   protected hover(i: number): void {

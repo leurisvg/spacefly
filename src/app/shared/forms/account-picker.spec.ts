@@ -14,7 +14,6 @@ const acc = (id: string, name: string, kind: EditorAccount['kind'], currency = '
   currency,
   role: null,
   group: null,
-  balance: 0,
 });
 const ACCOUNTS = [
   acc('1', 'Banco Popular', 'asset'),
@@ -29,10 +28,10 @@ const ACCOUNTS = [
   selector: 'sf-host',
   imports: [AccountPicker, FormField],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `<sf-account-picker [formField]="f.account" [accounts]="accounts()" [side]="side()" [other]="other()" ariaLabel="Account" />`,
+  template: `<sf-account-picker [formField]="f.account" [accounts]="accounts" [side]="side()" [other]="other()" ariaLabel="Account" />`,
 })
 class Host {
-  readonly accounts = signal(ACCOUNTS);
+  readonly accounts = ACCOUNTS;
   readonly side = signal<'source' | 'destination'>('destination');
   readonly other = signal<AccountSlot>(null);
   readonly model = signal<{ account: AccountInput | null }>({ account: null });
@@ -87,25 +86,6 @@ describe('AccountPicker', () => {
       'Supermercado Nacional DOP',
       'Netflix DOP',
     ]);
-  });
-
-  it('shows the balance of each account on the source side, in its own currency', async () => {
-    const s = await setup('source');
-    s.host.accounts.set([
-      { ...ACCOUNTS[0]!, balance: 12345.5 },
-      { ...ACCOUNTS[1]!, balance: -80 },
-      { ...ACCOUNTS[2]!, balance: -420000 },
-      ACCOUNTS[3]!,
-    ]);
-    await s.open();
-    expect(s.labels()).toEqual(['Banco Popular RD$12,345.50', 'Cuenta USD −US$80.00', 'Préstamo vehículo −RD$420,000.00', 'Empresa SRL DOP']);
-  });
-
-  it('keeps showing the currency on the destination side', async () => {
-    const s = await setup('destination');
-    s.host.accounts.set([{ ...ACCOUNTS[0]!, balance: 999 }]);
-    await s.open();
-    expect(s.labels()).toEqual(['Banco Popular DOP']);
   });
 
   it('orders source accounts as assets, liabilities, then income sources', async () => {

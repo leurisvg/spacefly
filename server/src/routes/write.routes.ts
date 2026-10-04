@@ -60,7 +60,6 @@ export function writeRoutes(_s: Services) {
           currency: a.currency || primary.code,
           role: a.role,
           group: a.group,
-          balance: a.balance,
         },
       ];
     });

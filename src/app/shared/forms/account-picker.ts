@@ -1,7 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input, model, output } from '@angular/core';
 import type { FormValueControl } from '@angular/forms/signals';
 import { inferTransactionType, type AccountInput, type AccountKind, type AccountSlot, type EditorAccount } from '@shared';
-import { FormatService } from '../../core/format/format.service';
 import { I18n } from '../../core/i18n/i18n';
 import { Combobox, type ComboOption, type ComboSelection } from './combobox';
 
@@ -39,7 +38,6 @@ const DESTINATION_GROUPS: AccountKind[] = ['asset', 'liability', 'expense', 'cas
 })
 export class AccountPicker implements FormValueControl<AccountInput | null> {
   protected readonly i18n = inject(I18n);
-  private readonly format = inject(FormatService);
 
   readonly value = model<AccountInput | null>(null);
   readonly accounts = input.required<EditorAccount[]>();
@@ -67,8 +65,6 @@ export class AccountPicker implements FormValueControl<AccountInput | null> {
     const groups = this.side() === 'source' ? SOURCE_GROUPS : DESTINATION_GROUPS;
     const fits = this.compatible();
     const reason = this.i18n.t('forms.account.incompatible');
-    // Where the money comes from, you want to see how much there is (privacy mode masks it like any amount).
-    const showBalance = this.side() === 'source';
     return groups.flatMap((kind) =>
       this.accounts()
         .filter((a) => a.kind === kind)
@@ -76,7 +72,7 @@ export class AccountPicker implements FormValueControl<AccountInput | null> {
           value: a.id,
           label: a.name,
           group: this.i18n.t(`forms.accountGroups.${kind}`),
-          hint: showBalance && kind !== 'revenue' ? this.format.money(a.balance, a.currency) : a.currency,
+          hint: a.currency,
           invalid: !fits(kind),
           invalidReason: reason,
         })),
