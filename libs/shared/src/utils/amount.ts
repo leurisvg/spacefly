@@ -11,7 +11,7 @@ const count = (s: string, ch: string): number => s.split(ch).length - 1;
  * is ambiguous (`1,234`); `decimal` says which character the user's locale uses as decimal mark.
  */
 export function parseAmount(input: string, decimal: '.' | ',' = '.'): string | null {
-  let s = input.trim().replace(/[\s ']/g, '');
+  let s = input.trim().replace(/[\s\u00a0']/g, '');
   let sign = '';
   if (s.startsWith('-') || s.startsWith('+')) {
     if (s[0] === '-') sign = '-';
