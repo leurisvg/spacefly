@@ -237,11 +237,30 @@ CF_ACCESS_ENABLED=true
 CF_ACCESS_TEAM_DOMAIN=your-team.cloudflareaccess.com
 CF_ACCESS_AUD=
 CF_ACCESS_ALLOWED_EMAILS=you@example.com
+CF_ACCESS_SERVICE_TOKEN_IDS=                       # mobile app: client id(s) of its Access service token (optional)
+MOBILE_REDIRECT_URIS=                              # mobile app: e.g. spacefly://auth/callback; empty disables /auth/mobile/*
 DISPLAY_CURRENCIES=DOP,USD                         # currencies in the selector (the primary one is always included)
 FX_FALLBACK_PROVIDER=open.er-api                   # open.er-api | none
 CACHE_TTL_CURRENT_MONTH=300
 DATA_DIR=/data                                     # volume for SQLite
 ```
+
+### Mobile app access
+
+The mobile app signs in through the same Firefly OAuth flow, in the system browser (`ASWebAuthenticationSession` / Chrome Custom Tabs), and then keeps a **bearer token** instead of a cookie:
+
+1. The app opens `GET /auth/mobile/login?redirect_uri=…&code_challenge=…&state=…` (PKCE S256). SpaceFly checks `redirect_uri` against `MOBILE_REDIRECT_URIS` (exact, case-sensitive match) and runs the usual Firefly authorization (Firefly still redirects to `${APP_URL}/auth/callback`, so the Firefly OAuth client does not change).
+2. After the callback SpaceFly redirects to `redirect_uri?code=…&state=…` (errors come back the same way, as `error=…`). The code is one-time, expires in 60 s and is useless without the app's PKCE verifier.
+3. The app calls `POST /auth/mobile/token {code, code_verifier}` (JSON, with `X-SpaceFly: 1`) and gets `{token, expiresAt, email}`. From then on it sends `Authorization: Bearer <token>` (it takes precedence over the cookie). `POST /auth/logout` with the bearer ends the session.
+
+With `DEV_FIREFLY_TOKEN` (development only) step 1 hands the code over directly. If `MOBILE_REDIRECT_URIS` is empty the mobile endpoints answer 404.
+
+**Behind Cloudflare Access** the app cannot show Access' interactive login for API calls, so it authenticates with a **service token**:
+
+1. Zero Trust → **Access → Service Auth → Service Tokens → Create Service Token**. Copy the **Client ID** and the **Client Secret** (shown once).
+2. On the SpaceFly application add a policy with action **Service Auth** that includes that token. Put it above or next to the email policy: Access evaluates *Allow* / *Service Auth* policies independently, and a request that satisfies any of them gets in.
+3. Set `CF_ACCESS_SERVICE_TOKEN_IDS=<Client ID>` in `.env` and restart. SpaceFly accepts an Access JWT without an email only when its `common_name` is one of those ids, and only on `/api/*`, `/auth/mobile/token` and `/auth/logout`. Pages and the browser OAuth routes still require a person.
+4. Type the Client ID and Secret in the app's **Settings** (they are kept in the device's secure storage and sent as `CF-Access-Client-Id` / `CF-Access-Client-Secret`; they are never compiled into the build). The interactive part of the login (`/auth/mobile/login`) runs in the system browser, where Access shows its normal email login.
 
 ### Creating the OAuth client in Firefly III
 

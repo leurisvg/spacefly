@@ -82,6 +82,73 @@ describe('Cloudflare Access', () => {
   });
 });
 
+describe('Cloudflare Access service tokens', () => {
+  it('lets a service token reach the API only, and only when its client id is configured', async () => {
+    const { publicKey, privateKey } = await generateKeyPair('RS256');
+    const jwk = { ...(await exportJWK(publicKey)), kid: 'k1', alg: 'RS256' };
+    const certs = new Response(JSON.stringify({ keys: [jwk] }), { headers: { 'Content-Type': 'application/json' } });
+    const realFetch = globalThis.fetch;
+    globalThis.fetch = (async (input: string | URL | Request) =>
+      String(input).includes('/cdn-cgi/access/certs') ? certs.clone() : realFetch(input)) as typeof fetch;
+    try {
+      const { app } = setup({
+        CF_ACCESS_ENABLED: 'true',
+        CF_ACCESS_TEAM_DOMAIN: 'team.cloudflareaccess.com',
+        CF_ACCESS_AUD: 'aud-123',
+        CF_ACCESS_ALLOWED_EMAILS: 'leurisvg003@gmail.com',
+        CF_ACCESS_SERVICE_TOKEN_IDS: 'abc123.access',
+        MOBILE_REDIRECT_URIS: 'spacefly://auth/callback',
+      });
+      const sign = (claims: Record<string, unknown>) =>
+        new SignJWT(claims)
+          .setProtectedHeader({ alg: 'RS256', kid: 'k1' })
+          .setIssuer('https://team.cloudflareaccess.com')
+          .setAudience('aud-123')
+          .setExpirationTime('5m')
+          .sign(privateKey);
+      const asService = async (path: string, init: RequestInit = {}, commonName = 'abc123.access') =>
+        app.request(path, { ...init, headers: { 'Cf-Access-Jwt-Assertion': await sign({ common_name: commonName }), ...init.headers } });
+
+      expect((await asService('/api/me')).status).toBe(401); // through Access, then needs a SpaceFly session
+      const token = await asService('/auth/mobile/token', { method: 'POST', headers: { 'X-SpaceFly': '1', 'Content-Type': 'application/json' }, body: '{}' });
+      expect(token.status).toBe(400); // through Access, rejected by the endpoint itself
+      expect((await asService('/auth/logout', { method: 'POST', headers: { 'X-SpaceFly': '1' } })).status).toBe(204);
+
+      // Nothing else: no pages, no browser OAuth routes.
+      expect((await asService('/')).status).toBe(403);
+      expect((await asService('/auth/login')).status).toBe(403);
+      expect((await asService('/auth/mobile/login?redirect_uri=spacefly://auth/callback')).status).toBe(403);
+      // An unknown client id and a JWT with neither email nor a known token are refused everywhere.
+      expect((await asService('/api/me', {}, 'other.access')).status).toBe(403);
+      const anonymous = await app.request('/api/me', { headers: { 'Cf-Access-Jwt-Assertion': await sign({}) } });
+      expect(anonymous.status).toBe(403);
+    } finally {
+      globalThis.fetch = realFetch;
+    }
+  });
+
+  it('refuses a service token when no client id is configured', async () => {
+    const { publicKey, privateKey } = await generateKeyPair('RS256');
+    const jwk = { ...(await exportJWK(publicKey)), kid: 'k1', alg: 'RS256' };
+    const certs = new Response(JSON.stringify({ keys: [jwk] }), { headers: { 'Content-Type': 'application/json' } });
+    const realFetch = globalThis.fetch;
+    globalThis.fetch = (async (input: string | URL | Request) =>
+      String(input).includes('/cdn-cgi/access/certs') ? certs.clone() : realFetch(input)) as typeof fetch;
+    try {
+      const { app } = setup({ CF_ACCESS_ENABLED: 'true', CF_ACCESS_TEAM_DOMAIN: 'team.cloudflareaccess.com', CF_ACCESS_AUD: 'aud-123', CF_ACCESS_ALLOWED_EMAILS: 'leurisvg003@gmail.com' });
+      const jwt = await new SignJWT({ common_name: 'abc123.access' })
+        .setProtectedHeader({ alg: 'RS256', kid: 'k1' })
+        .setIssuer('https://team.cloudflareaccess.com')
+        .setAudience('aud-123')
+        .setExpirationTime('5m')
+        .sign(privateKey);
+      expect((await app.request('/api/me', { headers: { 'Cf-Access-Jwt-Assertion': jwt } })).status).toBe(403);
+    } finally {
+      globalThis.fetch = realFetch;
+    }
+  });
+});
+
 describe('reports API', () => {
   it('serves the monthly report; reports only issue GET requests to the Firefly API', async () => {
     const { app, log } = setup();

@@ -66,6 +66,8 @@ export function createApp(s: Services) {
       c.req.method === 'GET' || c.req.method === 'HEAD' ? next() : mw(c, next);
 
   app.use('/auth/logout', guard);
+  app.use('/auth/mobile/token', guard);
+  app.use('/auth/mobile/token', onlyWrites(maxBody));
   app.use('/auth/*', rateLimit(30, 60_000));
   app.route('/auth', oauthRoutes(s));
 

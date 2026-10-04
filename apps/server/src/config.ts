@@ -14,6 +14,17 @@ const list = z
       .filter(Boolean),
   );
 
+/** Comma-separated values kept exactly as written (redirect URIs and Access client ids are case-sensitive). */
+const exactList = z
+  .string()
+  .default('')
+  .transform((v) =>
+    v
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean),
+  );
+
 const schema = z
   .object({
     NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
@@ -31,6 +42,10 @@ const schema = z
     CF_ACCESS_TEAM_DOMAIN: z.string().default(''),
     CF_ACCESS_AUD: z.string().default(''),
     CF_ACCESS_ALLOWED_EMAILS: list,
+    /** Client ids of Access service tokens (the mobile app sends them) allowed through on the API routes. */
+    CF_ACCESS_SERVICE_TOKEN_IDS: exactList,
+    /** Redirect URIs the mobile app may use after login, e.g. `spacefly://auth/callback`. Empty disables the mobile login. */
+    MOBILE_REDIRECT_URIS: exactList,
     FX_FALLBACK_PROVIDER: z.enum(['open.er-api', 'none']).default('open.er-api'),
     DISPLAY_CURRENCIES: z.string().default('DOP,USD'),
     CACHE_TTL_CURRENT_MONTH: z.coerce.number().int().positive().default(300),
