@@ -6,6 +6,7 @@ export const settingsSchema = z.object({
   excludedAccounts: z.array(z.string().max(64)).max(200).default([]),
   balanceMonths: z.coerce.number().int().min(2).max(60).default(6),
   sankeyThreshold: z.coerce.number().min(0).max(0.2).default(0),
+  accountOrder: z.array(z.string().max(64)).max(200).default([]),
 });
 
 export const DEFAULT_SETTINGS: UserSettings = settingsSchema.parse({});

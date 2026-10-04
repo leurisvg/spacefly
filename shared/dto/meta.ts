@@ -24,6 +24,8 @@ export interface UserSettings {
   balanceMonths: number;
   /** Sankey "Others" grouping threshold, 0–0.2. */
   sankeyThreshold: number;
+  /** Asset account ids in the order the user arranged them (accounts not listed follow, largest balance first). */
+  accountOrder: string[];
 }
 
 export interface SettingsResponse {

@@ -287,6 +287,14 @@
       "ccAsset": "Tarjeta de crédito",
       "cashWalletAsset": "Efectivo"
     },
+    "reorder": {
+      "start": "Reordenar",
+      "done": "Listo",
+      "reset": "Restablecer orden",
+      "hint": "Arrastra las filas o usa las flechas. El orden se guarda solo.",
+      "up": "Subir {{name}}",
+      "down": "Bajar {{name}}"
+    },
     "counterparty": {
       "descriptions": {
         "expense": "A dónde va tu dinero: totales, frecuencia y tendencia por cuenta de gasto.",

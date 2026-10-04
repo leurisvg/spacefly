@@ -287,6 +287,14 @@
       "ccAsset": "Credit card",
       "cashWalletAsset": "Cash"
     },
+    "reorder": {
+      "start": "Reorder",
+      "done": "Done",
+      "reset": "Reset order",
+      "hint": "Drag the rows or use the arrows. The order saves itself.",
+      "up": "Move {{name}} up",
+      "down": "Move {{name}} down"
+    },
     "counterparty": {
       "descriptions": {
         "expense": "Where your money goes: totals, frequency and trend by expense account.",

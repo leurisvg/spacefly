@@ -139,6 +139,13 @@ export function apiRoutes(s: Services) {
     return c.json(saved);
   });
 
+  api.put('/settings/account-order', async (c) => {
+    const { order } = z.object({ order: z.array(z.string().max(64)).max(200) }).parse(await c.req.json());
+    const userId = c.get('session').userId;
+    const saved = s.settings.put(userId, { ...s.settings.get(userId), accountOrder: order });
+    return c.json({ accountOrder: saved.accountOrder });
+  });
+
   // ── Transactions ────────────────────────────────────────────────────────────
   api.get('/transactions', async (c) => {
     const { data, period, ctx } = await context(c);
@@ -382,7 +389,7 @@ export function apiRoutes(s: Services) {
       data.ledger(period),
       snapshots(data, period.end, months, false),
     ]);
-    return c.json(wrap(ctx, buildAccounts(ctx, current, splits, history, settings.excludedAccounts)));
+    return c.json(wrap(ctx, buildAccounts(ctx, current, splits, history, settings.excludedAccounts, settings.accountOrder)));
   });
 
   api.get('/reports/accounts/:id', async (c) => {

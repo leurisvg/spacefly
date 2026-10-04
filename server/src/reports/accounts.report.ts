@@ -5,15 +5,17 @@ import { balanceIn, netWorthOf } from './helpers';
 
 type Snapshot = { month: string; date: string; accounts: Account[] };
 
-/** Asset accounts: balances at the period end, activity in the period and balance history. */
+/** Asset accounts: balances at the period end, activity in the period and balance history. Listed in the user's order, then by balance. */
 export function buildAccounts(
   ctx: ReportContext,
   current: Account[],
   splits: Split[],
   history: Snapshot[],
   excluded: string[],
+  order: string[] = [],
 ): AccountsReport {
   const ex = new Set(excluded);
+  const rank = new Map(order.map((id, i) => [id, i]));
   const date = ctx.period.end;
   const accounts = current
     .filter((a) => a.active || a.balance !== 0)
@@ -34,7 +36,7 @@ export function buildAccounts(
         expense: round(ctx.sum(expense)),
       };
     })
-    .sort((a, b) => b.balance - a.balance);
+    .sort((a, b) => (rank.get(a.id) ?? Infinity) - (rank.get(b.id) ?? Infinity) || b.balance - a.balance);
 
   return {
     accounts,

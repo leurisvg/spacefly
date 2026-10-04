@@ -284,6 +284,26 @@ describe('reports API', () => {
     expect((await app.request('/api/reports/accounts/999?start=2026-09-01&end=2026-09-30', { headers: { cookie } })).status).toBe(404);
   });
 
+  it('lists asset accounts in the order the user arranged them', async () => {
+    const { app } = setup();
+    const cookie = await login(app);
+    const ids = async () =>
+      (((await (await app.request('/api/reports/accounts?start=2026-09-01&end=2026-09-30', { headers: { cookie } })).json()) as Report<{ accounts: { id: string }[] }>).data.accounts).map((a) => a.id);
+    expect(await ids()).toEqual(['1', '2', '3']); // by balance
+    const put = await app.request('/api/settings/account-order', {
+      method: 'PUT',
+      headers: { cookie, 'content-type': 'application/json', 'x-spacefly': '1' },
+      body: JSON.stringify({ order: ['3', '1'] }),
+    });
+    expect(put.status).toBe(200);
+    expect(await ids()).toEqual(['3', '1', '2']); // listed first, the rest by balance
+    // Saving the other settings keeps the order.
+    const settings = (await (await app.request('/api/settings', { headers: { cookie } })).json()) as { settings: { accountOrder: string[] } };
+    expect(settings.settings.accountOrder).toEqual(['3', '1']);
+    await app.request('/api/settings/account-order', { method: 'PUT', headers: { cookie, 'content-type': 'application/json', 'x-spacefly': '1' }, body: JSON.stringify({ order: [] }) });
+    expect(await ids()).toEqual(['1', '2', '3']);
+  });
+
   it('validates input', async () => {
     const { app } = setup();
     const cookie = await login(app);
