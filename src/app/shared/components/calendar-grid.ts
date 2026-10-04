@@ -28,9 +28,9 @@ interface Cell {
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'block' },
   template: `
-    <div class="grid grid-cols-7 gap-1 sm:gap-1.5" role="grid" [attr.aria-label]="'calendar.title' | transloco">
+    <div class="grid grid-cols-7" [class]="small() ? 'gap-0.5' : 'gap-1 sm:gap-1.5'" role="grid" [attr.aria-label]="'calendar.title' | transloco">
       @for (w of weekdays(); track $index) {
-        <div class="pb-1 text-center text-[11px] font-semibold text-muted-foreground" role="columnheader">{{ w }}</div>
+        <div class="pb-1 text-center font-semibold text-muted-foreground" [class]="small() ? 'text-[10px]' : 'text-[11px]'" role="columnheader">{{ w }}</div>
       }
       @for (_ of blanks(); track $index) {
         <div aria-hidden="true"></div>
@@ -61,7 +61,8 @@ interface Cell {
           @if (!compact()) {
             @if (c.day.income > 0) {
               <span
-                class="absolute left-0 w-1/2 text-center text-[9px] font-bold leading-none sm:text-[10px]"
+                class="absolute left-0 w-1/2 text-center font-bold leading-none"
+                [class]="small() ? 'text-[8px]' : 'text-[9px] sm:text-[10px]'"
                 [class.text-white]="c.incInside"
                 [class.text-positive]="!c.incInside"
                 [style.bottom]="c.incInside ? 'calc(' + c.incH + '% - 1.1em)' : 'calc(' + c.incH + '% + 2px)'"
@@ -69,14 +70,15 @@ interface Cell {
             }
             @if (c.day.expense > 0) {
               <span
-                class="absolute right-0 w-1/2 text-center text-[9px] font-bold leading-none sm:text-[10px]"
+                class="absolute right-0 w-1/2 text-center font-bold leading-none"
+                [class]="small() ? 'text-[8px]' : 'text-[9px] sm:text-[10px]'"
                 [class.text-white]="c.expInside"
                 [class.text-negative]="!c.expInside"
                 [style.bottom]="c.expInside ? 'calc(' + c.expH + '% - 1.1em)' : 'calc(' + c.expH + '% + 2px)'"
               >{{ short(c.day.expense) }}</span>
             }
           }
-          <span class="absolute inset-0 grid place-items-center text-xs font-bold text-foreground drop-shadow sm:text-sm">{{ c.num }}</span>
+          <span class="absolute inset-0 grid place-items-center font-bold text-foreground drop-shadow" [class]="small() ? 'text-[11px]' : 'text-xs sm:text-sm'">{{ c.num }}</span>
           @if (c.scheduled.length) {
             <span class="absolute right-1 top-1 flex gap-0.5" aria-hidden="true">
               @for (s of c.scheduled.slice(0, 3); track $index) {
@@ -104,10 +106,13 @@ export class CalendarGrid {
   readonly days = input.required<CalendarDay[]>();
   readonly scheduled = input<ScheduledItem[]>([]);
   readonly compact = input(false);
+  /** Smaller cells and type, for several months side by side. */
+  readonly size = input<'md' | 'sm'>('md');
   /** Value that fills a cell; defaults to the largest day shown (pass one to compare several months). */
   readonly scale = input<number | null>(null);
   readonly dayClick = output<string>();
 
+  protected readonly small = computed(() => this.size() === 'sm');
   protected readonly weekdays = computed(() => this.f.weekdayNames());
   protected readonly blanks = computed(() => Array.from({ length: this.days().length ? weekdayMon0(this.days()[0].date) : 0 }));
   protected readonly hasScheduled = computed(() => this.scheduled().length > 0);
@@ -145,6 +150,7 @@ export class CalendarGrid {
   /** Same compact labels as the email: 950 / 1.2k. */
   protected short(v: number): string {
     if (this.f.hidden()) return '0';
+    if (this.small() && v >= 10000) return `${Math.round(v / 1000)}k`;
     return v >= 1000 ? `${(v / 1000).toFixed(1)}k` : String(Math.round(v));
   }
 }

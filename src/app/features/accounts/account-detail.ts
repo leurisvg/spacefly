@@ -1,9 +1,9 @@
-import { ChangeDetectionStrategy, Component, computed, inject, input, linkedSignal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, input, linkedSignal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideArrowLeft, lucideChevronLeft, lucideChevronRight, lucidePencil } from '@ng-icons/lucide';
 import { TranslocoPipe } from '@jsverse/transloco';
-import type { AccountDetailReport, AccountTxRow, CalendarDay } from '@shared';
+import { addDays, todayIso, type AccountDetailReport, type AccountTxRow, type CalendarDay } from '@shared';
 import { HlmBadge } from '@spartan-ng/helm/badge';
 import { HlmButton } from '@spartan-ng/helm/button';
 import { HlmToggleGroupImports } from '@spartan-ng/helm/toggle-group';
@@ -27,6 +27,8 @@ import { TxDetailService } from '../../shared/components/tx-detail.service';
 import { EntityEditor } from '../editor/entity-editor.service';
 
 const PAGE_SIZE = 50;
+/** Days shown when the page opens (today included). */
+const DEFAULT_DAYS = 30;
 const TABS = ['all', 'withdrawal', 'deposit', 'transfer'] as const;
 type Tab = (typeof TABS)[number];
 
@@ -64,7 +66,7 @@ type Tab = (typeof TABS)[number];
         @if (stats(); as s) {
           <section class="rounded-xl border border-border bg-card p-4">
             <h2 class="card-title mb-3">{{ 'accounts.detail.stats' | transloco }}</h2>
-            <dl class="grid grid-cols-2 gap-x-6 gap-y-3 text-sm md:grid-cols-4">
+            <dl class="grid grid-cols-2 gap-x-4 gap-y-3 text-sm sm:gap-x-6 md:grid-cols-4">
               <div>
                 <dt class="eyebrow">{{ 'accounts.detail.opening' | transloco }}</dt>
                 <dd class="mt-0.5"><sf-dual-money align="start" [original]="d.openingOriginal" [converted]="d.opening" [currency]="d.account.currency" /></dd>
@@ -76,13 +78,13 @@ type Tab = (typeof TABS)[number];
               @if (s.lowest; as low) {
                 <div>
                   <dt class="eyebrow">{{ 'accounts.detail.lowest' | transloco }}</dt>
-                  <dd class="mt-0.5"><sf-money [value]="low.balance" tone="auto" /> <span class="text-xs text-muted-foreground">{{ low.date | fdate: 'short' }}</span></dd>
+                  <dd class="mt-0.5 flex flex-wrap items-center"><sf-money [value]="low.balance" tone="auto" /><span class="mx-1.5 inline-block h-3 w-px bg-border align-middle" aria-hidden="true"></span><span class="text-xs text-muted-foreground">{{ low.date | fdate: 'short' }}</span></dd>
                 </div>
               }
               @if (s.highest; as high) {
                 <div>
                   <dt class="eyebrow">{{ 'accounts.detail.highest' | transloco }}</dt>
-                  <dd class="mt-0.5"><sf-money [value]="high.balance" tone="auto" /> <span class="text-xs text-muted-foreground">{{ high.date | fdate: 'short' }}</span></dd>
+                  <dd class="mt-0.5 flex flex-wrap items-center"><sf-money [value]="high.balance" tone="auto" /><span class="mx-1.5 inline-block h-3 w-px bg-border align-middle" aria-hidden="true"></span><span class="text-xs text-muted-foreground">{{ high.date | fdate: 'short' }}</span></dd>
                 </div>
               }
               <div>
@@ -96,13 +98,13 @@ type Tab = (typeof TABS)[number];
               @if (s.biggestExpense; as tx) {
                 <div class="min-w-0">
                   <dt class="eyebrow">{{ 'accounts.detail.biggestExpense' | transloco }}</dt>
-                  <dd class="mt-0.5 truncate"><sf-money [value]="-tx.amount" tone="expense" /> <span class="text-xs text-muted-foreground">{{ tx.description }}</span></dd>
+                  <dd class="mt-0.5 flex min-w-0 items-center"><sf-money class="shrink-0" [value]="-tx.amount" tone="expense" /><span class="mx-1.5 inline-block h-3 w-px bg-border align-middle" aria-hidden="true"></span><span class="truncate text-xs text-muted-foreground">{{ tx.description }}</span></dd>
                 </div>
               }
               @if (s.biggestIncome; as tx) {
                 <div class="min-w-0">
                   <dt class="eyebrow">{{ 'accounts.detail.biggestIncome' | transloco }}</dt>
-                  <dd class="mt-0.5 truncate"><sf-money [value]="tx.amount" tone="income" /> <span class="text-xs text-muted-foreground">{{ tx.description }}</span></dd>
+                  <dd class="mt-0.5 flex min-w-0 items-center"><sf-money class="shrink-0" [value]="tx.amount" tone="income" /><span class="mx-1.5 inline-block h-3 w-px bg-border align-middle" aria-hidden="true"></span><span class="truncate text-xs text-muted-foreground">{{ tx.description }}</span></dd>
                 </div>
               }
             </dl>
@@ -116,12 +118,12 @@ type Tab = (typeof TABS)[number];
         }
       </sf-chart-card>
 
-      <sf-chart-card [title]="i18n.t('accounts.detail.dailyFlow')" [subtitle]="i18n.t('calendar.clickDay')" [exportable]="false" [table]="flowTable()" [loading]="res.loading()" [initialLoading]="res.initialLoading()" skeletonHeight="28rem">
-        <div class="grid gap-6 px-2 pb-2" [class]="calendarGridClass()">
+      <sf-chart-card [title]="i18n.t('accounts.detail.dailyFlow')" [subtitle]="i18n.t('calendar.clickDay')" [exportable]="false" [table]="flowTable()" [loading]="res.loading()" [initialLoading]="res.initialLoading()" skeletonHeight="18rem">
+        <div class="flex flex-wrap justify-center gap-x-8 gap-y-5 px-2 pb-2 sm:justify-start">
           @for (m of calendarMonths(); track m.month) {
-            <section>
-              <h3 class="mb-2 text-sm font-medium capitalize">{{ m.month | fdate: 'month' }}</h3>
-              <sf-calendar-grid [days]="m.days" [scale]="calendarScale()" (dayClick)="openDay($event)" />
+            <section class="w-full max-w-[19rem]">
+              <h3 class="mb-1.5 text-sm font-medium capitalize">{{ m.month | fdate: 'month' }}</h3>
+              <sf-calendar-grid size="sm" [days]="m.days" [scale]="calendarScale()" (dayClick)="openDay($event)" />
             </section>
           }
         </div>
@@ -163,7 +165,7 @@ type Tab = (typeof TABS)[number];
       <section class="rounded-xl border border-border bg-card">
         <header class="flex flex-wrap items-center justify-between gap-3 px-4 pt-4">
           <h2 class="card-title">{{ 'accounts.detail.records' | transloco }}</h2>
-          <hlm-toggle-group type="single" variant="outline" size="sm" [value]="tab()" [nullable]="false" (valueChange)="$event && filters.setParams({ tab: $any($event) })">
+          <hlm-toggle-group class="max-w-full overflow-x-auto" type="single" variant="outline" size="sm" [value]="tab()" [nullable]="false" (valueChange)="$event && filters.setParams({ tab: $any($event) })">
             @for (t of tabs; track t.key) {
               <button hlmToggleGroupItem [value]="t.key" class="gap-1.5 text-xs">
                 {{ t.label | transloco }}<span class="num text-muted-foreground">{{ counts()[t.key] }}</span>
@@ -172,7 +174,52 @@ type Tab = (typeof TABS)[number];
           </hlm-toggle-group>
         </header>
 
-        <div class="overflow-x-auto px-4 py-2">
+        <ul class="divide-y divide-border/60 px-4 py-1 lg:hidden">
+          @for (tx of pageRows(); track tx.id) {
+            <li class="flex items-start gap-2 py-2.5">
+              <div class="min-w-0 flex-1">
+                <div class="truncate text-sm font-medium">{{ tx.description }}</div>
+                <div class="mt-0.5 flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-[11px] text-muted-foreground">
+                  <span class="num">{{ tx.date | fdate: 'short' }} {{ tx.date.slice(0, 4) }}</span>
+                  <span aria-hidden="true">·</span>
+                  <span>{{ tx.category?.name || ('common.uncategorized' | transloco) }}</span>
+                  <span aria-hidden="true">·</span>
+                  <span class="truncate">{{ counterparty(tx) }}</span>
+                </div>
+                <div class="mt-1 flex flex-wrap items-center gap-1 text-[11px] text-muted-foreground">
+                  @if (tab() === 'all') {
+                    <span hlmBadge variant="outline" class="h-4 px-1.5 text-[10px]">{{ 'txType.' + tx.type | transloco }}</span>
+                  }
+                  @if (tx.budget) {
+                    <span hlmBadge variant="secondary" class="h-4 px-1.5 text-[10px]">{{ tx.budget.name }}</span>
+                  }
+                  @for (t of tx.tags; track t) {
+                    <span>#{{ t }}</span>
+                  }
+                </div>
+              </div>
+              <div class="flex shrink-0 flex-col items-end gap-0.5 text-sm">
+                @if (foreign()) {
+                  <sf-dual-money [original]="tx.flowOriginal" [converted]="tx.flow" [currency]="r()!.account.currency" [signed]="true" [tone]="tone(tx)" />
+                } @else {
+                  <sf-money [value]="tx.flow" [signed]="true" [tone]="tone(tx)" [original]="original(tx)" />
+                }
+                @if (tx.balance !== null) {
+                  <span class="text-[11px] text-muted-foreground">{{ 'accounts.detail.balanceAfter' | transloco }}: <sf-money [value]="foreign() ? tx.balanceOriginal! : tx.balance" [currency]="foreign() ? r()!.account.currency : undefined" /></span>
+                }
+              </div>
+              @if (editable(tx)) {
+                <a hlmBtn variant="ghost" size="icon-sm" class="-mr-2 shrink-0" [routerLink]="['/transactions', tx.groupId, 'edit']" [attr.aria-label]="'editor.tx.edit' | transloco">
+                  <ng-icon name="lucidePencil" aria-hidden="true" />
+                </a>
+              }
+            </li>
+          } @empty {
+            <li class="py-8 text-center text-sm text-muted-foreground">{{ 'tx.none' | transloco }}</li>
+          }
+        </ul>
+
+        <div class="hidden overflow-x-auto px-4 py-2 lg:block">
           <table class="w-full min-w-[46rem] text-sm">
             <thead>
               <tr class="border-b border-border">
@@ -263,6 +310,13 @@ export class AccountDetail {
   /** Bound from the `:id` route param. */
   readonly id = input.required<string>();
 
+  constructor() {
+    // Opens on the last 30 days; the range is handed back when leaving so no other screen inherits it.
+    const today = todayIso();
+    const release = this.filters.scopePeriod({ start: addDays(today, 1 - DEFAULT_DAYS), end: today });
+    inject(DestroyRef).onDestroy(release);
+  }
+
   protected readonly res = reportResource<AccountDetailReport>(() => `reports/accounts/${this.id()}`);
   protected readonly r = this.res.data;
 
@@ -316,13 +370,15 @@ export class AccountDetail {
     const cur = this.r()?.account.currency;
     return !!cur && cur !== this.filters.currency();
   });
+  /** Currency the charts are drawn in: the account's own, when it isn't the one being displayed. */
+  private readonly own = computed(() => (this.foreign() ? this.r()?.account.currency : undefined));
   protected readonly closingNote = computed(() => (this.foreign() ? `≈ ${this.f.money(this.r()?.closing)}` : null));
 
   protected readonly zoomHint = computed(() => ((this.r()?.days.length ?? 0) > 60 ? this.i18n.t('accounts.detail.zoomHint') : null));
 
   protected readonly balanceOptions = computed(() => {
     const d = this.r();
-    return d?.days.length ? dailyBalanceOption(this.f, this.i18n.t('accounts.balance'), d.days) : null;
+    return d?.days.length ? dailyBalanceOption(this.f, this.i18n.t('accounts.balance'), d.days, this.own()) : null;
   });
   /** One calendar per month of the period, all on the same scale. */
   protected readonly calendarMonths = computed(() => {
@@ -334,16 +390,23 @@ export class AccountDetail {
     return [...byMonth].map(([month, days]) => ({ month, days }));
   });
   protected readonly calendarScale = computed(() => Math.max(1, ...(this.r()?.days ?? []).map((d) => Math.max(d.income, d.expense))));
-  protected readonly calendarGridClass = computed(() => (this.calendarMonths().length > 1 ? 'lg:grid-cols-2 2xl:grid-cols-3' : 'max-w-2xl'));
 
   protected readonly monthlyOptions = computed(() => {
     const d = this.r();
-    return d ? incomeExpenseOption(this.f, this.i18n.t, d.months.map((m) => ({ ...m, net: m.income - m.expense }))) : null;
+    return d
+      ? incomeExpenseOption(
+          this.f,
+          this.i18n.t,
+          d.months.map((m) => ({ ...m, net: m.income - m.expense, own: { income: m.incomeOriginal, expense: m.expenseOriginal } })),
+          this.own(),
+        )
+      : null;
   });
   protected readonly weekdayOptions = computed(() => {
     const d = this.r();
     if (!d) return null;
-    return categoryBarsOption(this.f, this.weekdays(), d.byWeekday, money.expense(), this.i18n.t('common.expenses'));
+    const own = this.own();
+    return categoryBarsOption(this.f, this.weekdays(), d.byWeekday, money.expense(), this.i18n.t('common.expenses'), own ? { currency: own, values: d.byWeekdayOriginal } : undefined);
   });
 
   private weekdays(): string[] {
@@ -355,7 +418,7 @@ export class AccountDetail {
     if (!d) return null;
     return {
       columns: [this.i18n.t('common.date'), this.i18n.t('accounts.balance')],
-      rows: d.days.filter((x) => x.balance !== null).map((x) => [this.f.date(x.date, 'day'), this.f.money(x.balance)]),
+      rows: d.days.filter((x) => x.balance !== null).map((x) => [this.f.date(x.date, 'day'), this.moneyPair(x.balanceOriginal, x.balance)]),
       numeric: [1],
     };
   });
@@ -373,7 +436,13 @@ export class AccountDetail {
     if (!d) return null;
     return {
       columns: [this.i18n.t('common.month'), this.i18n.t('common.income'), this.i18n.t('common.expenses'), this.i18n.t('common.net'), this.i18n.t('accounts.detail.closingBalance')],
-      rows: d.months.map((m) => [this.f.date(m.month, 'month'), this.f.money(m.income), this.f.money(m.expense), this.f.money(m.income - m.expense, undefined, { signed: true }), this.f.money(m.balance)]),
+      rows: d.months.map((m) => [
+        this.f.date(m.month, 'month'),
+        this.moneyPair(m.incomeOriginal, m.income),
+        this.moneyPair(m.expenseOriginal, m.expense),
+        this.moneyPair(m.incomeOriginal - m.expenseOriginal, m.income - m.expense, true),
+        this.moneyPair(m.balanceOriginal, m.balance),
+      ]),
       numeric: [1, 2, 3, 4],
     };
   });
@@ -381,19 +450,26 @@ export class AccountDetail {
     const d = this.r();
     if (!d) return null;
     const names = this.weekdays();
-    return { columns: [this.i18n.t('common.date'), this.i18n.t('common.expenses')], rows: d.byWeekday.map((v, i) => [names[i], this.f.money(v)]), numeric: [1] };
+    return { columns: [this.i18n.t('common.date'), this.i18n.t('common.expenses')], rows: d.byWeekday.map((v, i) => [names[i], this.moneyPair(d.byWeekdayOriginal[i], v)]), numeric: [1] };
   });
+
+  /** "US$10.00 (≈ RD$600.00)" for a foreign account, the plain amount otherwise. */
+  private moneyPair(original: number | null, converted: number | null, signed = false): string {
+    const own = this.own();
+    if (!own || original === null) return this.f.money(converted, undefined, { signed });
+    return `${this.f.money(original, own, { signed })} (≈ ${this.f.money(converted, undefined, { signed })})`;
+  }
 
   protected balanceOf = (m: { balance: number }) => m.balance;
 
   private named(items: AccountDetailReport['topCategories']) {
-    return items.map((x) => ({ ...x, name: x.name || this.i18n.t('common.uncategorized') }));
+    return items.map((x) => ({ ...x, own: x.valueOriginal, name: x.name || this.i18n.t('common.uncategorized') }));
   }
   protected rankOptions(items: AccountDetailReport['topCategories'], kind: 'expense' | 'income') {
-    return rankingBarsOption(this.f, this.named(items), kind === 'income' ? money.income() : money.expense());
+    return rankingBarsOption(this.f, this.named(items), kind === 'income' ? money.income() : money.expense(), this.own());
   }
   protected rankTable(items: AccountDetailReport['topCategories']): ChartTable {
-    return { columns: [this.i18n.t('common.account'), this.i18n.t('tx.count'), this.i18n.t('common.total')], rows: this.named(items).map((x) => [x.name, String(x.count), this.f.money(x.value)]), numeric: [1, 2] };
+    return { columns: [this.i18n.t('common.account'), this.i18n.t('tx.count'), this.i18n.t('common.total')], rows: this.named(items).map((x) => [x.name, String(x.count), this.moneyPair(x.valueOriginal ?? null, x.value)]), numeric: [1, 2] };
   }
 
   /** The other side of the record: where the money came from or went to. */

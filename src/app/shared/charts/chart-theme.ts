@@ -15,11 +15,13 @@ export function esc(value: unknown): string {
   return String(value ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!);
 }
 
-/** Tooltip row: short line key in the series color, value first (Strong), label after. */
-export function tooltipRow(color: string, label: string, value: string): string {
+/** Tooltip row: short line key in the series color, value first (Strong), label after. `note` is a smaller secondary figure (a conversion). */
+export function tooltipRow(color: string, label: string, value: string, note?: string): string {
   return `<div style="display:flex;align-items:center;gap:8px;line-height:1.6">
     <span style="display:inline-block;width:10px;height:2px;border-radius:1px;background:${color}"></span>
-    <strong style="font-family:var(--font-mono);font-weight:600;color:${cssVar('--chart-ink')}">${esc(value)}</strong>
+    <strong style="font-family:var(--font-mono);font-weight:600;color:${cssVar('--chart-ink')}">${esc(value)}</strong>${
+      note ? `<span style="font-family:var(--font-mono);font-size:10px;color:${cssVar('--chart-muted')}">${esc(note)}</span>` : ''
+    }
     <span style="color:${cssVar('--chart-ink-2')}">${esc(label)}</span></div>`;
 }
 

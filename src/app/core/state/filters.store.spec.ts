@@ -90,4 +90,34 @@ describe('FiltersStore', () => {
     expect(store.param('mode')()).toBe('tags');
     expect(store.param('missing')()).toBeNull();
   });
+
+  describe('page-scoped period', () => {
+    const range = { start: '2026-08-17', end: '2026-09-15' };
+
+    it('wins over the URL and is released without touching it', async () => {
+      const { store, router } = await setup('/x?p=quarter&start=2026-07-01&end=2026-09-30');
+      const release = store.scopePeriod(range);
+      expect(store.preset()).toBe('custom');
+      expect(store.period()).toEqual(range);
+      expect(store.query()).toMatchObject(range);
+      release();
+      expect(store.preset()).toBe('quarter');
+      expect(store.period()).toEqual({ start: '2026-07-01', end: '2026-09-30' });
+      expect(router.url).toBe('/x?p=quarter&start=2026-07-01&end=2026-09-30');
+    });
+
+    it('is edited by the picker actions instead of the URL', async () => {
+      const { store, router } = await setup('/x');
+      const release = store.scopePeriod(range);
+      store.setCustom({ start: '2026-09-01', end: '2026-09-10' });
+      store.shift(1);
+      expect(store.period()).toEqual({ start: '2026-09-11', end: '2026-09-20' });
+      store.setPreset('month', '2026-05-20');
+      expect(store.preset()).toBe('month');
+      expect(store.period()).toEqual({ start: '2026-05-01', end: '2026-05-31' });
+      expect(router.url).toBe('/x');
+      release();
+      expect(store.period()).toEqual({ start: '2026-09-01', end: '2026-09-30' });
+    });
+  });
 });

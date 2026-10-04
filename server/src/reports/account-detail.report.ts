@@ -38,9 +38,15 @@ function flowInOwn(ctx: ReportContext, a: Account, s: Split): number {
   return s.destId === a.id ? amount : -amount;
 }
 
-function ranked(ctx: ReportContext, splits: Split[], key: (s: Split) => string | null, name: (s: Split) => string): RankedItem[] {
+function ranked(ctx: ReportContext, a: Account, splits: Split[], key: (s: Split) => string | null, name: (s: Split) => string): RankedItem[] {
   return [...groupBy(splits, key, name)]
-    .map(([id, g]) => ({ id, name: g.name, value: round(ctx.sum(g.splits)), count: g.splits.length }))
+    .map(([id, g]) => ({
+      id,
+      name: g.name,
+      value: round(ctx.sum(g.splits)),
+      count: g.splits.length,
+      valueOriginal: round(g.splits.reduce((sum, s) => sum + Math.abs(flowInOwn(ctx, a, s)), 0)),
+    }))
     .sort((a, b) => b.value - a.value)
     .slice(0, 8);
 }
@@ -67,10 +73,14 @@ export function buildAccountDetail({ ctx, account: a, excluded, asOf, splits, tr
   const byDay = new Map<string, Split[]>();
   for (const s of splits) byDay.set(s.date, [...(byDay.get(s.date) ?? []), s]);
   running = opening;
+  runningOwn = openingOwn;
   const days = daysInRange(ctx.period.start, ctx.period.end).map((date) => {
     const list = byDay.get(date) ?? [];
     const sum = (pred: (s: Split) => boolean) => round(ctx.sum(list.filter(pred)));
-    if (date <= asOf) running += list.reduce((acc, s) => acc + flowOf(ctx, a, s), 0);
+    if (date <= asOf) {
+      running += list.reduce((acc, s) => acc + flowOf(ctx, a, s), 0);
+      runningOwn += list.reduce((acc, s) => acc + flowInOwn(ctx, a, s), 0);
+    }
     return {
       date,
       income: sum((s) => isIncome(s) && s.destId === a.id),
@@ -79,23 +89,34 @@ export function buildAccountDetail({ ctx, account: a, excluded, asOf, splits, tr
       transferOut: sum((s) => isTransfer(s) && s.sourceId === a.id),
       count: list.length,
       balance: date <= asOf ? round(running) : null,
+      balanceOriginal: date <= asOf ? round(runningOwn) : null,
     };
   });
 
   const incomes = splits.filter((s) => isIncome(s) && s.destId === a.id);
   const expenses = splits.filter((s) => isExpense(s) && s.sourceId === a.id);
   const byWeekday = Array.from({ length: 7 }, () => 0);
-  for (const s of expenses) byWeekday[weekdayMon0(s.date)] += ctx.value(s);
+  const byWeekdayOriginal = Array.from({ length: 7 }, () => 0);
+  for (const s of expenses) {
+    byWeekday[weekdayMon0(s.date)] += ctx.value(s);
+    byWeekdayOriginal[weekdayMon0(s.date)] += Math.abs(flowInOwn(ctx, a, s));
+  }
 
   const trendMine = trend.filter(mine);
   const monthly = months.map((month, i) => {
     const inMonth = trendMine.filter((s) => s.date.startsWith(month));
     const snap = history[i]?.accounts.find((x) => x.id === a.id);
+    const monthIncome = inMonth.filter((s) => isIncome(s) && s.destId === a.id);
+    const monthExpense = inMonth.filter((s) => isExpense(s) && s.sourceId === a.id);
+    const own = (list: Split[]) => round(list.reduce((sum, s) => sum + Math.abs(flowInOwn(ctx, a, s)), 0));
     return {
       month,
-      income: round(ctx.sum(inMonth.filter((s) => isIncome(s) && s.destId === a.id))),
-      expense: round(ctx.sum(inMonth.filter((s) => isExpense(s) && s.sourceId === a.id))),
+      income: round(ctx.sum(monthIncome)),
+      expense: round(ctx.sum(monthExpense)),
       balance: snap ? round(balanceIn(ctx, a, history[i].date)) : 0,
+      incomeOriginal: own(monthIncome),
+      expenseOriginal: own(monthExpense),
+      balanceOriginal: snap ? round(snap.balance) : 0,
     };
   });
 
@@ -127,9 +148,10 @@ export function buildAccountDetail({ ctx, account: a, excluded, asOf, splits, tr
     days,
     months: monthly,
     byWeekday: byWeekday.map((v) => round(v)),
-    topCategories: ranked(ctx, expenses, (s) => s.categoryId, (s) => s.categoryName ?? ''),
-    topMerchants: ranked(ctx, expenses, (s) => s.destId, (s) => s.destName),
-    topIncomeSources: ranked(ctx, incomes, (s) => s.sourceId, (s) => s.sourceName),
+    byWeekdayOriginal: byWeekdayOriginal.map((v) => round(v)),
+    topCategories: ranked(ctx, a, expenses, (s) => s.categoryId, (s) => s.categoryName ?? ''),
+    topMerchants: ranked(ctx, a, expenses, (s) => s.destId, (s) => s.destName),
+    topIncomeSources: ranked(ctx, a, incomes, (s) => s.sourceId, (s) => s.sourceName),
     rows,
   };
 }
