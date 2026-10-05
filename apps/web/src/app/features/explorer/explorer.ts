@@ -185,6 +185,7 @@ import { TransactionList } from '../../shared/components/transaction-list';
                     <sf-money
                       [value]="tx.type === 'withdrawal' ? -tx.amount : tx.amount"
                       [signed]="tx.type !== 'transfer'"
+                      [showOriginal]="true"
                       [tone]="tx.type === 'withdrawal' ? 'expense' : tx.type === 'deposit' ? 'income' : 'none'"
                       [original]="tx.rate === 1 ? null : { amount: (tx.type === 'withdrawal' ? -1 : 1) * tx.originalAmount, currency: tx.originalCurrency, rate: tx.rate }"
                     />

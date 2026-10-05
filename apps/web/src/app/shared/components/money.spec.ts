@@ -42,6 +42,17 @@ describe('Money', () => {
     expect(fx(masked)).toContain('×61.0000'); // the rate is not an amount
   });
 
+  it('draws the original amount when asked, keeping the conversion in the tooltip', () => {
+    const original = { amount: -50, currency: 'USD', rate: 61 };
+    const { text, fixture } = render({ value: -3050, currency: 'DOP', original, showOriginal: true, signed: true });
+    expect(text).toBe('−US$50.00');
+    expect((fixture.componentInstance as unknown as { fxText(): string }).fxText()).toBe('−50.00 USD → −RD$3,050.00 (×61.0000)');
+  });
+
+  it('shows the converted value when there is no original to show (already in the display currency)', () => {
+    expect(render({ value: -50, currency: 'DOP', original: null, showOriginal: true }).text).toBe('−RD$50.00');
+  });
+
   it('reacts when privacy is toggled', () => {
     const { fixture, el } = render({ value: 1500 });
     expect(el.textContent).toContain('RD$1,500.00');

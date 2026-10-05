@@ -72,7 +72,7 @@ import { Money } from './money';
             @if (tx.type === 'transfer') {
               <span class="inline-flex items-center gap-1 text-muted-foreground">
                 <ng-icon name="lucideArrowRightLeft" class="text-xs" />
-                <sf-money [value]="tx.amount" [original]="original(tx)" />
+                <sf-money [value]="tx.amount" [original]="original(tx)" [showOriginal]="true" />
               </span>
             } @else {
               <sf-money
@@ -80,6 +80,7 @@ import { Money } from './money';
                 [signed]="true"
                 [tone]="tx.type === 'withdrawal' ? 'expense' : 'income'"
                 [original]="original(tx)"
+                [showOriginal]="true"
               />
             }
           </div>

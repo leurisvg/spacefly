@@ -36,7 +36,7 @@ export function formatTestProviders(lang = 'es', translations?: Record<string, u
   const providers: (Provider | EnvironmentProviders)[] = [
     ...i18n,
     // `realStores` keeps the real FiltersStore/MetaStore (over the platform fakes) for view-model specs.
-    ...(options.realStores ? [] : [{ provide: FiltersStore, useValue: { currency } }, { provide: MetaStore, useValue: { currencies: signal(CURRENCIES) } }]),
+    ...(options.realStores ? [] : [{ provide: FiltersStore, useValue: { currency } }, { provide: MetaStore, useValue: { currencies: signal(CURRENCIES), fireflyUrl: () => null } }]),
   ];
   return { providers, lang$, currency };
 }

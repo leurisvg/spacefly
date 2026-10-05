@@ -5,7 +5,8 @@ import { FormatService } from '@spacefly/client/format/format.service';
 
 /**
  * An amount in the display currency. When it was converted, hovering shows the original
- * amounts and rates ("−50.00 USD → −RD$3,050.00 (×61.0000)"), like the email sub-lines.
+ * amounts and rates ("−50.00 USD → −RD$3,050.00 (×61.0000)"), like the email sub-lines. With `showOriginal` the
+ * figure itself is the original amount ("−US$50.00") and the tooltip keeps the conversion.
  */
 @Component({
   selector: 'sf-money',
@@ -27,14 +28,18 @@ export class Money {
   readonly parts = input<FxPart[] | undefined | null>(undefined);
   /** Single original amount (transactions). */
   readonly original = input<{ amount: number; currency: string; rate: number } | null>(null);
+  /** Draw the single `original` amount in its own currency instead of the converted `value` (the tooltip still shows both). */
+  readonly showOriginal = input(false);
   readonly signed = input(false);
   /** auto = green/red by sign; income/expense force a tone; none = default ink. */
   readonly tone = input<'auto' | 'income' | 'expense' | 'none'>('none');
   readonly compact = input(false);
 
-  protected readonly text = computed(() =>
-    this.compact() ? this.f.compact(this.value(), this.currency()) : this.f.money(this.value(), this.currency(), { signed: this.signed() }),
-  );
+  protected readonly text = computed(() => {
+    const own = this.showOriginal() ? this.original() : null;
+    if (own) return this.f.money(own.amount, own.currency, { signed: this.signed() });
+    return this.compact() ? this.f.compact(this.value(), this.currency()) : this.f.money(this.value(), this.currency(), { signed: this.signed() });
+  });
 
   protected readonly fxLines = computed(() => {
     const parts = this.parts() ?? (this.original() ? [{ ...this.original()!, original: this.original()!.amount }] : []);
