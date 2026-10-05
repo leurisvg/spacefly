@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, effect, inject, input, model, output, untracked } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, input, model, output, untracked } from '@angular/core';
 import type { FormValueControl } from '@angular/forms/signals';
 import { BrnCalendarI18nService } from '@spartan-ng/brain/calendar';
 import { addDays, isIsoDate, todayIso } from '@spacefly/shared';
@@ -62,9 +62,11 @@ export class DateInput implements FormValueControl<string> {
   readonly touched = input(false);
   readonly touch = output<void>();
 
-  protected date(): Date | undefined {
-    return toDate(this.value());
-  }
+  /**
+   * Stable between changes of the value: the calendar resets the month it shows whenever its `date` input changes
+   * identity, so a method returning a new `Date` on every check would undo every month or year the user navigates to.
+   */
+  protected readonly date = computed(() => toDate(this.value()));
 
   protected readonly formatDate = (date: Date): string => this.format.date(toIso(date), 'long');
 
