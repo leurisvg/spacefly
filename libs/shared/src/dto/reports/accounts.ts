@@ -52,6 +52,11 @@ export interface AccountDay {
   balance: number | null;
   /** The same balance in the account's own currency. */
   balanceOriginal: number | null;
+  /** The four flows above in the account's own currency. */
+  incomeOriginal: number;
+  expenseOriginal: number;
+  transferInOriginal: number;
+  transferOutOriginal: number;
 }
 
 export interface AccountMonth {

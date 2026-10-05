@@ -123,7 +123,7 @@ type Tab = (typeof TABS)[number];
           @for (m of calendarMonths(); track m.month) {
             <section class="w-full max-w-[19rem]">
               <h3 class="mb-1.5 text-sm font-medium capitalize">{{ m.month | fdate: 'month' }}</h3>
-              <sf-calendar-grid size="sm" [days]="m.days" [scale]="calendarScale()" (dayClick)="openDay($event)" />
+              <sf-calendar-grid size="sm" [days]="m.days" [scale]="calendarScale()" [currency]="own()" (dayClick)="openDay($event)" />
             </section>
           }
         </div>
@@ -394,13 +394,20 @@ export class AccountDetail {
   /** One calendar per month of the period, all on the same scale. */
   protected readonly calendarMonths = computed(() => {
     const byMonth = new Map<string, CalendarDay[]>();
+    const foreign = this.foreign();
     for (const d of this.r()?.days ?? []) {
       const month = d.date.slice(0, 7);
-      byMonth.set(month, [...(byMonth.get(month) ?? []), { date: d.date, income: d.income, expense: d.expense, count: d.count, balance: d.balance }]);
+      // A foreign account is drawn in its own currency: bars, labels and tooltip.
+      const day: CalendarDay = foreign
+        ? { date: d.date, income: d.incomeOriginal, expense: d.expenseOriginal, count: d.count, balance: d.balanceOriginal }
+        : { date: d.date, income: d.income, expense: d.expense, count: d.count, balance: d.balance };
+      byMonth.set(month, [...(byMonth.get(month) ?? []), day]);
     }
     return [...byMonth].map(([month, days]) => ({ month, days }));
   });
-  protected readonly calendarScale = computed(() => Math.max(1, ...(this.r()?.days ?? []).map((d) => Math.max(d.income, d.expense))));
+  protected readonly calendarScale = computed(() =>
+    Math.max(1, ...(this.r()?.days ?? []).map((d) => (this.foreign() ? Math.max(d.incomeOriginal, d.expenseOriginal) : Math.max(d.income, d.expense)))),
+  );
 
   protected readonly monthlyOptions = computed(() => {
     const d = this.r();
@@ -438,7 +445,15 @@ export class AccountDetail {
     if (!d) return null;
     return {
       columns: [this.i18n.t('common.date'), this.i18n.t('common.income'), this.i18n.t('common.expenses'), this.i18n.t('accounts.detail.transferIn'), this.i18n.t('accounts.detail.transferOut')],
-      rows: d.days.filter((x) => x.count).map((x) => [this.f.date(x.date, 'day'), this.f.money(x.income), this.f.money(x.expense), this.f.money(x.transferIn), this.f.money(x.transferOut)]),
+      rows: d.days
+        .filter((x) => x.count)
+        .map((x) => [
+          this.f.date(x.date, 'day'),
+          this.moneyPair(x.incomeOriginal, x.income),
+          this.moneyPair(x.expenseOriginal, x.expense),
+          this.moneyPair(x.transferInOriginal, x.transferIn),
+          this.moneyPair(x.transferOutOriginal, x.transferOut),
+        ]),
       numeric: [1, 2, 3, 4],
     };
   });

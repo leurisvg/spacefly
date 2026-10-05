@@ -98,13 +98,15 @@ export class CalendarGrid {
   readonly size = input<'md' | 'sm'>('md');
   /** Value that fills a cell; defaults to the largest day shown (pass one to compare several months). */
   readonly scale = input<number | null>(null);
+  /** Currency of the day amounts when it isn't the display currency. */
+  readonly currency = input<string | undefined>(undefined);
   readonly dayClick = output<string>();
 
   protected readonly small = computed(() => this.size() === 'sm');
   protected readonly weekdays = computed(() => this.f.weekdayNames());
   protected readonly blanks = computed(() => Array.from({ length: calendarBlanks(this.days()) }));
   protected readonly hasScheduled = computed(() => this.scheduled().length > 0);
-  protected readonly cells = computed(() => buildCalendarCells(this.f, this.days(), this.scheduled(), this.scale()));
+  protected readonly cells = computed(() => buildCalendarCells(this.f, this.days(), this.scheduled(), this.scale(), undefined, this.currency()));
 
   protected short(v: number): string {
     return shortAmount(v, this.f.hidden(), this.small());

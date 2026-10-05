@@ -268,6 +268,10 @@ describe('reports API', () => {
     expect(d.months.at(-1)).toMatchObject({ incomeOriginal: 500, expenseOriginal: 50 });
     expect(d.byWeekdayOriginal.reduce((x, y) => x + y, 0)).toBe(50);
     expect(d.topMerchants.map((m) => m.valueOriginal)).toEqual([50]);
+    // Each day carries its flows in USD too: the 500 deposit and the 50 dinner.
+    expect(d.days.reduce((x, y) => x + y.incomeOriginal, 0)).toBe(500);
+    expect(d.days.reduce((x, y) => x + y.expenseOriginal, 0)).toBe(50);
+    expect(d.days.every((x) => x.transferInOriginal === 0 && x.transferOutOriginal === 0)).toBe(true);
     // Period totals and the change, in USD as well.
     expect(d.totalsOriginal).toEqual({ income: 500, expense: 50, transferIn: 0, transferOut: 0 });
     expect(d.changeOriginal).toBe(d.balanceOriginal - d.openingOriginal);

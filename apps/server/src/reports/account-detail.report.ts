@@ -70,6 +70,8 @@ export function buildAccountDetail({ ctx, account: a, excluded, asOf, splits, tr
   const afterOwn = new Map<string, number>();
   for (const s of settled) afterOwn.set(s.id, (runningOwn += flowInOwn(ctx, a, s)));
 
+  const ownTotal = (list: Split[]) => round(list.reduce((sum, s) => sum + Math.abs(flowInOwn(ctx, a, s)), 0));
+
   const byDay = new Map<string, Split[]>();
   for (const s of splits) byDay.set(s.date, [...(byDay.get(s.date) ?? []), s]);
   running = opening;
@@ -77,6 +79,7 @@ export function buildAccountDetail({ ctx, account: a, excluded, asOf, splits, tr
   const days = daysInRange(ctx.period.start, ctx.period.end).map((date) => {
     const list = byDay.get(date) ?? [];
     const sum = (pred: (s: Split) => boolean) => round(ctx.sum(list.filter(pred)));
+    const sumOwn = (pred: (s: Split) => boolean) => ownTotal(list.filter(pred));
     if (date <= asOf) {
       running += list.reduce((acc, s) => acc + flowOf(ctx, a, s), 0);
       runningOwn += list.reduce((acc, s) => acc + flowInOwn(ctx, a, s), 0);
@@ -90,6 +93,10 @@ export function buildAccountDetail({ ctx, account: a, excluded, asOf, splits, tr
       count: list.length,
       balance: date <= asOf ? round(running) : null,
       balanceOriginal: date <= asOf ? round(runningOwn) : null,
+      incomeOriginal: sumOwn((s) => isIncome(s) && s.destId === a.id),
+      expenseOriginal: sumOwn((s) => isExpense(s) && s.sourceId === a.id),
+      transferInOriginal: sumOwn((s) => isTransfer(s) && s.destId === a.id),
+      transferOutOriginal: sumOwn((s) => isTransfer(s) && s.sourceId === a.id),
     };
   });
 
@@ -132,7 +139,6 @@ export function buildAccountDetail({ ctx, account: a, excluded, asOf, splits, tr
 
   const transfersIn = splits.filter((s) => isTransfer(s) && s.destId === a.id);
   const transfersOut = splits.filter((s) => isTransfer(s) && s.sourceId === a.id);
-  const ownTotal = (list: Split[]) => round(list.reduce((sum, s) => sum + Math.abs(flowInOwn(ctx, a, s)), 0));
 
   const first = round(opening);
   return {

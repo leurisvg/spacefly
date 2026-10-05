@@ -60,6 +60,14 @@ describe('ui-logic', () => {
       expect(cells[0].tip).toContain('−RD$50.00');
     });
 
+    it('words the tooltip in the given currency when the amounts are not in the display currency', () => {
+      TestBed.configureTestingModule({ providers: formatTestProviders('en').providers });
+      const cells = buildCalendarCells(TestBed.inject(FormatService), days, [], null, '2026-09-02', 'USD');
+      expect(cells[0].tip).toContain('−US$50.00');
+      expect(cells[0].tip).toContain('= US$100.00');
+      expect(cells[0].tip).not.toContain('RD$');
+    });
+
     it('offsets the first day to its weekday and abbreviates amounts', () => {
       expect(calendarBlanks(days)).toBe(2); // 2026-09-02 is a Wednesday
       expect([950, 1200].map((v) => shortAmount(v, false))).toEqual(['950', '1.2k']);
