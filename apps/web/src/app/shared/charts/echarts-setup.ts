@@ -17,6 +17,7 @@ import {
 } from 'echarts/components';
 import { CanvasRenderer } from 'echarts/renderers';
 import { buildTheme } from '@spacefly/client/charts/chart-theme';
+import { THEME_IDS } from '@spacefly/client/charts/palette';
 
 echarts.use([
   BarChart,
@@ -37,6 +38,7 @@ echarts.use([
   VisualMapComponent,
   CanvasRenderer,
 ]);
-echarts.registerTheme('spacefly', buildTheme());
+// One ECharts theme per app theme; `sf-chart` picks `spacefly-<id>` (ngx-echarts re-inits the chart when it changes).
+for (const id of THEME_IDS) echarts.registerTheme(`spacefly-${id}`, buildTheme(id));
 
 export default echarts;

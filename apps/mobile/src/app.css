@@ -1,13 +1,17 @@
 @import 'tailwindcss';
 
 /*
- * SpaceFly is dark-only. The chart/money/series tokens below are copied from apps/web/src/styles.css and
+ * Two dark themes, picked in Settings. The theme host puts `theme-<id>` on the root view (NativeScript does not
+ * match `:root` by itself, and CSS variables set on the root view are inherited by every screen), and every rule
+ * below reads the variables. The chart/money/series tokens are copied from apps/web/src/styles.css and
  * libs/client/src/charts/palette.ts; palette.spec.ts fails when they drift apart.
  */
 :root {
   --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+}
 
+.theme-midnight {
   --background: #0a0e1a;
   --chart-surface: #111827;
   --chart-ink: #e2e8f0;
@@ -15,6 +19,8 @@
   --chart-muted: #64748b;
   --chart-grid: #1e293b;
   --chart-axis: #334155;
+  --chart-tooltip: #0f172a;
+  --chart-on-fill: #ffffff;
 
   --money-income: #199e70;
   --money-expense: #e66767;
@@ -38,28 +44,76 @@
   --foreground: #e2e8f0;
   --card: #111827;
   --primary: #818cf8;
+  --primary-foreground: #0a0e1a;
   --muted: #1e293b;
   --muted-foreground: #94a3b8;
   --destructive: #f87171;
   --border: #1e293b;
+  --input: #334155;
+  --toast-error: #7f1d1d;
   --status-good: #0ca30c;
   --status-warning: #fab219;
   --status-critical: #d03b3b;
 }
 
+.theme-earth {
+  --background: #2c3639;
+  --chart-surface: #3f4e4f;
+  --chart-ink: #dcd7c9;
+  --chart-ink-2: #bdbcb1;
+  --chart-muted: #a5a79e;
+  --chart-grid: #525e5e;
+  --chart-axis: #66706e;
+  --chart-tooltip: #2c3639;
+  --chart-on-fill: #1b2224;
+
+  --money-income: #82c170;
+  --money-expense: #d98182;
+  --money-net: #3db3e6;
+  --money-savings: #3eae99;
+  --money-budget: #3db3e6;
+  --money-revenue: #9f93ed;
+  --money-hub: #a3ada5;
+  --money-deficit: #e99d59;
+  --money-other: #7d8b87;
+
+  --series-1: #b49718;
+  --series-2: #de7ea0;
+  --series-3: #82c170;
+  --series-4: #9f93ed;
+  --series-5: #3eae99;
+  --series-6: #e99d59;
+  --series-7: #3db3e6;
+  --series-8: #d98182;
+
+  --foreground: #dcd7c9;
+  --card: #3f4e4f;
+  --primary: #a27b5c;
+  --primary-foreground: #161c1e;
+  --muted: #4f5c5b;
+  --muted-foreground: #bdbcb1;
+  --destructive: #ff7266;
+  --border: #525e5e;
+  --input: #66706e;
+  --toast-error: #7a3b36;
+  --status-good: #7fd36b;
+  --status-warning: #f2c14e;
+  --status-critical: #ff7266;
+}
+
 Page,
 ActionBar {
-  background-color: #0a0e1a;
-  color: #e2e8f0;
+  background-color: var(--background);
+  color: var(--foreground);
 }
 
 ActionBar {
-  background-color: #111827;
+  background-color: var(--card);
 }
 
 /* ── Layout ─────────────────────────────────────────────────────────────── */
 .screen {
-  background-color: #0a0e1a;
+  background-color: var(--background);
 }
 
 .screen-pad {
@@ -67,8 +121,8 @@ ActionBar {
 }
 
 .card {
-  background-color: #111827;
-  border-color: #1e293b;
+  background-color: var(--card);
+  border-color: var(--border);
   border-width: 1;
   border-radius: 12;
   padding: 12;
@@ -78,18 +132,18 @@ ActionBar {
 .card-title {
   font-size: 15;
   font-weight: 600;
-  color: #e2e8f0;
+  color: var(--foreground);
   margin-bottom: 6;
 }
 
 .eyebrow {
   font-size: 11;
-  color: #94a3b8;
+  color: var(--muted-foreground);
   letter-spacing: 0.5;
 }
 
 .muted {
-  color: #94a3b8;
+  color: var(--muted-foreground);
 }
 
 .small {
@@ -97,7 +151,7 @@ ActionBar {
 }
 
 .row-divider {
-  border-bottom-color: #1e293b;
+  border-bottom-color: var(--border);
   border-bottom-width: 1;
   padding-top: 8;
   padding-bottom: 8;
@@ -105,8 +159,8 @@ ActionBar {
 
 /* ── Controls ───────────────────────────────────────────────────────────── */
 .btn {
-  background-color: #818cf8;
-  color: #0a0e1a;
+  background-color: var(--primary);
+  color: var(--primary-foreground);
   font-weight: 600;
   border-radius: 10;
   padding: 10 16;
@@ -116,16 +170,16 @@ ActionBar {
 
 .btn-outline {
   background-color: transparent;
-  border-color: #334155;
+  border-color: var(--input);
   border-width: 1;
-  color: #e2e8f0;
+  color: var(--foreground);
 }
 
 .btn-danger {
   background-color: transparent;
-  border-color: #f87171;
+  border-color: var(--destructive);
   border-width: 1;
-  color: #f87171;
+  color: var(--destructive);
 }
 
 .btn-small {
@@ -135,48 +189,48 @@ ActionBar {
 }
 
 .field {
-  background-color: #0a0e1a;
-  border-color: #334155;
+  background-color: var(--background);
+  border-color: var(--input);
   border-width: 1;
   border-radius: 8;
   padding: 8 10;
-  color: #e2e8f0;
-  placeholder-color: #64748b;
+  color: var(--foreground);
+  placeholder-color: var(--chart-muted);
   margin-bottom: 8;
 }
 
 .field-error {
-  color: #f87171;
+  color: var(--destructive);
   font-size: 12;
   margin-bottom: 8;
 }
 
 .field-label {
   font-size: 12;
-  color: #94a3b8;
+  color: var(--muted-foreground);
   margin-bottom: 4;
 }
 
 .chip {
-  border-color: #334155;
+  border-color: var(--input);
   border-width: 1;
   border-radius: 16;
   padding: 4 12;
   margin-right: 6;
-  color: #94a3b8;
+  color: var(--muted-foreground);
   font-size: 13;
 }
 
 .chip-on {
-  background-color: #818cf8;
-  border-color: #818cf8;
-  color: #0a0e1a;
+  background-color: var(--primary);
+  border-color: var(--primary);
+  color: var(--primary-foreground);
 }
 
 /* ── Tab bar ────────────────────────────────────────────────────────────── */
 .tab-bar {
-  background-color: #111827;
-  border-top-color: #1e293b;
+  background-color: var(--card);
+  border-top-color: var(--border);
   border-top-width: 1;
 }
 
@@ -184,25 +238,25 @@ ActionBar {
   text-align: center;
   padding: 10 0;
   font-size: 12;
-  color: #64748b;
+  color: var(--chart-muted);
 }
 
 .tab-on {
-  color: #818cf8;
+  color: var(--primary);
   font-weight: 600;
 }
 
 /* ── Money and meaning ──────────────────────────────────────────────────── */
 .tone-positive {
-  color: #199e70;
+  color: var(--money-income);
 }
 
 .tone-negative {
-  color: #e66767;
+  color: var(--money-expense);
 }
 
 .tone-neutral {
-  color: #94a3b8;
+  color: var(--muted-foreground);
 }
 
 .money {
@@ -210,8 +264,8 @@ ActionBar {
 }
 
 .kpi {
-  background-color: #111827;
-  border-color: #1e293b;
+  background-color: var(--card);
+  border-color: var(--border);
   border-width: 1;
   border-radius: 12;
   padding: 10;
@@ -224,7 +278,7 @@ ActionBar {
 }
 
 .meter-track {
-  background-color: #1e293b;
+  background-color: var(--muted);
   border-radius: 3;
   height: 6;
 }
@@ -236,36 +290,36 @@ ActionBar {
 }
 
 .meter-good {
-  background-color: #0ca30c;
+  background-color: var(--status-good);
 }
 
 .meter-warning {
-  background-color: #fab219;
+  background-color: var(--status-warning);
 }
 
 .meter-critical {
-  background-color: #d03b3b;
+  background-color: var(--status-critical);
 }
 
 /* ── Toasts ─────────────────────────────────────────────────────────────── */
 .toast {
-  background-color: #1e293b;
+  background-color: var(--muted);
   border-radius: 10;
   padding: 10 14;
   margin: 0 16 8 16;
-  color: #e2e8f0;
+  color: var(--foreground);
 }
 
 .toast-error {
-  background-color: #7f1d1d;
+  background-color: var(--toast-error);
 }
 
 .fab {
   width: 56;
   height: 56;
   border-radius: 28;
-  background-color: #818cf8;
-  color: #0a0e1a;
+  background-color: var(--primary);
+  color: var(--primary-foreground);
   font-size: 28;
   text-align: center;
   vertical-align: middle;
@@ -273,5 +327,5 @@ ActionBar {
 }
 
 .ok {
-  color: #199e70;
+  color: var(--money-income);
 }

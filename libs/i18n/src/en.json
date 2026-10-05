@@ -1,5 +1,6 @@
 {
   "lang": { "es": "Español", "en": "English" },
+  "theme": { "midnight": "Midnight", "earth": "Earth" },
   "common": {
     "income": "Income",
     "expenses": "Expenses",
@@ -69,6 +70,7 @@
     "refresh": "Refresh data",
     "refreshed": "Data refreshed from Firefly",
     "language": "Language",
+    "theme": "Theme",
     "hideAmounts": "Hide amounts",
     "showAmounts": "Show amounts",
     "account": "User account",

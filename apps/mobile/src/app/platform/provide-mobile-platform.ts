@@ -7,12 +7,14 @@ import { Confirm } from '@spacefly/client/platform/confirm';
 import { DEVICE_LANG } from '@spacefly/client/platform/device-lang';
 import { FilterParamsSource } from '@spacefly/client/platform/filter-params-source';
 import { KeyValueStorage } from '@spacefly/client/platform/key-value-storage';
+import { ThemeHost } from '@spacefly/client/platform/theme-host';
 import { Toast } from '@spacefly/client/platform/toast';
 import { AppSettingsStorage } from './app-settings-storage';
 import { InMemoryFilterParams } from './in-memory-filter-params';
 import { MobileAuthPlatform } from './mobile-auth-platform';
 import { NsBackNavigation } from './ns-back-navigation';
 import { NsConfirm } from './ns-confirm';
+import { NsThemeHost } from './ns-theme-host';
 import { NsToast } from './ns-toast';
 import { ServerConfig } from './server-config';
 
@@ -28,6 +30,7 @@ export function provideMobilePlatform(): (Provider | EnvironmentProviders)[] {
     { provide: Toast, useExisting: NsToast },
     { provide: Confirm, useClass: NsConfirm },
     { provide: BackNavigation, useClass: NsBackNavigation },
+    { provide: ThemeHost, useClass: NsThemeHost },
     { provide: DEVICE_LANG, useFactory: () => Device.language ?? null },
   ];
 }

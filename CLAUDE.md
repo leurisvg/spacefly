@@ -41,6 +41,7 @@ Abstract classes in `libs/client/src/platform` with **no default provider**: an 
 | `Toast` | sonner | `ToastHost` |
 | `Confirm` | `ConfirmService` (lazy, via `web-confirm.ts`) | `Dialogs.confirm/prompt` |
 | `BackNavigation` | `web-back-navigation.ts` (router + `Location`) | `RouterExtensions` |
+| `ThemeHost` | `web-theme-host.ts`: `data-theme` on `<html>` + `theme-color` meta | `ns-theme-host.ts`: `theme-<id>` class on the root view |
 | `DEVICE_LANG` | `navigator.language` | `Device.language` |
 
 Tests of `libs/client` get the web providers through `libs/client/testing/providers.ts`; web specs through `apps/web/src/testing/providers.ts`.
@@ -57,7 +58,7 @@ Tests of `libs/client` get the web providers through `libs/client/testing/provid
 
 - Builders live in `libs/client/src/charts/builders.ts` and return a plain ECharts option. Colors come from `charts/palette.ts`, never from `cssVar()` or the DOM.
 - Every formatter function in an option must be wrapped with `tagged(spec, fn)` (compact, const, byIndex, byName…). The mobile app serializes the option with `toPortableOption()` into a WebView, and that throws on an untagged function. `portable.spec.ts` runs every builder, so a builder that breaks portability fails CI.
-- The palette is duplicated in `apps/web/src/styles.css` and `apps/mobile/src/app.css`. `palette.spec.ts` fails when they drift.
+- Themes (`THEME_IDS`, `THEMES` in `palette.ts`) are data; `palette` reads the active one through getters, so a `computed()` that calls a builder follows the theme without changes. Each theme's tokens are duplicated in `apps/web/src/styles.css` (`:root[data-theme='<id>']`) and `apps/mobile/src/app.css` (`.theme-<id>`). `palette.spec.ts` fails when they drift. A new theme's data colors must pass the dataviz validator on its own surface.
 
 ## Checklist for a feature
 

@@ -7,6 +7,7 @@ import { CLIENT_INTERCEPTORS } from '@spacefly/client/auth/auth.interceptor';
 import { initialLang, LANG_KEY } from '@spacefly/client/i18n/lang';
 import { provideClientCore } from '@spacefly/client/i18n/provide-client-core';
 import { baseUrlInterceptor } from '@spacefly/client/platform/api-base-url';
+import { provideTheme } from '@spacefly/client/state/theme.store';
 import { AppComponent } from './app/app.component';
 import { bearerInterceptor } from './app/platform/bearer.interceptor';
 import { ensureIntl } from './app/platform/intl-polyfill';
@@ -28,6 +29,7 @@ runNativeScriptAngularApp({
         provideNativeScriptRouter(routes),
         provideClientCore({ lang, loader: StaticTranslocoLoader }),
         provideMobilePlatform(),
+        provideTheme(),
         // The screens translate through `I18n.t()`, which never triggers a load: have the catalog ready before the first render.
         provideAppInitializer(() => firstValueFrom(inject(TranslocoService).load(lang))),
       ],

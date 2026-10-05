@@ -34,6 +34,7 @@ const days = Array.from({ length: 40 }, (_, i) => ({
   transferOut: 0,
   count: i % 3,
   balance: i < 35 ? 10000 - i * 120 : null,
+  balanceOriginal: null,
 }));
 const sankey: SankeyReport = {
   nodes: [

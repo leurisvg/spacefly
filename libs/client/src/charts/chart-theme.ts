@@ -1,6 +1,6 @@
-import { palette } from './palette';
+import { activeTheme, palette, paletteOf, type ThemeId } from './palette';
 
-export const seriesPalette = (): string[] => [...palette.series];
+export const seriesPalette = (id: ThemeId = activeTheme()): string[] => [...paletteOf(id).series];
 
 /** Escapes untrusted labels (Firefly names) before they go into tooltip HTML. */
 export function esc(value: unknown): string {
@@ -21,15 +21,16 @@ export function tooltipTitle(title: string): string {
   return `<div style="font-weight:600;margin-bottom:4px;color:${palette.chartInk}">${esc(title)}</div>`;
 }
 
-/** ECharts theme from the design tokens: recessive hairline grid/axes, thin marks, text in ink tokens. */
-export function buildTheme() {
-  const ink = palette.chartInk;
-  const ink2 = palette.chartInk2;
-  const muted = palette.chartMuted;
-  const grid = palette.chartGrid;
-  const axis = palette.chartAxis;
-  const surface = palette.chartSurface;
-  const font = palette.fontSans;
+/** ECharts theme from one theme's design tokens (the active one by default): recessive hairline grid/axes, thin marks, text in ink tokens. */
+export function buildTheme(id: ThemeId = activeTheme()) {
+  const p = paletteOf(id);
+  const ink = p.chartInk;
+  const ink2 = p.chartInk2;
+  const muted = p.chartMuted;
+  const grid = p.chartGrid;
+  const axis = p.chartAxis;
+  const surface = p.chartSurface;
+  const font = p.fontSans;
   const axisCommon = {
     axisLine: { show: true, lineStyle: { color: axis, width: 1 } },
     axisTick: { show: false },
@@ -38,13 +39,13 @@ export function buildTheme() {
     splitArea: { show: false },
   };
   return {
-    color: seriesPalette(),
+    color: seriesPalette(id),
     backgroundColor: 'transparent',
     textStyle: { fontFamily: font, color: ink2 },
     title: { textStyle: { color: ink, fontWeight: 600, fontSize: 13 }, subtextStyle: { color: muted } },
     legend: { textStyle: { color: ink2, fontSize: 12 }, icon: 'roundRect', itemWidth: 12, itemHeight: 3, itemGap: 16 },
     tooltip: {
-      backgroundColor: '#0f172a',
+      backgroundColor: p.chartTooltip,
       borderColor: axis,
       borderWidth: 1,
       padding: [8, 12],
@@ -62,7 +63,7 @@ export function buildTheme() {
     treemap: { itemStyle: { borderColor: surface, borderWidth: 2, gapWidth: 2 } },
     sunburst: { itemStyle: { borderColor: surface, borderWidth: 2 } },
     calendar: {
-      itemStyle: { color: surface, borderColor: palette.background, borderWidth: 2 },
+      itemStyle: { color: surface, borderColor: p.background, borderWidth: 2 },
       splitLine: { show: false },
       dayLabel: { color: muted },
       monthLabel: { color: ink2 },

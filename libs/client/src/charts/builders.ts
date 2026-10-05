@@ -261,7 +261,7 @@ export function treemapOption(f: Fmt, items: Slice[]): EChartsCoreOption {
         label: {
           show: true,
           formatter: byName(items.map((i) => [i.name, `${i.name}\n${f.compact(i.value)}`])),
-          color: '#fff',
+          color: palette.chartOnFill,
           fontSize: 12,
           lineHeight: 16,
           overflow: 'truncate',
@@ -298,7 +298,7 @@ export function sunburstOption(
         sort: undefined,
         nodeClick: false,
         itemStyle: { borderColor: money.surface(), borderWidth: 2 },
-        label: { color: '#fff', fontSize: 11, minAngle: 12, overflow: 'truncate' },
+        label: { color: palette.chartOnFill, fontSize: 11, minAngle: 12, overflow: 'truncate' },
         levels: [{}, { r0: '12%', r: '45%', label: { rotate: 0 } }, { r0: '45%', r: '92%', label: { rotate: 'tangential' }, itemStyle: { opacity: 0.85 } }],
         data: groups.map((g) => ({
           name: g.name,

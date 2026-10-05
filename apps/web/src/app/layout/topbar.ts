@@ -3,7 +3,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router } from '@angular/router';
 import { filter, map, startWith } from 'rxjs';
 import { NgIcon, provideIcons } from '@ng-icons/core';
-import { lucideExternalLink, lucideEye, lucideEyeOff, lucideLanguages, lucideLogOut, lucideRefreshCw, lucideUser } from '@ng-icons/lucide';
+import { lucideExternalLink, lucideEye, lucideEyeOff, lucideLanguages, lucideLogOut, lucidePalette, lucideRefreshCw, lucideUser } from '@ng-icons/lucide';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { HlmBreadcrumbImports } from '@spartan-ng/helm/breadcrumb';
 import { HlmButton } from '@spartan-ng/helm/button';
@@ -11,6 +11,7 @@ import { HlmDropdownMenuImports } from '@spartan-ng/helm/dropdown-menu';
 import { HlmSidebarImports } from '@spartan-ng/helm/sidebar';
 import { HlmTooltip } from '@spartan-ng/helm/tooltip';
 import { preferencesViewModel } from '@spacefly/client/features/settings/preferences.vm';
+import { THEME_SWATCH } from '@spacefly/client/charts/palette';
 import type { Lang } from '@spacefly/client/i18n/lang';
 import { CurrencyToggle } from '../shared/components/currency-toggle';
 import { PeriodPicker } from '../shared/components/period-picker';
@@ -31,7 +32,7 @@ import { NewMenu } from './new-menu';
     CurrencyToggle,
     NewMenu,
   ],
-  providers: [provideIcons({ lucideRefreshCw, lucideLanguages, lucideLogOut, lucideUser, lucideExternalLink, lucideEye, lucideEyeOff })],
+  providers: [provideIcons({ lucideRefreshCw, lucideLanguages, lucidePalette, lucideLogOut, lucideUser, lucideExternalLink, lucideEye, lucideEyeOff })],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'sticky top-0 z-20 flex flex-col gap-2 border-b border-border bg-background/85 px-3 py-2 backdrop-blur supports-[backdrop-filter]:bg-background/70 sm:px-5',
@@ -92,6 +93,26 @@ import { NewMenu } from './new-menu';
           }
         </hlm-dropdown-menu>
       </ng-template>
+      <button hlmBtn variant="ghost" size="icon-sm" [hlmDropdownMenuTrigger]="themeMenu" [attr.aria-label]="'topbar.theme' | transloco">
+        <ng-icon name="lucidePalette" />
+      </button>
+      <ng-template #themeMenu>
+        <hlm-dropdown-menu class="w-44">
+          @for (t of vm.themes; track t) {
+            <button hlmDropdownMenuItem (triggered)="vm.setTheme(t)">
+              <span
+                class="size-4 shrink-0 rounded-full border border-border"
+                [style.background]="'linear-gradient(135deg, ' + swatch[t].background + ' 50%, ' + swatch[t].accent + ' 50%)'"
+                aria-hidden="true"
+              ></span>
+              <span class="flex-1">{{ 'theme.' + t | transloco }}</span>
+              @if (vm.theme() === t) {
+                <span class="text-primary">●</span>
+              }
+            </button>
+          }
+        </hlm-dropdown-menu>
+      </ng-template>
       <button hlmBtn variant="ghost" size="icon-sm" [hlmDropdownMenuTrigger]="userMenu" align="end" [attr.aria-label]="'topbar.account' | transloco">
         <ng-icon name="lucideUser" />
       </button>
@@ -119,6 +140,7 @@ import { NewMenu } from './new-menu';
 export class Topbar {
   private readonly router = inject(Router);
   protected readonly vm = preferencesViewModel();
+  protected readonly swatch = THEME_SWATCH;
 
   private readonly url = toSignal(
     this.router.events.pipe(

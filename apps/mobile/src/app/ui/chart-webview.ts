@@ -36,12 +36,13 @@ export class ChartWebView {
   private readonly ready = signal(false);
   /** The option as JSON; throws (and logs) if a builder used a formatter that isn't portable. */
   private readonly payload = computed(() => JSON.stringify(toPortableOption(this.options())));
-  private readonly theme = JSON.stringify(buildTheme());
+  /** The ECharts theme of the active app theme (reads the palette signal, so it follows a theme change). */
+  private readonly theme = computed(() => JSON.stringify(buildTheme()));
 
   constructor() {
     effect(() => {
       if (!this.ready()) return;
-      const code = `window.sfRender(${this.payload()}, ${this.theme});`;
+      const code = `window.sfRender(${this.payload()}, ${this.theme()});`;
       void this.web().nativeElement.executeJavaScript(code);
     });
   }

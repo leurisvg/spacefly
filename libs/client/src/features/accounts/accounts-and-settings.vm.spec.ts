@@ -8,7 +8,8 @@ import { preferencesViewModel } from '../settings/preferences.vm';
 import { settingsViewModel, toggleId } from '../settings/settings.vm';
 import { signal } from '@angular/core';
 import { KeyValueStorage } from '../../platform/key-value-storage';
-import { RecordingAuthPlatform } from '../../../testing';
+import { RecordingAuthPlatform, RecordingThemeHost } from '../../../testing';
+import { setPaletteTheme } from '../../charts/palette';
 
 describe('account order', () => {
   const order = ['a', 'b', 'c', 'd'];
@@ -146,5 +147,17 @@ describe('preferencesViewModel', () => {
     expect(vm.currency()).toBe('USD');
     vm.privacy.toggle();
     expect(vm.privacy.hidden()).toBe(true);
+  });
+
+  it('switches the theme, remembers it and applies it to the host', () => {
+    TestBed.configureTestingModule({ providers: [...formatTestProviders('es', EN, { realStores: true }).providers, provideHttpClient(), provideHttpClientTesting()] });
+    const vm = TestBed.runInInjectionContext(() => preferencesViewModel());
+    expect(vm.themes).toEqual(['midnight', 'earth']);
+    expect(vm.theme()).toBe('midnight');
+    vm.setTheme('earth');
+    expect(vm.theme()).toBe('earth');
+    expect(TestBed.inject(KeyValueStorage).get('spacefly.theme')).toBe('earth');
+    expect(TestBed.inject(RecordingThemeHost).applied).toEqual(['midnight', 'earth']);
+    setPaletteTheme('midnight');
   });
 });

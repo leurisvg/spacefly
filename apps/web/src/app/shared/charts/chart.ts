@@ -3,6 +3,7 @@ import { NgxEchartsDirective } from 'ngx-echarts';
 import { HlmSkeleton } from '@spartan-ng/helm/skeleton';
 import type { ECElementEvent, ECharts, EChartsCoreOption } from 'echarts/core';
 import { PrivacyStore } from '@spacefly/client/state/privacy.store';
+import { ThemeStore } from '@spacefly/client/state/theme.store';
 import { ChartCard } from './chart-card';
 
 /**
@@ -20,7 +21,7 @@ import { ChartCard } from './chart-card';
     @defer (on viewport; prefetch on idle) {
       <div
         echarts
-        theme="spacefly"
+        [theme]="'spacefly-' + theme.theme()"
         [options]="merged()"
         [autoResize]="true"
         [style.height]="height()"
@@ -38,6 +39,7 @@ import { ChartCard } from './chart-card';
 export class Chart {
   private readonly card = inject(ChartCard, { optional: true });
   private readonly privacy = inject(PrivacyStore);
+  protected readonly theme = inject(ThemeStore);
   readonly options = input.required<EChartsCoreOption>();
   readonly height = input('18rem');
   readonly ariaLabel = input<string>('');

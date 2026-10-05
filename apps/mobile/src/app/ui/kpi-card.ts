@@ -1,4 +1,5 @@
 import { Component, computed, inject, input, NO_ERRORS_SCHEMA } from '@angular/core';
+import { money } from '@spacefly/client/charts/series-colors';
 import { FormatService } from '@spacefly/client/format/format.service';
 import { Delta } from './delta';
 
@@ -10,7 +11,7 @@ import { Delta } from './delta';
   template: `
     <StackLayout class="kpi">
       <Label [text]="label()" class="eyebrow" textWrap="false"></Label>
-      <Label [text]="text()" class="kpi-value" [style.color]="accent()" textWrap="false"></Label>
+      <Label [text]="text()" class="kpi-value" [style.color]="color()" textWrap="false"></Label>
       @if (value() !== null && previous() !== null) {
         <ns-delta [value]="value()!" [previous]="previous()" [upIsGood]="upIsGood()" [points]="format() === 'pct'" />
       }
@@ -24,7 +25,9 @@ export class KpiCard {
   readonly previous = input<number | null>(null);
   readonly format = input<'money' | 'pct'>('money');
   readonly upIsGood = input(true);
-  readonly accent = input('#e2e8f0');
+  /** Value color; the theme's ink when not given. Pass a `money.*()` so it follows the theme. */
+  readonly accent = input<string | null>(null);
 
+  protected readonly color = computed(() => this.accent() ?? money.ink());
   protected readonly text = computed(() => (this.format() === 'pct' ? this.f.pct(this.value()) : this.f.money(this.value())));
 }

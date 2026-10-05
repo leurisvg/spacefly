@@ -6,7 +6,9 @@ import { Confirm, type ConfirmOptions } from '../src/platform/confirm';
 import { DEVICE_LANG } from '../src/platform/device-lang';
 import { FilterParamsSource, type ParamValue } from '../src/platform/filter-params-source';
 import { KeyValueStorage } from '../src/platform/key-value-storage';
+import { ThemeHost } from '../src/platform/theme-host';
 import { Toast } from '../src/platform/toast';
+import type { ThemeId } from '../src/charts/palette';
 
 /** In-memory KeyValueStorage. */
 export class MemoryStorage extends KeyValueStorage {
@@ -94,6 +96,14 @@ export class FakeBackNavigation extends BackNavigation {
   }
 }
 
+export class RecordingThemeHost extends ThemeHost {
+  readonly applied: ThemeId[] = [];
+
+  override apply(id: ThemeId): void {
+    this.applied.push(id);
+  }
+}
+
 /** All the platform tokens, backed by the fakes above. Inject a fake by class to inspect it. */
 export function provideTestPlatform(): (Provider | EnvironmentProviders)[] {
   return [
@@ -103,6 +113,7 @@ export function provideTestPlatform(): (Provider | EnvironmentProviders)[] {
     RecordingToast,
     FakeConfirm,
     FakeBackNavigation,
+    RecordingThemeHost,
     { provide: KeyValueStorage, useExisting: MemoryStorage },
     { provide: API_BASE_URL, useValue: '' },
     { provide: AuthPlatform, useExisting: RecordingAuthPlatform },
@@ -110,6 +121,7 @@ export function provideTestPlatform(): (Provider | EnvironmentProviders)[] {
     { provide: Toast, useExisting: RecordingToast },
     { provide: Confirm, useExisting: FakeConfirm },
     { provide: BackNavigation, useExisting: FakeBackNavigation },
+    { provide: ThemeHost, useExisting: RecordingThemeHost },
     { provide: DEVICE_LANG, useValue: 'es-DO' },
   ];
 }

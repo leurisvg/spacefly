@@ -3,6 +3,7 @@ import { RouterExtensions } from '@nativescript/angular';
 import { inject } from '@angular/core';
 import { dashboardViewModel } from '@spacefly/client/features/dashboard/dashboard.vm';
 import { FormatService } from '@spacefly/client/format/format.service';
+import { money } from '@spacefly/client/charts/series-colors';
 import { ChartClick, ChartWebView } from '../ui/chart-webview';
 import { EmptyState } from '../ui/empty-state';
 import { KpiCard } from '../ui/kpi-card';
@@ -22,11 +23,11 @@ import { Money } from '../ui/money';
         }
 
         <GridLayout columns="*, *" rows="auto, auto, auto">
-          <ns-kpi col="0" row="0" [label]="vm.i18n.t('common.income')" [value]="vm.data()?.kpis?.income?.value ?? null" [previous]="vm.data()?.kpis?.income?.previous ?? null" accent="#199e70" />
-          <ns-kpi col="1" row="0" [label]="vm.i18n.t('common.expenses')" [value]="vm.data()?.kpis?.expense?.value ?? null" [previous]="vm.data()?.kpis?.expense?.previous ?? null" [upIsGood]="false" accent="#e66767" />
-          <ns-kpi col="0" row="1" [label]="vm.i18n.t('common.net')" [value]="vm.data()?.kpis?.net?.value ?? null" [previous]="vm.data()?.kpis?.net?.previous ?? null" accent="#3987e5" />
-          <ns-kpi col="1" row="1" [label]="vm.i18n.t('common.savingsRate')" format="pct" [value]="vm.data()?.kpis?.savingsRate?.value ?? null" [previous]="vm.data()?.kpis?.savingsRate?.previous ?? null" accent="#008300" />
-          <ns-kpi col="0" row="2" colSpan="2" [label]="vm.i18n.t('common.netWorth')" [value]="vm.data()?.kpis?.netWorth?.value ?? null" [previous]="vm.data()?.kpis?.netWorth?.previous ?? null" accent="#9085e9" />
+          <ns-kpi col="0" row="0" [label]="vm.i18n.t('common.income')" [value]="vm.data()?.kpis?.income?.value ?? null" [previous]="vm.data()?.kpis?.income?.previous ?? null" [accent]="money.income()" />
+          <ns-kpi col="1" row="0" [label]="vm.i18n.t('common.expenses')" [value]="vm.data()?.kpis?.expense?.value ?? null" [previous]="vm.data()?.kpis?.expense?.previous ?? null" [upIsGood]="false" [accent]="money.expense()" />
+          <ns-kpi col="0" row="1" [label]="vm.i18n.t('common.net')" [value]="vm.data()?.kpis?.net?.value ?? null" [previous]="vm.data()?.kpis?.net?.previous ?? null" [accent]="money.net()" />
+          <ns-kpi col="1" row="1" [label]="vm.i18n.t('common.savingsRate')" format="pct" [value]="vm.data()?.kpis?.savingsRate?.value ?? null" [previous]="vm.data()?.kpis?.savingsRate?.previous ?? null" [accent]="money.savings()" />
+          <ns-kpi col="0" row="2" colSpan="2" [label]="vm.i18n.t('common.netWorth')" [value]="vm.data()?.kpis?.netWorth?.value ?? null" [previous]="vm.data()?.kpis?.netWorth?.previous ?? null" [accent]="money.revenue()" />
         </GridLayout>
 
         @if (vm.incomeOptions(); as o) {
@@ -104,6 +105,7 @@ import { Money } from '../ui/money';
 })
 export class Dashboard {
   protected readonly vm = dashboardViewModel();
+  protected readonly money = money;
   protected readonly f = inject(FormatService);
   private readonly router = inject(RouterExtensions);
 

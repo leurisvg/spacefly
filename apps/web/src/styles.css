@@ -17,15 +17,31 @@
 @source './libs';
 
 /*
- * SpaceFly is dark-only. Tokens come from the email report's dark theme
- * (#0a0e1a page, #111827 cards, indigo #818cf8 accent) mapped onto spartan's variables.
+ * Two dark themes, picked in the topbar and stored as `data-theme` on <html> (see ThemeHost). Midnight is the
+ * default and also answers to a bare :root / `.dark`, so nothing breaks before the attribute is set. Every theme
+ * block defines every token; the chart/money/series tokens are mirrored in libs/client/src/charts/palette.ts and
+ * apps/mobile/src/app.css, and palette.spec.ts fails when they drift apart.
  */
-:root,
-:root.dark {
-  color-scheme: dark;
+:root {
   --radius: 0.7rem;
   --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+
+  --chart-1: var(--series-1);
+  --chart-2: var(--series-2);
+  --chart-3: var(--series-3);
+  --chart-4: var(--series-4);
+  --chart-5: var(--series-5);
+}
+
+/*
+ * Midnight: the email report's dark theme (#0a0e1a page, #111827 cards, indigo #818cf8 accent) mapped onto
+ * spartan's variables.
+ */
+:root,
+:root.dark,
+:root[data-theme='midnight'] {
+  color-scheme: dark;
 
   --background: #0a0e1a;
   --foreground: #e2e8f0;
@@ -65,6 +81,8 @@
   --chart-muted: #64748b;
   --chart-grid: #1e293b;
   --chart-axis: #334155;
+  --chart-tooltip: #0f172a;
+  --chart-on-fill: #ffffff;
 
   --money-income: #199e70;
   --money-expense: #e66767;
@@ -93,12 +111,81 @@
   /* Text-safe tints for signed amounts (text tokens, not series colors). */
   --text-positive: #34d399;
   --text-negative: #f87171;
+}
 
-  --chart-1: var(--series-1);
-  --chart-2: var(--series-2);
-  --chart-3: var(--series-3);
-  --chart-4: var(--series-4);
-  --chart-5: var(--series-5);
+/*
+ * Earth: #2C3639 page, #3F4E4F cards, #DCD7C9 text, #A27B5C accent. The data colors keep their meaning (green
+ * income, red expense…) in lighter, earthier tones: the card is a mid-tone, so marks need to be lighter than on
+ * midnight to reach 3:1 on it (validated with the dataviz validator, `light` mode, surface #3F4E4F: all five checks pass, no exceptions, in a
+ * different slot order than midnight). The accent only
+ * reaches ~2.3:1 on a card, so it fills buttons and rings but is never the only carrier of meaning; the text on it
+ * is darker than the page color to reach 4.5:1.
+ */
+:root[data-theme='earth'] {
+  color-scheme: dark;
+
+  --background: #2c3639;
+  --foreground: #dcd7c9;
+  --card: #3f4e4f;
+  --card-foreground: #dcd7c9;
+  --popover: #3f4e4f;
+  --popover-foreground: #dcd7c9;
+  --primary: #a27b5c;
+  --primary-foreground: #161c1e;
+  --secondary: #4f5c5b;
+  --secondary-foreground: #dcd7c9;
+  --muted: #4f5c5b;
+  --muted-foreground: #bdbcb1;
+  --accent: #4f5c5b;
+  --accent-foreground: #ece8dc;
+  --destructive: #ff7266;
+  --border: #525e5e;
+  --input: #66706e;
+  --ring: #a27b5c;
+
+  --sidebar: #21292b;
+  --sidebar-foreground: #c4c2b7;
+  --sidebar-primary: #a27b5c;
+  --sidebar-primary-foreground: #161c1e;
+  --sidebar-accent: #3b4648;
+  --sidebar-accent-foreground: #ece8dc;
+  --sidebar-border: #3b4648;
+  --sidebar-ring: #a27b5c;
+
+  --chart-surface: #3f4e4f;
+  --chart-ink: #dcd7c9;
+  --chart-ink-2: #bdbcb1;
+  --chart-muted: #a5a79e;
+  --chart-grid: #525e5e;
+  --chart-axis: #66706e;
+  --chart-tooltip: #2c3639;
+  --chart-on-fill: #1b2224;
+
+  --money-income: #82c170;
+  --money-expense: #d98182;
+  --money-net: #3db3e6;
+  --money-savings: #3eae99;
+  --money-budget: #3db3e6;
+  --money-revenue: #9f93ed;
+  --money-hub: #a3ada5;
+  --money-deficit: #e99d59;
+  --money-other: #7d8b87;
+
+  --series-1: #b49718;
+  --series-2: #de7ea0;
+  --series-3: #82c170;
+  --series-4: #9f93ed;
+  --series-5: #3eae99;
+  --series-6: #e99d59;
+  --series-7: #3db3e6;
+  --series-8: #d98182;
+
+  --status-good: #7fd36b;
+  --status-warning: #f2c14e;
+  --status-critical: #ff7266;
+
+  --text-positive: #a6e3b4;
+  --text-negative: #ffaa9e;
 }
 
 @theme inline {

@@ -1,5 +1,6 @@
 import { Component, NO_ERRORS_SCHEMA } from '@angular/core';
 import { accountsViewModel } from '@spacefly/client/features/accounts/accounts.vm';
+import { money } from '@spacefly/client/charts/series-colors';
 import { ChartWebView } from '../ui/chart-webview';
 import { KpiCard } from '../ui/kpi-card';
 import { Money } from '../ui/money';
@@ -16,7 +17,7 @@ import { EmptyState } from '../ui/empty-state';
         @if (vm.res.error() && !vm.r()) {
           <ns-empty [error]="true" [title]="vm.i18n.t('errors.load')" />
         }
-        <ns-kpi [label]="vm.i18n.t('accounts.total')" [value]="vm.r()?.total ?? null" accent="#3987e5" />
+        <ns-kpi [label]="vm.i18n.t('accounts.total')" [value]="vm.r()?.total ?? null" [accent]="money.net()" />
 
         <StackLayout class="card" marginTop="8">
           @for (a of vm.rows(); track a.id) {
@@ -46,4 +47,5 @@ import { EmptyState } from '../ui/empty-state';
 })
 export class Accounts {
   protected readonly vm = accountsViewModel();
+  protected readonly money = money;
 }

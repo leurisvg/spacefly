@@ -1,6 +1,7 @@
 import { computed, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { TranslocoService } from '@jsverse/transloco';
+import { THEME_IDS, type ThemeId } from '../../charts/palette';
 import { ApiService } from '../../api/report-resource';
 import { AuthService } from '../../auth/auth.service';
 import { I18n } from '../../i18n/i18n';
@@ -10,8 +11,9 @@ import { Toast } from '../../platform/toast';
 import { FiltersStore } from '../../state/filters.store';
 import { MetaStore } from '../../state/meta.store';
 import { PrivacyStore } from '../../state/privacy.store';
+import { ThemeStore } from '../../state/theme.store';
 
-/** Device-level preferences (language, privacy mode, display currency) plus the signed-in user and the cache refresh. */
+/** Device-level preferences (language, color theme, privacy mode, display currency) plus the signed-in user and the cache refresh. */
 export function preferencesViewModel() {
   const transloco = inject(TranslocoService);
   const storage = inject(KeyValueStorage);
@@ -20,6 +22,7 @@ export function preferencesViewModel() {
   const auth = inject(AuthService);
   const filters = inject(FiltersStore);
   const privacy = inject(PrivacyStore);
+  const themeStore = inject(ThemeStore);
   const toast = inject(Toast);
   const i18n = inject(I18n);
 
@@ -30,6 +33,8 @@ export function preferencesViewModel() {
     i18n,
     langs: LANGS,
     lang,
+    themes: THEME_IDS,
+    theme: themeStore.theme,
     privacy,
     auth,
     currency: filters.currency,
@@ -42,6 +47,10 @@ export function preferencesViewModel() {
     setLang(next: Lang): void {
       transloco.setActiveLang(next);
       storage.set(LANG_KEY, next);
+    },
+
+    setTheme(id: ThemeId): void {
+      themeStore.set(id);
     },
 
     setCurrency(code: string): void {

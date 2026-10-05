@@ -9,7 +9,7 @@ import { ServerConfig } from '../platform/server-config';
 
 type TestResult = { kind: 'idle' } | { kind: 'busy' } | { kind: 'ok' } | { kind: 'blocked' } | { kind: 'failed' };
 
-/** The settings tab: language, privacy, currency, the server and its Cloudflare Access credentials, refresh and sign-out. */
+/** The settings tab: language, theme, privacy, currency, the server and its Cloudflare Access credentials, refresh and sign-out. */
 @Component({
   selector: 'ns-settings',
   schemas: [NO_ERRORS_SCHEMA],
@@ -26,6 +26,15 @@ type TestResult = { kind: 'idle' } | { kind: 'busy' } | { kind: 'ok' } | { kind:
           <StackLayout orientation="horizontal">
             @for (l of vm.langs; track l) {
               <Label [text]="vm.i18n.t('lang.' + l)" class="chip" [class.chip-on]="vm.lang() === l" (tap)="setLang(l)"></Label>
+            }
+          </StackLayout>
+        </StackLayout>
+
+        <StackLayout class="card">
+          <Label [text]="vm.i18n.t('topbar.theme')" class="card-title"></Label>
+          <StackLayout orientation="horizontal">
+            @for (t of vm.themes; track t) {
+              <Label [text]="vm.i18n.t('theme.' + t)" class="chip" [class.chip-on]="vm.theme() === t" (tap)="vm.setTheme(t)"></Label>
             }
           </StackLayout>
         </StackLayout>

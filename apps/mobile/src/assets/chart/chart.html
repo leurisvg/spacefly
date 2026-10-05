@@ -23,15 +23,23 @@
     <script>
       // window.sfHydrate is injected by the app (libs/client/src/charts/portable.ts) right after this page loads.
       var chart = null;
+      var themeJson = null;
+      window.addEventListener('resize', function () {
+        if (chart) chart.resize();
+      });
+      // ECharts bakes a theme in at init, so a theme change disposes the chart and creates it again.
       window.sfRender = function (option, theme) {
+        var json = JSON.stringify(theme);
+        if (chart && json !== themeJson) {
+          chart.dispose();
+          chart = null;
+        }
         if (!chart) {
+          themeJson = json;
           echarts.registerTheme('spacefly', theme);
           chart = echarts.init(document.getElementById('chart'), 'spacefly');
           chart.on('click', function (p) {
             window.nsWebViewBridge.emit('chartClick', { dataIndex: p.dataIndex, name: p.name });
-          });
-          window.addEventListener('resize', function () {
-            chart.resize();
           });
         }
         chart.setOption(window.sfHydrate(option), true);
