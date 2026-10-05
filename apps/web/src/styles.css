@@ -17,7 +17,7 @@
 @source './libs';
 
 /*
- * Two dark themes, picked in the topbar and stored as `data-theme` on <html> (see ThemeHost). Midnight is the
+ * Dark themes (midnight, earth, dusk), picked in the topbar and stored as `data-theme` on <html> (see ThemeHost). Midnight is the
  * default and also answers to a bare :root / `.dark`, so nothing breaks before the attribute is set. Every theme
  * block defines every token; the chart/money/series tokens are mirrored in libs/client/src/charts/palette.ts and
  * apps/mobile/src/app.css, and palette.spec.ts fails when they drift apart.
@@ -179,6 +179,78 @@
   --series-6: #e99d59;
   --series-7: #3db3e6;
   --series-8: #d98182;
+
+  --status-good: #7fd36b;
+  --status-warning: #f2c14e;
+  --status-critical: #ff7266;
+
+  --text-positive: #a6e3b4;
+  --text-negative: #ffaa9e;
+}
+
+/*
+ * Dusk: #0F3040 page, #464858 cards, a light tint of #D99B7F for text, #A56F63 accent (#D99B7F for focus rings).
+ * Same rules as earth: the card is a mid-tone, so the data colors are validated on it (dataviz validator, `light`
+ * mode, surface #464858, all five checks pass). Text on the accent is near-black to reach 4.5:1.
+ */
+:root[data-theme='dusk'] {
+  color-scheme: dark;
+
+  --background: #0f3040;
+  --foreground: #f0d7cc;
+  --card: #464858;
+  --card-foreground: #f0d7cc;
+  --popover: #464858;
+  --popover-foreground: #f0d7cc;
+  --primary: #a56f63;
+  --primary-foreground: #070a0e;
+  --secondary: #575664;
+  --secondary-foreground: #f0d7cc;
+  --muted: #575664;
+  --muted-foreground: #cebab5;
+  --accent: #575664;
+  --accent-foreground: #f4e1d9;
+  --destructive: #ff7266;
+  --border: #5a5966;
+  --input: #716c75;
+  --ring: #d99b7f;
+
+  --sidebar: #0b222d;
+  --sidebar-foreground: #dfc9c0;
+  --sidebar-primary: #a56f63;
+  --sidebar-primary-foreground: #070a0e;
+  --sidebar-accent: #26414e;
+  --sidebar-accent-foreground: #f4e1d9;
+  --sidebar-border: #26414e;
+  --sidebar-ring: #d99b7f;
+
+  --chart-surface: #464858;
+  --chart-ink: #f0d7cc;
+  --chart-ink-2: #cebab5;
+  --chart-muted: #b5a5a3;
+  --chart-grid: #5a5966;
+  --chart-axis: #716c75;
+  --chart-tooltip: #0f3040;
+  --chart-on-fill: #11151a;
+
+  --money-income: #6eb15f;
+  --money-expense: #dd7f7b;
+  --money-net: #6ca9e1;
+  --money-savings: #24bbab;
+  --money-budget: #6ca9e1;
+  --money-revenue: #b597f0;
+  --money-hub: #9aa0b4;
+  --money-deficit: #e0a165;
+  --money-other: #7b8098;
+
+  --series-1: #e0a165;
+  --series-2: #6ca9e1;
+  --series-3: #6eb15f;
+  --series-4: #e294b3;
+  --series-5: #b6951f;
+  --series-6: #24bbab;
+  --series-7: #b597f0;
+  --series-8: #dd7f7b;
 
   --status-good: #7fd36b;
   --status-warning: #f2c14e;

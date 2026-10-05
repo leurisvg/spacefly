@@ -6,7 +6,7 @@ import { signal } from '@angular/core';
  * concrete colors anyway), so both apps draw from this file; `palette.spec.ts` fails if it drifts from the
  * stylesheets.
  */
-export const THEME_IDS = ['midnight', 'earth'] as const;
+export const THEME_IDS = ['midnight', 'earth', 'dusk'] as const;
 export type ThemeId = (typeof THEME_IDS)[number];
 export const DEFAULT_THEME: ThemeId = 'midnight';
 
@@ -60,6 +60,7 @@ export type PaletteVars = { readonly [K in keyof typeof MIDNIGHT]: string };
  *   vision ΔE >= 15, >= 3:1 contrast, with no income/expense exception. Passing meant a different slot order than
  *   midnight (green/orange next to each other fail under deuteranopia); money-* tokens keep their meaning
  *   (green income, red expense, blue net…) regardless of slot. money-hub/other are recessive neutrals, like midnight's.
+ * - dusk: surface #464858, same validation in `light` mode (all five checks pass, no exceptions); a third slot order.
  */
 export const THEMES: Record<ThemeId, PaletteVars> = {
   midnight: MIDNIGHT,
@@ -91,12 +92,41 @@ export const THEMES: Record<ThemeId, PaletteVars> = {
     '--series-7': '#3db3e6',
     '--series-8': '#d98182',
   },
+  dusk: {
+    '--background': '#0f3040',
+    '--chart-surface': '#464858',
+    '--chart-ink': '#f0d7cc',
+    '--chart-ink-2': '#cebab5',
+    '--chart-muted': '#b5a5a3',
+    '--chart-grid': '#5a5966',
+    '--chart-axis': '#716c75',
+    '--chart-tooltip': '#0f3040',
+    '--chart-on-fill': '#11151a',
+    '--money-income': '#6eb15f',
+    '--money-expense': '#dd7f7b',
+    '--money-net': '#6ca9e1',
+    '--money-savings': '#24bbab',
+    '--money-budget': '#6ca9e1',
+    '--money-revenue': '#b597f0',
+    '--money-hub': '#9aa0b4',
+    '--money-deficit': '#e0a165',
+    '--money-other': '#7b8098',
+    '--series-1': '#e0a165',
+    '--series-2': '#6ca9e1',
+    '--series-3': '#6eb15f',
+    '--series-4': '#e294b3',
+    '--series-5': '#b6951f',
+    '--series-6': '#24bbab',
+    '--series-7': '#b597f0',
+    '--series-8': '#dd7f7b',
+  },
 };
 
 /** Page and accent color of each theme, for the pickers' preview swatch (the accent is `--primary`; `palette.spec.ts` checks it). */
 export const THEME_SWATCH: Record<ThemeId, { readonly background: string; readonly accent: string }> = {
   midnight: { background: MIDNIGHT['--background'], accent: '#818cf8' },
   earth: { background: '#2c3639', accent: '#a27b5c' },
+  dusk: { background: '#0f3040', accent: '#a56f63' },
 };
 
 function build(id: ThemeId) {

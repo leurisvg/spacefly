@@ -1,6 +1,6 @@
 {
   "lang": { "es": "Español", "en": "English" },
-  "theme": { "midnight": "Medianoche", "earth": "Tierra" },
+  "theme": { "midnight": "Medianoche", "earth": "Tierra", "dusk": "Atardecer" },
   "common": {
     "income": "Ingresos",
     "expenses": "Gastos",

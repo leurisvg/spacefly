@@ -1,7 +1,7 @@
 @import 'tailwindcss';
 
 /*
- * Two dark themes, picked in Settings. The theme host puts `theme-<id>` on the root view (NativeScript does not
+ * Dark themes (midnight, earth, dusk), picked in Settings. The theme host puts `theme-<id>` on the root view (NativeScript does not
  * match `:root` by itself, and CSS variables set on the root view are inherited by every screen), and every rule
  * below reads the variables. The chart/money/series tokens are copied from apps/web/src/styles.css and
  * libs/client/src/charts/palette.ts; palette.spec.ts fails when they drift apart.
@@ -96,6 +96,51 @@
   --border: #525e5e;
   --input: #66706e;
   --toast-error: #7a3b36;
+  --status-good: #7fd36b;
+  --status-warning: #f2c14e;
+  --status-critical: #ff7266;
+}
+
+.theme-dusk {
+  --background: #0f3040;
+  --chart-surface: #464858;
+  --chart-ink: #f0d7cc;
+  --chart-ink-2: #cebab5;
+  --chart-muted: #b5a5a3;
+  --chart-grid: #5a5966;
+  --chart-axis: #716c75;
+  --chart-tooltip: #0f3040;
+  --chart-on-fill: #11151a;
+
+  --money-income: #6eb15f;
+  --money-expense: #dd7f7b;
+  --money-net: #6ca9e1;
+  --money-savings: #24bbab;
+  --money-budget: #6ca9e1;
+  --money-revenue: #b597f0;
+  --money-hub: #9aa0b4;
+  --money-deficit: #e0a165;
+  --money-other: #7b8098;
+
+  --series-1: #e0a165;
+  --series-2: #6ca9e1;
+  --series-3: #6eb15f;
+  --series-4: #e294b3;
+  --series-5: #b6951f;
+  --series-6: #24bbab;
+  --series-7: #b597f0;
+  --series-8: #dd7f7b;
+
+  --foreground: #f0d7cc;
+  --card: #464858;
+  --primary: #a56f63;
+  --primary-foreground: #070a0e;
+  --muted: #575664;
+  --muted-foreground: #cebab5;
+  --destructive: #ff7266;
+  --border: #5a5966;
+  --input: #716c75;
+  --toast-error: #6e3036;
   --status-good: #7fd36b;
   --status-warning: #f2c14e;
   --status-critical: #ff7266;

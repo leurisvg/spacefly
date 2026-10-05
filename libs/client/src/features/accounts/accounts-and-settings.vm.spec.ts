@@ -152,7 +152,7 @@ describe('preferencesViewModel', () => {
   it('switches the theme, remembers it and applies it to the host', () => {
     TestBed.configureTestingModule({ providers: [...formatTestProviders('es', EN, { realStores: true }).providers, provideHttpClient(), provideHttpClientTesting()] });
     const vm = TestBed.runInInjectionContext(() => preferencesViewModel());
-    expect(vm.themes).toEqual(['midnight', 'earth']);
+    expect(vm.themes).toEqual(['midnight', 'earth', 'dusk']);
     expect(vm.theme()).toBe('midnight');
     vm.setTheme('earth');
     expect(vm.theme()).toBe('earth');
