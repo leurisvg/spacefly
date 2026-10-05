@@ -93,7 +93,11 @@ export interface AccountDetailReport {
   openingOriginal: number;
   closing: number;
   change: { abs: number; pct: number | null };
+  /** `change.abs` in the account's own currency. */
+  changeOriginal: number;
   totals: { income: number; expense: number; transferIn: number; transferOut: number; count: number };
+  /** The same totals (without `count`) in the account's own currency. */
+  totalsOriginal: { income: number; expense: number; transferIn: number; transferOut: number };
   days: AccountDay[];
   /** Trailing 12 months ending at the period end. */
   months: AccountMonth[];

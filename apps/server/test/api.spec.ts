@@ -268,6 +268,9 @@ describe('reports API', () => {
     expect(d.months.at(-1)).toMatchObject({ incomeOriginal: 500, expenseOriginal: 50 });
     expect(d.byWeekdayOriginal.reduce((x, y) => x + y, 0)).toBe(50);
     expect(d.topMerchants.map((m) => m.valueOriginal)).toEqual([50]);
+    // Period totals and the change, in USD as well.
+    expect(d.totalsOriginal).toEqual({ income: 500, expense: 50, transferIn: 0, transferOut: 0 });
+    expect(d.changeOriginal).toBe(d.balanceOriginal - d.openingOriginal);
   });
 
   it('lists expense and revenue accounts with period, previous period and last activity', async () => {

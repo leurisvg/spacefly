@@ -130,6 +130,10 @@ export function buildAccountDetail({ ctx, account: a, excluded, asOf, splits, tr
     }))
     .reverse();
 
+  const transfersIn = splits.filter((s) => isTransfer(s) && s.destId === a.id);
+  const transfersOut = splits.filter((s) => isTransfer(s) && s.sourceId === a.id);
+  const ownTotal = (list: Split[]) => round(list.reduce((sum, s) => sum + Math.abs(flowInOwn(ctx, a, s)), 0));
+
   const first = round(opening);
   return {
     account: { id: a.id, name: a.name, role: a.role, type: a.type, currency: a.currency, iban: a.iban, includeNetWorth: a.includeNetWorth, excluded },
@@ -138,13 +142,15 @@ export function buildAccountDetail({ ctx, account: a, excluded, asOf, splits, tr
     opening: first,
     closing: round(closing),
     change: { abs: round(closing - opening), pct: first !== 0 ? (closing - opening) / Math.abs(first) : null },
+    changeOriginal: round(a.balance - openingOwn),
     totals: {
       income: round(ctx.sum(incomes)),
       expense: round(ctx.sum(expenses)),
-      transferIn: round(ctx.sum(splits.filter((s) => isTransfer(s) && s.destId === a.id))),
-      transferOut: round(ctx.sum(splits.filter((s) => isTransfer(s) && s.sourceId === a.id))),
+      transferIn: round(ctx.sum(transfersIn)),
+      transferOut: round(ctx.sum(transfersOut)),
       count: splits.length,
     },
+    totalsOriginal: { income: ownTotal(incomes), expense: ownTotal(expenses), transferIn: ownTotal(transfersIn), transferOut: ownTotal(transfersOut) },
     days,
     months: monthly,
     byWeekday: byWeekday.map((v) => round(v)),

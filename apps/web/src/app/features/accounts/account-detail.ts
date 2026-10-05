@@ -55,10 +55,10 @@ type Tab = (typeof TABS)[number];
       </sf-page-header>
 
       <section class="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <sf-kpi class="col-span-2 lg:col-span-1" [label]="i18n.t('accounts.detail.closing')" [value]="foreign() ? (r()?.balanceOriginal ?? null) : (r()?.closing ?? null)" [previous]="foreign() ? (r()?.openingOriginal ?? null) : (r()?.opening ?? null)" [currency]="foreign() ? r()?.account?.currency : undefined" [note]="closingNote()" [spark]="r()?.months?.map(balanceOf) ?? null" accent="var(--money-net)" [loading]="res.initialLoading()" />
-        <sf-kpi [label]="i18n.t('common.income')" [value]="r()?.totals?.income ?? null" accent="var(--money-income)" [loading]="res.initialLoading()" />
-        <sf-kpi [label]="i18n.t('common.expenses')" [value]="r()?.totals?.expense ?? null" accent="var(--money-expense)" [loading]="res.initialLoading()" />
-        <sf-kpi [label]="i18n.t('accounts.detail.change')" [value]="r()?.change?.abs ?? null" accent="var(--money-net)" [loading]="res.initialLoading()" />
+        <sf-kpi class="col-span-2 lg:col-span-1" [label]="i18n.t('accounts.detail.closing')" [value]="foreign() ? (r()?.balanceOriginal ?? null) : (r()?.closing ?? null)" [previous]="foreign() ? (r()?.openingOriginal ?? null) : (r()?.opening ?? null)" [currency]="own()" [note]="approx(r()?.closing)" [spark]="r()?.months?.map(balanceOf) ?? null" accent="var(--money-net)" [loading]="res.initialLoading()" />
+        <sf-kpi [label]="i18n.t('common.income')" [value]="foreign() ? (r()?.totalsOriginal?.income ?? null) : (r()?.totals?.income ?? null)" [currency]="own()" [note]="approx(r()?.totals?.income)" accent="var(--money-income)" [loading]="res.initialLoading()" />
+        <sf-kpi [label]="i18n.t('common.expenses')" [value]="foreign() ? (r()?.totalsOriginal?.expense ?? null) : (r()?.totals?.expense ?? null)" [currency]="own()" [note]="approx(r()?.totals?.expense)" accent="var(--money-expense)" [loading]="res.initialLoading()" />
+        <sf-kpi [label]="i18n.t('accounts.detail.change')" [value]="foreign() ? (r()?.changeOriginal ?? null) : (r()?.change?.abs ?? null)" [currency]="own()" [note]="approx(r()?.change?.abs)" accent="var(--money-net)" [loading]="res.initialLoading()" />
       </section>
 
       @if (r(); as d) {
@@ -77,33 +77,33 @@ type Tab = (typeof TABS)[number];
               @if (s.lowest; as low) {
                 <div>
                   <dt class="eyebrow">{{ 'accounts.detail.lowest' | transloco }}</dt>
-                  <dd class="mt-0.5 flex flex-wrap items-center"><sf-money [value]="low.balance" tone="auto" /><span class="mx-1.5 inline-block h-3 w-px bg-border align-middle" aria-hidden="true"></span><span class="text-xs text-muted-foreground">{{ low.date | fdate: 'short' }}</span></dd>
+                  <dd class="mt-0.5 flex flex-wrap items-center"><sf-dual-money align="start" tone="auto" [original]="low.balanceOriginal" [converted]="low.balance" [currency]="d.account.currency" /><span class="mx-1.5 inline-block h-3 w-px bg-border align-middle" aria-hidden="true"></span><span class="text-xs text-muted-foreground">{{ low.date | fdate: 'short' }}</span></dd>
                 </div>
               }
               @if (s.highest; as high) {
                 <div>
                   <dt class="eyebrow">{{ 'accounts.detail.highest' | transloco }}</dt>
-                  <dd class="mt-0.5 flex flex-wrap items-center"><sf-money [value]="high.balance" tone="auto" /><span class="mx-1.5 inline-block h-3 w-px bg-border align-middle" aria-hidden="true"></span><span class="text-xs text-muted-foreground">{{ high.date | fdate: 'short' }}</span></dd>
+                  <dd class="mt-0.5 flex flex-wrap items-center"><sf-dual-money align="start" tone="auto" [original]="high.balanceOriginal" [converted]="high.balance" [currency]="d.account.currency" /><span class="mx-1.5 inline-block h-3 w-px bg-border align-middle" aria-hidden="true"></span><span class="text-xs text-muted-foreground">{{ high.date | fdate: 'short' }}</span></dd>
                 </div>
               }
               <div>
                 <dt class="eyebrow">{{ 'accounts.detail.avgDailyExpense' | transloco }}</dt>
-                <dd class="mt-0.5"><sf-money [value]="s.avgDailyExpense" /></dd>
+                <dd class="mt-0.5"><sf-dual-money align="start" [original]="s.avgDailyExpenseOriginal" [converted]="s.avgDailyExpense" [currency]="d.account.currency" /></dd>
               </div>
               <div>
                 <dt class="eyebrow">{{ 'accounts.detail.netTransfers' | transloco }}</dt>
-                <dd class="mt-0.5"><sf-money [value]="d.totals.transferIn - d.totals.transferOut" [signed]="true" /></dd>
+                <dd class="mt-0.5"><sf-dual-money align="start" [signed]="true" [original]="d.totalsOriginal.transferIn - d.totalsOriginal.transferOut" [converted]="d.totals.transferIn - d.totals.transferOut" [currency]="d.account.currency" /></dd>
               </div>
               @if (s.biggestExpense; as tx) {
                 <div class="min-w-0">
                   <dt class="eyebrow">{{ 'accounts.detail.biggestExpense' | transloco }}</dt>
-                  <dd class="mt-0.5 flex min-w-0 items-center"><sf-money class="shrink-0" [value]="-tx.amount" tone="expense" /><span class="mx-1.5 inline-block h-3 w-px bg-border align-middle" aria-hidden="true"></span><span class="truncate text-xs text-muted-foreground">{{ tx.description }}</span></dd>
+                  <dd class="mt-0.5 flex min-w-0 items-center"><sf-dual-money class="shrink-0" align="start" tone="expense" [original]="-tx.amountOriginal" [converted]="-tx.amount" [currency]="d.account.currency" /><span class="mx-1.5 inline-block h-3 w-px bg-border align-middle" aria-hidden="true"></span><span class="truncate text-xs text-muted-foreground">{{ tx.description }}</span></dd>
                 </div>
               }
               @if (s.biggestIncome; as tx) {
                 <div class="min-w-0">
                   <dt class="eyebrow">{{ 'accounts.detail.biggestIncome' | transloco }}</dt>
-                  <dd class="mt-0.5 flex min-w-0 items-center"><sf-money class="shrink-0" [value]="tx.amount" tone="income" /><span class="mx-1.5 inline-block h-3 w-px bg-border align-middle" aria-hidden="true"></span><span class="truncate text-xs text-muted-foreground">{{ tx.description }}</span></dd>
+                  <dd class="mt-0.5 flex min-w-0 items-center"><sf-dual-money class="shrink-0" align="start" tone="income" [original]="tx.amountOriginal" [converted]="tx.amount" [currency]="d.account.currency" /><span class="mx-1.5 inline-block h-3 w-px bg-border align-middle" aria-hidden="true"></span><span class="truncate text-xs text-muted-foreground">{{ tx.description }}</span></dd>
                 </div>
               }
             </dl>
@@ -352,12 +352,20 @@ export class AccountDetail {
     if (!d) return null;
     const known = d.days.filter((x) => x.balance !== null);
     const extreme = (pick: (a: number, b: number) => boolean) =>
-      known.reduce<{ date: string; balance: number } | null>((best, x) => (best === null || pick(x.balance!, best.balance) ? { date: x.date, balance: x.balance! } : best), null);
-    const biggest = (type: string) => d.rows.filter((x) => x.type === type).reduce<AccountTxRow | null>((best, x) => (best === null || x.amount > best.amount ? x : best), null);
+      known.reduce<{ date: string; balance: number; balanceOriginal: number } | null>(
+        (best, x) => (best === null || pick(x.balance!, best.balance) ? { date: x.date, balance: x.balance!, balanceOriginal: x.balanceOriginal! } : best),
+        null,
+      );
+    const biggest = (type: string) =>
+      d.rows
+        .filter((x) => x.type === type)
+        .reduce<(AccountTxRow & { amountOriginal: number }) | null>((best, x) => (best === null || x.amount > best.amount ? { ...x, amountOriginal: Math.abs(x.flowOriginal) } : best), null);
+    const days = Math.max(1, known.length);
     return {
       lowest: extreme((a, b) => a < b),
       highest: extreme((a, b) => a > b),
-      avgDailyExpense: d.totals.expense / Math.max(1, known.length),
+      avgDailyExpense: d.totals.expense / days,
+      avgDailyExpenseOriginal: d.totalsOriginal.expense / days,
       biggestExpense: biggest('withdrawal'),
       biggestIncome: biggest('deposit'),
     };
@@ -369,8 +377,11 @@ export class AccountDetail {
     return !!cur && cur !== this.filters.currency();
   });
   /** Currency the charts are drawn in: the account's own, when it isn't the one being displayed. */
-  private readonly own = computed(() => (this.foreign() ? this.r()?.account.currency : undefined));
-  protected readonly closingNote = computed(() => (this.foreign() ? `≈ ${this.f.money(this.r()?.closing)}` : null));
+  protected readonly own = computed(() => (this.foreign() ? this.r()?.account.currency : undefined));
+  /** "≈ RD$600.00" under a figure shown in the account's own currency; nothing when it is already in the display currency. */
+  protected approx(converted: number | null | undefined): string | null {
+    return this.foreign() && converted != null ? `≈ ${this.f.money(converted)}` : null;
+  }
 
   protected readonly zoomHint = computed(() => ((this.r()?.days.length ?? 0) > 60 ? this.i18n.t('accounts.detail.zoomHint') : null));
 
@@ -458,7 +469,7 @@ export class AccountDetail {
     return `${this.f.money(original, own, { signed })} (≈ ${this.f.money(converted, undefined, { signed })})`;
   }
 
-  protected balanceOf = (m: { balance: number }) => m.balance;
+  protected balanceOf = (m: { balance: number; balanceOriginal: number }) => (this.foreign() ? m.balanceOriginal : m.balance);
 
   private named(items: AccountDetailReport['topCategories']) {
     return items.map((x) => ({ ...x, own: x.valueOriginal, name: x.name || this.i18n.t('common.uncategorized') }));
