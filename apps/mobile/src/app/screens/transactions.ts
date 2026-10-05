@@ -1,5 +1,5 @@
 import { Component, inject, NO_ERRORS_SCHEMA } from '@angular/core';
-import { RouterExtensions } from '@nativescript/angular';
+import { ListViewComponent, RouterExtensions } from '@nativescript/angular';
 import type { ItemEventData } from '@nativescript/core';
 import { explorerViewModel } from '@spacefly/client/features/transactions/explorer.vm';
 import { FormatService } from '@spacefly/client/format/format.service';
@@ -12,7 +12,8 @@ const TYPES = ['', 'withdrawal', 'deposit', 'transfer'] as const;
 /** The transactions tab: the period's ledger with search, a type filter and pagination; tap a row for its detail. */
 @Component({
   selector: 'ns-transactions',
-  imports: [EmptyState, Money],
+  // ListViewComponent is what turns the <ng-template> into the row template; without it every row prints as "[object Object]".
+  imports: [EmptyState, ListViewComponent, Money],
   schemas: [NO_ERRORS_SCHEMA],
   template: `
     <GridLayout rows="auto, auto, *, auto">
