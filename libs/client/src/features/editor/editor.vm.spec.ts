@@ -5,6 +5,7 @@ import { TestBed } from '@angular/core/testing';
 import type { AccountInput, EditorAccount, TxEditPayload } from '@spacefly/shared';
 import { EDITOR_LOOKUPS, EN, FakeBackNavigation, formatTestProviders, loadTranslations, RecordingToast } from '../../../testing';
 import { accountPickerViewModel, comboValueOf, isCreated, slotFits } from './account-picker.vm';
+import { trimAmountZeros } from '@spacefly/shared';
 import { blankTxModel, buildTxRequest, transactionFormViewModel, txModelFromPayload, withDefaults, type TxModel, type TxQueryValues } from './transaction-form.vm';
 
 describe('account picker shaping', () => {
@@ -88,6 +89,15 @@ describe('transaction form shaping', () => {
     expect(model).toMatchObject({ description: 'Cena', otherCurrency: true, foreignCurrency: 'USD', notes: '', billId: '', source: { id: '1' } });
     const request = buildTxRequest(model, 'withdrawal', { amount: model.foreignAmount, currency: model.foreignCurrency });
     expect(request).toMatchObject({ description: 'Cena', time: '20:15', amount: '120.50', foreignAmount: '2.00', foreignCurrency: 'USD', budgetId: '1', billId: null, notes: null, tags: ['hogar'] });
+  });
+
+  it('drops the padding zeros Firefly stores amounts with, keeping two decimals and any real digit', () => {
+    const model = txModelFromPayload({ ...payload, amount: '12800.00000000', foreignAmount: '0.12345600' });
+    expect([model.amount, model.foreignAmount]).toEqual(['12800.00', '0.123456']);
+    expect(trimAmountZeros('120.50')).toBe('120.50');
+    expect(trimAmountZeros('5')).toBe('5');
+    expect(trimAmountZeros('')).toBe('');
+    expect(trimAmountZeros('abc')).toBe('abc');
   });
 
   it('keeps budget and bill only on expenses and trims text', () => {

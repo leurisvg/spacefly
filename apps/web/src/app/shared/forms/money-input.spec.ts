@@ -95,6 +95,16 @@ describe('MoneyInput', () => {
     expect(s.input.value).toBe('');
   });
 
+  it('does not show padding zeros as precision, but keeps real digits beyond the currency decimals', async () => {
+    const s = setup();
+    s.host.model.set({ amount: '12800.00000000' });
+    await s.settle();
+    expect(s.input.value).toBe('12,800.00');
+    s.host.model.set({ amount: '0.12345600' });
+    await s.settle();
+    expect(s.input.value).toBe('0.123456');
+  });
+
   it('marks the field touched on blur', async () => {
     const s = setup();
     expect(s.host.f.amount().touched()).toBe(false);

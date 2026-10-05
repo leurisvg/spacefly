@@ -104,7 +104,8 @@ export class MoneyInput implements FormValueControl<string> {
   /** "1234.5" → "1,234.50" (language-aware); anything unparsable is shown as typed. */
   private display(v: string): string {
     if (!/^-?\d+(\.\d+)?$/.test(v)) return v;
-    const fraction = v.split('.')[1]?.length ?? 0;
+    // Digits that carry value only: a stored "12800.00000000" is not eight decimals' worth of precision.
+    const fraction = (v.split('.')[1] ?? '').replace(/0+$/, '').length;
     const digits = Math.min(Math.max(this.decimals(), fraction), 8);
     return new Intl.NumberFormat(this.format.locale(), { minimumFractionDigits: digits, maximumFractionDigits: digits }).format(Number(v));
   }

@@ -55,3 +55,14 @@ export function parseAmount(input: string, decimal: '.' | ',' = '.'): string | n
 export function isPositiveAmount(value: string | null | undefined): boolean {
   return !!value && /^\d+(\.\d+)?$/.test(value) && Number(value) > 0;
 }
+
+/**
+ * Drops the padding zeros Firefly stores amounts with ("12800.00000000" → "12800.00"), keeping at least two decimals
+ * and every digit that carries value ("0.12345600" → "0.123456"). Anything that isn't a plain decimal is returned as is.
+ */
+export function trimAmountZeros(value: string): string {
+  const m = /^(-?\d+)\.(\d+)$/.exec(value);
+  if (!m) return value;
+  const fraction = m[2].replace(/0+$/, '').padEnd(2, '0');
+  return `${m[1]}.${fraction}`;
+}
