@@ -18,7 +18,7 @@ interface PresetOption {
   anchor: () => string;
 }
 
-/** ◀ [period ▾] ▶ — month / quarter / year / YTD presets plus a custom range. */
+/** ◀ [period ▾] ▶ — month / quarter / year / YTD / last-30-days / last-6-months presets plus a custom range. */
 @Component({
   selector: 'sf-period-picker',
   imports: [FormsModule, NgIcon, TranslocoPipe, HlmButton, HlmInput, HlmLabel, HlmPopoverImports, HlmSeparator],
@@ -32,7 +32,7 @@ interface PresetOption {
     <hlm-popover [state]="open() ? 'open' : 'closed'" (stateChanged)="open.set($event === 'open')" align="center" sideOffset="6">
       <button hlmPopoverTrigger hlmBtn variant="ghost" size="sm" class="min-w-0 rounded-none px-2 font-medium sm:min-w-44" (click)="openPicker()">
         <ng-icon name="lucideCalendarRange" class="hidden text-muted-foreground sm:inline" />
-        <span class="truncate capitalize">{{ label() }}</span>
+        <span class="truncate" [class.capitalize]="!presetKey()">{{ presetKey() ? (presetKey()! | transloco) : label() }}</span>
       </button>
       <hlm-popover-content *hlmPopoverPortal="let ctx" class="w-72 p-2">
         <div class="flex flex-col">
@@ -82,6 +82,8 @@ export class PeriodPicker {
   protected readonly options: PresetOption[] = [
     { key: 'thisMonth', preset: 'month', anchor: () => todayIso() },
     { key: 'lastMonth', preset: 'month', anchor: () => addMonths(todayIso(), -1) },
+    { key: 'last30', preset: 'last30', anchor: () => todayIso() },
+    { key: 'last6m', preset: 'last6m', anchor: () => todayIso() },
     { key: 'thisQuarter', preset: 'quarter', anchor: () => todayIso() },
     { key: 'thisYear', preset: 'year', anchor: () => todayIso() },
     { key: 'lastYear', preset: 'year', anchor: () => addMonths(todayIso(), -12) },
@@ -103,6 +105,12 @@ export class PeriodPicker {
       default:
         return `${this.f.date(p.start, 'short')} – ${this.f.date(p.end, 'long')}`;
     }
+  });
+
+  /** A rolling window reads as its name ("Last 30 days") only while it ends today; after ◀ it is just a range. */
+  protected readonly presetKey = computed(() => {
+    const preset = this.filters.preset();
+    return (preset === 'last30' || preset === 'last6m') && this.filters.period().end === todayIso() ? `period.presets.${preset}` : null;
   });
 
   protected readonly customValid = () => isIsoDate(this.customStart) && isIsoDate(this.customEnd) && this.customStart <= this.customEnd;

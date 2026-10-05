@@ -3,7 +3,7 @@ import { FilterParamsSource, type ParamValue } from '../platform/filter-params-s
 import { KeyValueStorage } from '../platform/key-value-storage';
 import { isIsoDate, presetPeriod, shiftPeriod, todayIso, type Period, type PeriodPreset } from '@spacefly/shared';
 
-const PRESETS: PeriodPreset[] = ['month', 'quarter', 'year', 'ytd', 'custom'];
+const PRESETS: PeriodPreset[] = ['month', 'quarter', 'year', 'ytd', 'last30', 'last6m', 'custom'];
 const CURRENCY_KEY = 'spacefly.currency';
 
 /**
@@ -77,6 +77,12 @@ export class FiltersStore {
    */
   scopePeriod(period: Period): () => void {
     this.pageScope.set({ preset: 'custom', period });
+    return () => this.pageScope.set(null);
+  }
+
+  /** Like `scopePeriod`, for a preset (the picker then shows it as selected). */
+  scopePreset(preset: Exclude<PeriodPreset, 'custom'>, anchor = todayIso()): () => void {
+    this.pageScope.set({ preset, period: presetPeriod(preset, anchor) });
     return () => this.pageScope.set(null);
   }
 

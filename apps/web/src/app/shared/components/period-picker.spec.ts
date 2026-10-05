@@ -5,7 +5,7 @@ import { formatTestProviders } from '@spacefly/client/testing';
 import { FiltersStore } from '@spacefly/client/state/filters.store';
 import { PeriodPicker } from './period-picker';
 
-const T = { period: { previous: 'Previous period', next: 'Next period', quarterShort: 'Q', ytdShort: 'YTD' } };
+const T = { period: { previous: 'Previous period', next: 'Next period', quarterShort: 'Q', ytdShort: 'YTD', presets: { last30: 'Last 30 days', last6m: 'Last 6 months' } } };
 
 function setup(preset: PeriodPreset, period: Period) {
   const filters = { preset: signal(preset), period: signal(period), shift: vi.fn(), setPreset: vi.fn(), setCustom: vi.fn() };
@@ -28,6 +28,20 @@ describe('PeriodPicker', () => {
     expect(setup('ytd', { start: '2026-01-01', end: '2026-09-15' }).label()).toBe('YTD 2026');
     TestBed.resetTestingModule();
     expect(setup('custom', { start: '2026-01-10', end: '2026-02-20' }).label()).toBe('Jan 10 – February 20, 2026');
+  });
+
+  it('names a rolling window while it ends today and shows the range once shifted', () => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date('2026-10-04T12:00:00'));
+    try {
+      expect(setup('last30', { start: '2026-09-05', end: '2026-10-04' }).label()).toBe('Last 30 days');
+      TestBed.resetTestingModule();
+      expect(setup('last6m', { start: '2026-04-05', end: '2026-10-04' }).label()).toBe('Last 6 months');
+      TestBed.resetTestingModule();
+      expect(setup('last30', { start: '2026-08-06', end: '2026-09-04' }).label()).toBe('Aug 6 – September 4, 2026');
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it('moves the period with the labelled arrow buttons', () => {

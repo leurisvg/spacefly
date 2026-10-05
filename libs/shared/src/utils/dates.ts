@@ -134,6 +134,10 @@ export function presetPeriod(preset: Exclude<PeriodPreset, 'custom'>, anchor: Is
       return { start: startOfYear(anchor), end: endOfYear(anchor) };
     case 'ytd':
       return { start: startOfYear(anchor), end: anchor };
+    case 'last30':
+      return { start: addDays(anchor, -29), end: anchor };
+    case 'last6m':
+      return { start: addDays(addMonths(anchor, -6), 1), end: anchor };
   }
 }
 
@@ -150,6 +154,10 @@ export function shiftPeriod(preset: PeriodPreset, p: Period, steps: number): Per
       const start = addMonths(p.start, steps * 12);
       return { start, end: addMonths(p.end, steps * 12) };
     }
+    case 'last30':
+      return { start: addDays(p.start, steps * 30), end: addDays(p.end, steps * 30) };
+    case 'last6m':
+      return presetPeriod('last6m', addMonths(p.end, steps * 6));
     case 'custom': {
       const len = daysBetween(p.start, p.end);
       return { start: addDays(p.start, steps * len), end: addDays(p.end, steps * len) };

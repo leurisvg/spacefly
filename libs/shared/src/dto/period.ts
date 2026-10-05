@@ -4,4 +4,5 @@ export interface Period {
   end: string;
 }
 
-export type PeriodPreset = 'month' | 'quarter' | 'year' | 'ytd' | 'custom';
+/** `last30` / `last6m` are rolling windows ending on the anchor (today): the last 30 days and the last 6 months, today included. */
+export type PeriodPreset = 'month' | 'quarter' | 'year' | 'ytd' | 'last30' | 'last6m' | 'custom';

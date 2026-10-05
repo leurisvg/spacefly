@@ -32,6 +32,10 @@ describe('dates', () => {
   it('builds and shifts presets', () => {
     expect(presetPeriod('quarter', '2026-08-15')).toEqual({ start: '2026-07-01', end: '2026-09-30' });
     expect(presetPeriod('ytd', '2026-08-15')).toEqual({ start: '2026-01-01', end: '2026-08-15' });
+    expect(presetPeriod('last30', '2026-10-04')).toEqual({ start: '2026-09-05', end: '2026-10-04' });
+    expect(presetPeriod('last6m', '2026-10-04')).toEqual({ start: '2026-04-05', end: '2026-10-04' });
+    expect(shiftPeriod('last30', { start: '2026-09-05', end: '2026-10-04' }, -1)).toEqual({ start: '2026-08-06', end: '2026-09-04' });
+    expect(shiftPeriod('last6m', { start: '2026-04-05', end: '2026-10-04' }, -1)).toEqual({ start: '2025-10-05', end: '2026-04-04' });
     expect(shiftPeriod('month', SEP, 1)).toEqual({ start: '2026-10-01', end: '2026-10-31' });
     expect(shiftPeriod('year', presetPeriod('year', '2026-01-01'), -1)).toEqual({ start: '2025-01-01', end: '2025-12-31' });
     expect(monthsInRange('2025-11-15', '2026-02-01')).toEqual(['2025-11', '2025-12', '2026-01', '2026-02']);

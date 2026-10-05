@@ -3,7 +3,7 @@ import { RouterLink } from '@angular/router';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideArrowLeft, lucideChevronLeft, lucideChevronRight, lucidePencil } from '@ng-icons/lucide';
 import { TranslocoPipe } from '@jsverse/transloco';
-import { addDays, todayIso, type AccountDetailReport, type AccountTxRow, type CalendarDay } from '@spacefly/shared';
+import { type AccountDetailReport, type AccountTxRow, type CalendarDay } from '@spacefly/shared';
 import { HlmBadge } from '@spartan-ng/helm/badge';
 import { HlmButton } from '@spartan-ng/helm/button';
 import { HlmToggleGroupImports } from '@spartan-ng/helm/toggle-group';
@@ -28,8 +28,6 @@ import { TxDetailService } from '@spacefly/client/state/tx-detail.service';
 import { EntityEditor } from '@spacefly/client/state/entity-editor.service';
 
 const PAGE_SIZE = 50;
-/** Days shown when the page opens (today included). */
-const DEFAULT_DAYS = 30;
 const TABS = ['all', 'withdrawal', 'deposit', 'transfer'] as const;
 type Tab = (typeof TABS)[number];
 
@@ -312,9 +310,8 @@ export class AccountDetail {
   readonly id = input.required<string>();
 
   constructor() {
-    // Opens on the last 30 days; the range is handed back when leaving so no other screen inherits it.
-    const today = todayIso();
-    const release = this.filters.scopePeriod({ start: addDays(today, 1 - DEFAULT_DAYS), end: today });
+    // Opens on the "last 30 days" preset; the range is handed back when leaving so no other screen inherits it.
+    const release = this.filters.scopePreset('last30');
     inject(DestroyRef).onDestroy(release);
   }
 

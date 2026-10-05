@@ -106,6 +106,15 @@ describe('FiltersStore on the URL query string (web platform)', () => {
       expect(router.url).toBe('/x?p=quarter&start=2026-07-01&end=2026-09-30');
     });
 
+    it('can be scoped to a preset, which the picker then shows as selected', async () => {
+      const { store } = await setup('/x');
+      const release = store.scopePreset('last30', '2026-10-04');
+      expect(store.preset()).toBe('last30');
+      expect(store.period()).toEqual({ start: '2026-09-05', end: '2026-10-04' });
+      release();
+      expect(store.preset()).toBe('month');
+    });
+
     it('is edited by the picker actions instead of the URL', async () => {
       const { store, router } = await setup('/x');
       const release = store.scopePeriod(range);

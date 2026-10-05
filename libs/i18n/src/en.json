@@ -106,6 +106,8 @@
     "presets": {
       "thisMonth": "This month",
       "lastMonth": "Last month",
+      "last30": "Last 30 days",
+      "last6m": "Last 6 months",
       "thisQuarter": "This quarter",
       "thisYear": "This year",
       "lastYear": "Last year",
