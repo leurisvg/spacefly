@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
 import { FormField as Field } from '@angular/forms/signals';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideArrowRightLeft, lucideExternalLink, lucideInfo } from '@ng-icons/lucide';
@@ -7,6 +7,7 @@ import { HlmSkeleton } from '@spartan-ng/helm/skeleton';
 import { HlmSwitch } from '@spartan-ng/helm/switch';
 import { HlmTextarea } from '@spartan-ng/helm/textarea';
 import { transactionFormViewModel } from '@spacefly/client/features/editor/transaction-form.vm';
+import { BreadcrumbLeaf } from '../../layout/breadcrumb-leaf';
 import { PageHeader } from '../../shared/components/page-header';
 import { Section } from '../../shared/components/section';
 import { Select } from '../../shared/components/select';
@@ -260,4 +261,8 @@ export class TransactionForm {
       bill: this.bill(),
     })),
   });
+
+  constructor() {
+    inject(BreadcrumbLeaf).track(() => this.vm.recordTitle());
+  }
 }

@@ -18,6 +18,7 @@ import { Chart } from '../../shared/charts/chart';
 import { ChartCard } from '../../shared/charts/chart-card';
 import type { ChartTable } from '@spacefly/client/charts/chart-table';
 import { money } from '@spacefly/client/charts/series-colors';
+import { BreadcrumbLeaf } from '../../layout/breadcrumb-leaf';
 import { DualMoney } from '../../shared/components/dual-money';
 import { CalendarGrid } from '../../shared/components/calendar-grid';
 import { EmptyState } from '../../shared/components/empty-state';
@@ -311,6 +312,7 @@ export class AccountDetail {
 
   constructor() {
     // Opens on the "last 30 days" preset; the range is handed back when leaving so no other screen inherits it.
+    inject(BreadcrumbLeaf).track(() => this.r()?.account.name);
     const release = this.filters.scopePreset('last30');
     inject(DestroyRef).onDestroy(release);
   }

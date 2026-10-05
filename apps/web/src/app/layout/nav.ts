@@ -119,12 +119,29 @@ export const NAV: NavSection[] = [
   },
 ];
 
-/** Screens that aren't in the sidebar but still belong to a section (breadcrumb `nav.<key>`). */
-export const EXTRA_CRUMBS: { pattern: RegExp; section: string; key: string; editor?: false }[] = [
-  { pattern: /^\/transactions\/new$/, section: 'transactions', key: 'newTransaction' },
-  { pattern: /^\/transactions\/[^/]+\/edit$/, section: 'transactions', key: 'editTransaction' },
-  { pattern: /^\/accounts\/[^/]+$/, section: 'accounts', key: 'accountDetail', editor: false },
-  { pattern: /^\/accounts\/(expense|revenue)\/[^/]+$/, section: 'accounts', key: 'accountDetail', editor: false },
+/**
+ * Screens that aren't in the sidebar but still belong to a section. Breadcrumb: section › parent (a sidebar item,
+ * as a link) › the record's name. `key` (`nav.<key>`) is the fallback while the name loads; `named` pages hand their
+ * record's name to `BreadcrumbLeaf`.
+ */
+export interface ExtraCrumb {
+  pattern: RegExp;
+  section: string;
+  /** Path of the sidebar item this screen hangs from. */
+  parent: string;
+  key: string;
+  /** The page supplies the record's name (see `BreadcrumbLeaf`). */
+  named?: true;
+  /** Not an editor: the period picker stays visible. */
+  editor?: false;
+}
+
+export const EXTRA_CRUMBS: ExtraCrumb[] = [
+  { pattern: /^\/transactions\/new$/, section: 'transactions', parent: '/transactions', key: 'newTransaction' },
+  { pattern: /^\/transactions\/[^/]+\/edit$/, section: 'transactions', parent: '/transactions', key: 'editTransaction', named: true },
+  { pattern: /^\/accounts\/[^/]+$/, section: 'accounts', parent: '/accounts', key: 'accountDetail', named: true, editor: false },
+  { pattern: /^\/accounts\/expense\/[^/]+$/, section: 'accounts', parent: '/accounts/expense', key: 'accountDetail', named: true, editor: false },
+  { pattern: /^\/accounts\/revenue\/[^/]+$/, section: 'accounts', parent: '/accounts/revenue', key: 'accountDetail', named: true, editor: false },
 ];
 
 /** Pages built around a single record rather than a period: the period picker is hidden there. */
@@ -133,13 +150,21 @@ export function isEditorRoute(url: string): boolean {
   return EXTRA_CRUMBS.some((c) => c.editor !== false && c.pattern.test(path));
 }
 
-export function findNav(url: string): { section: NavSection; item: NavItem } | null {
+export interface Crumb {
+  section: NavSection;
+  /** The sidebar item a detail screen hangs from; null on the sidebar screens themselves. */
+  parent: NavItem | null;
+  item: NavItem;
+  /** The page shows its record's name instead of `item`'s label once it knows it. */
+  named: boolean;
+}
+
+export function findNav(url: string): Crumb | null {
   const path = url.split('?')[0].split('#')[0] || '/';
-  for (const section of NAV) for (const item of section.items) if (item.path === path) return { section, item };
+  for (const section of NAV) for (const item of section.items) if (item.path === path) return { section, parent: null, item, named: false };
   const extra = EXTRA_CRUMBS.find((c) => c.pattern.test(path));
-  if (extra) {
-    const section = NAV.find((s) => s.key === extra.section)!;
-    return { section, item: { key: extra.key, path, icon: '' } };
-  }
-  return null;
+  if (!extra) return null;
+  const section = NAV.find((s) => s.key === extra.section)!;
+  const parent = section.items.find((i) => i.path === extra.parent) ?? null;
+  return { section, parent, item: { key: extra.key, path, icon: '' }, named: !!extra.named };
 }

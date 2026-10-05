@@ -15,6 +15,7 @@ import { THEME_SWATCH } from '@spacefly/client/charts/palette';
 import type { Lang } from '@spacefly/client/i18n/lang';
 import { CurrencyToggle } from '../shared/components/currency-toggle';
 import { PeriodPicker } from '../shared/components/period-picker';
+import { BreadcrumbLeaf } from './breadcrumb-leaf';
 import { findNav, isEditorRoute } from './nav';
 import { NewMenu } from './new-menu';
 
@@ -45,7 +46,11 @@ import { NewMenu } from './new-menu';
           @if (crumb(); as c) {
             <li hlmBreadcrumbItem class="hidden sm:inline-flex">{{ 'nav.sections.' + c.section | transloco }}</li>
             <li hlmBreadcrumbSeparator class="hidden sm:inline-flex"></li>
-            <li hlmBreadcrumbItem class="min-w-0"><span hlmBreadcrumbPage class="truncate">{{ 'nav.' + c.item | transloco }}</span></li>
+            @if (c.parent; as p) {
+              <li hlmBreadcrumbItem class="hidden sm:inline-flex"><a hlmBreadcrumbLink [link]="p.path">{{ 'nav.' + p.key | transloco }}</a></li>
+              <li hlmBreadcrumbSeparator class="hidden sm:inline-flex"></li>
+            }
+            <li hlmBreadcrumbItem class="min-w-0"><span hlmBreadcrumbPage class="truncate">{{ (c.named ? leaf.label() : null) ?? ('nav.' + c.item | transloco) }}</span></li>
           }
         </ol>
       </nav>
@@ -140,6 +145,7 @@ import { NewMenu } from './new-menu';
 export class Topbar {
   private readonly router = inject(Router);
   protected readonly vm = preferencesViewModel();
+  protected readonly leaf = inject(BreadcrumbLeaf);
   protected readonly swatch = THEME_SWATCH;
 
   private readonly url = toSignal(
@@ -152,7 +158,7 @@ export class Topbar {
   );
   protected readonly crumb = computed(() => {
     const hit = findNav(this.url());
-    return hit ? { section: hit.section.key, item: hit.item.key } : null;
+    return hit ? { section: hit.section.key, parent: hit.parent, item: hit.item.key, named: hit.named } : null;
   });
   /** Pages that don't depend on the period hide the picker. */
   protected readonly showPeriod = computed(() => {

@@ -173,6 +173,8 @@ export function transactionFormViewModel(inputs: TxFormInputs) {
   const isEdit = computed(() => !!inputs.id());
   const state = signal<TxFormState>('ready');
   const blockedReason = signal<string | null>(null);
+  /** Description of the transaction being edited, as loaded (not as typed): the breadcrumb's last item. */
+  const recordTitle = signal<string | null>(null);
   const saving = signal(false);
   const after = localPref<AfterSave>('spacefly.tx.afterSave', { stay: false, reset: true }, isAfterSave);
 
@@ -264,8 +266,10 @@ export function transactionFormViewModel(inputs: TxFormInputs) {
   // ── Loading (edit) ──────────────────────────────────────────────────────────
   async function load(id: string): Promise<void> {
     state.set('loading');
+    recordTitle.set(null);
     try {
       const tx = await api.getTransaction(id);
+      recordTitle.set(tx.description);
       model.set(txModelFromPayload(tx));
       f().reset();
       state.set('ready');
@@ -378,6 +382,7 @@ export function transactionFormViewModel(inputs: TxFormInputs) {
     isEdit,
     state,
     blockedReason,
+    recordTitle,
     saving,
     after,
     model,

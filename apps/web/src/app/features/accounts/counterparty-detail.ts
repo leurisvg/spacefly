@@ -15,6 +15,7 @@ import { Chart } from '../../shared/charts/chart';
 import { ChartCard } from '../../shared/charts/chart-card';
 import type { ChartTable } from '@spacefly/client/charts/chart-table';
 import { money } from '@spacefly/client/charts/series-colors';
+import { BreadcrumbLeaf } from '../../layout/breadcrumb-leaf';
 import { CalendarGrid } from '../../shared/components/calendar-grid';
 import { DualMoney } from '../../shared/components/dual-money';
 import { EmptyState } from '../../shared/components/empty-state';
@@ -196,6 +197,10 @@ export class CounterpartyDetail {
   /** Route data and param (withComponentInputBinding). */
   readonly kind = input<CounterpartyKind>('expense');
   readonly id = input.required<string>();
+
+  constructor() {
+    inject(BreadcrumbLeaf).track(() => this.r()?.account?.name);
+  }
 
   protected readonly res = reportResource<CounterpartyDetailReport>(() => `reports/counterparties/${this.id()}`, () => ({ kind: this.kind() }));
   protected readonly r = this.res.data;
