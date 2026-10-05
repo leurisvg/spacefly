@@ -97,6 +97,7 @@ export interface AccountDetailReport {
   opening: number;
   openingOriginal: number;
   closing: number;
+  /** Change over the period: the own-currency change converted at the closing rate, and its ratio to the opening balance. */
   change: { abs: number; pct: number | null };
   /** `change.abs` in the account's own currency. */
   changeOriginal: number;

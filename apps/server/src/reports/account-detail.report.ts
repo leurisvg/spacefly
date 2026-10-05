@@ -140,6 +140,9 @@ export function buildAccountDetail({ ctx, account: a, excluded, asOf, splits, tr
   const transfersIn = splits.filter((s) => isTransfer(s) && s.destId === a.id);
   const transfersOut = splits.filter((s) => isTransfer(s) && s.sourceId === a.id);
 
+  // The change is the own-currency change converted once, at the closing rate: converting each record at its own date's
+  // rate and subtracting would leave a residue (a +100 and a −100 USD would not net to zero pesos).
+  const changeOwn = a.balance - openingOwn;
   const first = round(opening);
   return {
     account: { id: a.id, name: a.name, role: a.role, type: a.type, currency: a.currency, iban: a.iban, includeNetWorth: a.includeNetWorth, excluded },
@@ -147,8 +150,8 @@ export function buildAccountDetail({ ctx, account: a, excluded, asOf, splits, tr
     openingOriginal: round(openingOwn),
     opening: first,
     closing: round(closing),
-    change: { abs: round(closing - opening), pct: first !== 0 ? (closing - opening) / Math.abs(first) : null },
-    changeOriginal: round(a.balance - openingOwn),
+    change: { abs: round(ctx.convert(changeOwn, a.currency, asOf)), pct: openingOwn !== 0 ? changeOwn / Math.abs(openingOwn) : null },
+    changeOriginal: round(changeOwn),
     totals: {
       income: round(ctx.sum(incomes)),
       expense: round(ctx.sum(expenses)),

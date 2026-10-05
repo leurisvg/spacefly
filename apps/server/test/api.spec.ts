@@ -275,6 +275,9 @@ describe('reports API', () => {
     // Period totals and the change, in USD as well.
     expect(d.totalsOriginal).toEqual({ income: 500, expense: 50, transferIn: 0, transferOut: 0 });
     expect(d.changeOriginal).toBe(d.balanceOriginal - d.openingOriginal);
+    // The converted change is the USD change at the closing rate, not a sum of records converted at their own dates.
+    expect(d.change.abs).toBeCloseTo(d.changeOriginal * (d.closing / d.balanceOriginal), 0);
+    expect(d.change.pct).toBeCloseTo(d.changeOriginal / d.openingOriginal, 6);
   });
 
   it('lists expense and revenue accounts with period, previous period and last activity', async () => {
