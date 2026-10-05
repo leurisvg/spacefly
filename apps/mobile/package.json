@@ -5,6 +5,11 @@
   "description": "SpaceFly mobile app (NativeScript + Angular). Only NativeScript dependencies live here: Angular, rxjs and Transloco come from the root package.json so there is a single copy.",
   "main": "src/main.ts",
   "dependencies": {
+    "@formatjs/intl-datetimeformat": "^7.8.0",
+    "@formatjs/intl-getcanonicallocales": "^3.2.12",
+    "@formatjs/intl-locale": "^5.3.12",
+    "@formatjs/intl-numberformat": "^9.4.3",
+    "@formatjs/intl-pluralrules": "^6.3.15",
     "@nativescript-community/ui-webview": "^1.6.2",
     "@nativescript/angular": "~22.0.1",
     "@nativescript/core": "~9.1.2",

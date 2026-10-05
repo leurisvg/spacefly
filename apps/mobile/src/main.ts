@@ -9,6 +9,7 @@ import { provideClientCore } from '@spacefly/client/i18n/provide-client-core';
 import { baseUrlInterceptor } from '@spacefly/client/platform/api-base-url';
 import { AppComponent } from './app/app.component';
 import { bearerInterceptor } from './app/platform/bearer.interceptor';
+import { ensureIntl } from './app/platform/intl-polyfill';
 import { provideMobilePlatform } from './app/platform/provide-mobile-platform';
 import { StaticTranslocoLoader } from './app/platform/static-loader';
 import { routes } from './app/app.routes';
@@ -17,8 +18,9 @@ import { firstValueFrom } from 'rxjs';
 const lang = initialLang(ApplicationSettings.getString(LANG_KEY) ?? null, Device.language);
 
 runNativeScriptAngularApp({
-  appModuleBootstrap: () =>
-    bootstrapApplication(AppComponent, {
+  appModuleBootstrap: async () => {
+    await ensureIntl();
+    return bootstrapApplication(AppComponent, {
       providers: [
         provideZonelessChangeDetection(),
         // The bearer interceptor must see `/api/…` paths, and the base URL is added last.
@@ -29,5 +31,6 @@ runNativeScriptAngularApp({
         // The screens translate through `I18n.t()`, which never triggers a load: have the catalog ready before the first render.
         provideAppInitializer(() => firstValueFrom(inject(TranslocoService).load(lang))),
       ],
-    }),
+    });
+  },
 });
