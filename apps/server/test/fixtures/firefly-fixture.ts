@@ -227,7 +227,7 @@ export const FIXTURE: FakeDataset = {
   piggyBanks: [],
 };
 
-/** A `fetch` implementation answering like Firefly III for the fixture data. Each call gets its own copy of the transactions, so writes never leak between tests. */
+/** A `fetch` implementation answering like Firefly III for the fixture data. Each call gets its own copy of the transactions and rates, so writes never leak between tests. */
 export function fakeFirefly(log?: FakeFireflyLog, extraGroups: unknown[] = []): typeof fetch {
-  return createFakeFirefly({ ...FIXTURE, groups: structuredClone([...FIXTURE.groups, ...extraGroups]) as FakeDataset['groups'] }, log);
+  return createFakeFirefly({ ...FIXTURE, groups: structuredClone([...FIXTURE.groups, ...extraGroups]) as FakeDataset['groups'], rates: structuredClone(FIXTURE.rates) }, log);
 }

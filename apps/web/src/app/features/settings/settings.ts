@@ -8,12 +8,13 @@ import { HlmLabel } from '@spartan-ng/helm/label';
 import { HlmSwitch } from '@spartan-ng/helm/switch';
 import { settingsViewModel } from '@spacefly/client/features/settings/settings.vm';
 import { FORMAT_PIPES } from '@spacefly/client/format/pipes';
+import { ExchangeRates } from './exchange-rates';
 import { PageHeader } from '../../shared/components/page-header';
 import { Section } from '../../shared/components/section';
 
 @Component({
   selector: 'sf-settings',
-  imports: [FormsModule, TranslocoPipe, HlmBadge, HlmButton, HlmInput, HlmLabel, HlmSwitch, PageHeader, Section, ...FORMAT_PIPES],
+  imports: [FormsModule, TranslocoPipe, HlmBadge, HlmButton, HlmInput, HlmLabel, HlmSwitch, ExchangeRates, PageHeader, Section, ...FORMAT_PIPES],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'flex flex-col gap-4 sm:gap-5' },
   template: `
@@ -58,6 +59,8 @@ import { Section } from '../../shared/components/section';
             </div>
           }
         </sf-section>
+
+        <sf-exchange-rates />
 
         <sf-section [title]="vm.i18n.t('settings.rates')" [loading]="vm.res.isLoading() && !vm.draft()">
           <p class="mb-3 text-xs text-muted-foreground">{{ 'settings.ratesHint' | transloco }}</p>

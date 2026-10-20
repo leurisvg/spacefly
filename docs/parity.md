@@ -17,5 +17,6 @@ Every screen has a view-model in `libs/client/src/features` when it exists on mo
 | Account detail, net worth, savings, counterparties | `/accounts/*` | web-only | – |
 | Subscriptions, recurring, goals, projection | `/planning/*` | web-only | – |
 | Entity editors (category, tag, budget, account, goal…) | sheets | web-only | – |
+| Exchange rates (add, replace, delete) | section of `/settings` | web-only (the server-side settings, excluded accounts and rates in use, are web-only too; the mobile Settings tab only holds device preferences) | `exchange-rates.vm.ts` |
 | Reordering accounts, CSV export | web | web-only (needs a file picker / share sheet) | – |
 | About | `/about` | web-only | – |

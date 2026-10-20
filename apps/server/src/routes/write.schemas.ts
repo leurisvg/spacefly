@@ -7,6 +7,7 @@ import {
   type BillWrite,
   type BudgetWrite,
   type CategoryWrite,
+  type ExchangeRateWrite,
   type PiggyWrite,
   type TagWrite,
   type TxWriteRequest,
@@ -181,3 +182,11 @@ export const piggySchema = z
       ctx.addIssue({ code: 'custom', path: ['targetDate'], message: 'The target date must be after the start date.' });
     }
   }) satisfies z.ZodType<PiggyWrite, unknown>;
+
+export const exchangeRateSchema = z.object({
+  currency: code,
+  date: dateStr,
+  rate: z.string().trim().refine(isPositiveAmount, 'The rate must be a number greater than zero.'),
+}) satisfies z.ZodType<ExchangeRateWrite, unknown>;
+
+export const exchangePairParams = z.object({ from: code, to: code, date: dateStr });

@@ -3,6 +3,7 @@ export * from './dto/money';
 export * from './dto/ledger';
 export * from './dto/meta';
 export * from './dto/write';
+export * from './dto/exchange-rates';
 export * from './dto/reports/common';
 export * from './dto/reports/monthly';
 export * from './dto/reports/sankey';

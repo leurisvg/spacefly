@@ -592,6 +592,25 @@ export function createFakeFirefly(ds: FakeDataset, log: FakeFireflyLog = newLog(
       }
       if (res) return res;
     }
+    const rate = p.match(/^\/v1\/exchange-rates\/([A-Z]{3})\/([A-Z]{3})\/(\d{4}-\d{2}-\d{2})$/);
+    if (rate && method !== 'GET') {
+      const [, from, to, date] = rate;
+      const at = ds.rates.findIndex((r) => r['from_currency_code'] === from && r['to_currency_code'] === to && String(r['date']).slice(0, 10) === date);
+      if (method === 'POST') {
+        if (at >= 0) return fail({ date: ['A rate for this date already exists.'] });
+        ds.rates.push({ from_currency_code: from, to_currency_code: to, rate: String(body['rate']), date: `${date}T00:00:00-04:00` });
+        return json({ data: { type: 'currency_exchange_rates', id: String(ds.rates.length), attributes: ds.rates.at(-1) } }, 200);
+      }
+      if (at < 0) return notFound();
+      if (method === 'PUT') {
+        ds.rates[at] = { ...ds.rates[at], rate: String(body['rate']) };
+        return json({ data: { type: 'currency_exchange_rates', id: String(at + 1), attributes: ds.rates[at] } });
+      }
+      if (method === 'DELETE') {
+        ds.rates.splice(at, 1);
+        return new Response(null, { status: 204 });
+      }
+    }
     if (method !== 'GET') return json({ message: `not mocked: ${method} ${p}` }, 405);
 
     // ── Lists ───────────────────────────────────────────────────────────────

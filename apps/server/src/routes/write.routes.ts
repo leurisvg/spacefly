@@ -14,6 +14,8 @@ import {
   type PiggyEditPayload,
   type PiggyWrite,
   type EditorLookups,
+  type ExchangeRateRow,
+  type ExchangeRatesResponse,
   type TagEditPayload,
   type TagWrite,
   type TxWriteResult,
@@ -22,10 +24,10 @@ import type { AppEnv, Services } from '../app.types';
 import { accountBody, assertEditable, billBody, budgetBody, categoryBody, momentOf, piggyBody, resolveTransaction, tagBody, toAccountEdit, toBillEdit, toBudgetEdit, toCategoryEdit, toEditPayload, toPiggyEdit, toTagEdit, transactionBody } from '../core/firefly-payloads';
 import type { FireflyData } from '../core/firefly-data';
 import type { FfSingle, FfTransactionGroup } from '../firefly/firefly.types';
-import type { FfAccount, FfBill, FfBudget, FfCategory, FfPiggyBank, FfTag } from '../firefly/firefly.types';
+import type { FfAccount, FfBill, FfBudget, FfCategory, FfExchangeRate, FfPiggyBank, FfTag } from '../firefly/firefly.types';
 import { crudRoutes } from './entity.routes';
-import { handleApiError } from './errors';
-import { accountSchema, billSchema, budgetSchema, categorySchema, idParam, parseBody, piggySchema, tagSchema, txWriteSchema, type TxWriteBody } from './write.schemas';
+import { handleApiError, ValidationFailed } from './errors';
+import { accountSchema, billSchema, budgetSchema, categorySchema, exchangePairParams, exchangeRateSchema, idParam, parseBody, piggySchema, tagSchema, txWriteSchema, type TxWriteBody } from './write.schemas';
 
 /** Create, update and delete in Firefly. Every successful write invalidates the cache it affects. */
 export function writeRoutes(_s: Services) {
@@ -148,6 +150,66 @@ export function writeRoutes(_s: Services) {
     const current = await fetchGroup(data, id);
     await c.get('writer').delete(`/v1/transactions/${encodeURIComponent(id)}`);
     data.invalidateAfterTransaction(current.attributes.transactions.map((t) => t.date));
+    return c.body(null, 204);
+  });
+
+  // ── Exchange rates ──────────────────────────────────────────────────────────
+  const ratePath = (from: string, to: string, date: string) => `/v1/exchange-rates/${from}/${to}/${date}`;
+
+  /** Always read fresh: the check before a write must not trust a list cached before someone edited Firefly. */
+  const storedRates = async (data: FireflyData) => (await data.ff.list<FfExchangeRate>('/v1/exchange-rates')).map((r) => r.attributes);
+
+  api.get('/exchange-rates', async (c) => {
+    const data = c.get('data');
+    const [primary, currencies, stored] = await Promise.all([data.primaryCurrency(), data.currencies(), data.exchangeRates()]);
+    const rates = stored.flatMap<ExchangeRateRow>((r) => {
+      const value = Number(r.rate);
+      if (!(value > 0)) return [];
+      const date = r.date.slice(0, 10);
+      if (r.to_currency_code === primary.code && r.from_currency_code !== primary.code) {
+        return [{ currency: r.from_currency_code, date, rate: value, from: r.from_currency_code, to: r.to_currency_code }];
+      }
+      if (r.from_currency_code === primary.code && r.to_currency_code !== primary.code) {
+        return [{ currency: r.to_currency_code, date, rate: 1 / value, from: r.from_currency_code, to: r.to_currency_code }];
+      }
+      return [];
+    });
+    rates.sort((a, b) => b.date.localeCompare(a.date) || a.currency.localeCompare(b.currency));
+    const body: ExchangeRatesResponse = {
+      primary: primary.code,
+      currencies: currencies.filter((x) => x.enabled && x.code !== primary.code).map((x) => x.code),
+      rates,
+    };
+    return c.json(body);
+  });
+
+  api.post('/exchange-rates', async (c) => {
+    const data = c.get('data');
+    const req = await parseBody(c, exchangeRateSchema);
+    const primary = (await data.primaryCurrency()).code;
+    if (req.currency === primary) throw new ValidationFailed({ currency: ['Pick a currency other than the primary one.'] });
+    const enabled = (await data.currencies()).some((x) => x.enabled && x.code === req.currency);
+    if (!enabled) throw new ValidationFailed({ currency: ['That currency is not enabled in Firefly.'] });
+    // One rate per pair and day: replace whatever is stored, in the direction it is stored.
+    const existing = (await storedRates(data)).find(
+      (r) =>
+        r.date.slice(0, 10) === req.date &&
+        ((r.from_currency_code === req.currency && r.to_currency_code === primary) || (r.from_currency_code === primary && r.to_currency_code === req.currency)),
+    );
+    const inverse = existing?.from_currency_code === primary;
+    const rate = inverse ? (1 / Number(req.rate)).toFixed(12) : req.rate;
+    const writer = c.get('writer');
+    if (existing) await writer.put(ratePath(existing.from_currency_code, existing.to_currency_code, req.date), { rate });
+    else await writer.post(ratePath(req.currency, primary, req.date), { rate });
+    data.invalidate();
+    return c.body(null, existing ? 200 : 201);
+  });
+
+  api.delete('/exchange-rates/:from/:to/:date', async (c) => {
+    const data = c.get('data');
+    const { from, to, date } = exchangePairParams.parse(c.req.param());
+    await c.get('writer').delete(ratePath(from, to, date));
+    data.invalidate();
     return c.body(null, 204);
   });
 
