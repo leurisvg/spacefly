@@ -93,7 +93,7 @@ import { EntityEditor } from '@spacefly/client/state/entity-editor.service';
           </table>
         </section>
         <sf-chart-card [title]="i18n.t('bills.costRanking')" [subtitle]="i18n.t('bills.costRankingHint')" [table]="table()" fileName="subscriptions">
-          <sf-chart [options]="rankingOpts()" [height]="rankingHeight()" />
+          <sf-chart [options]="rankingOpts()" [height]="rankingHeight()" (chartClick)="openBar($event.dataIndex)" />
         </sf-chart-card>
       } @else {
         <sf-empty [title]="i18n.t('bills.none')" />
@@ -117,6 +117,12 @@ export class Bills {
     rows: this.active().map((b) => [b.name, this.f.money(b.monthlyEquivalent), this.f.money(b.yearlyEquivalent)]),
     numeric: [1, 2],
   }));
+
+  protected openBar(index: number): void {
+    // The bars are drawn bottom-up and the builder keeps only the top 12, so the clicked index counts from the end of that slice.
+    const bill = this.active().slice(0, 12).reverse()[index];
+    if (bill) this.detail.open(bill.name, { bill: bill.id });
+  }
 
   protected edit(event: Event, id: string): void {
     event.stopPropagation();
