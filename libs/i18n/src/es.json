@@ -399,6 +399,8 @@
     "none": "No tienes suscripciones en Firefly",
     "costRanking": "Costo anual por suscripción",
     "costRankingHint": "Solo suscripciones activas",
+    "last12Months": "Últimos 12 meses",
+    "selectedPeriod": "Período seleccionado",
     "statuses": { "paid": "Pagada", "pending": "Pendiente", "not-expected": "No toca" },
     "freq": { "weekly": "Semanal", "monthly": "Mensual", "quarterly": "Trimestral", "half-year": "Semestral", "yearly": "Anual" }
   },

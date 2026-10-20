@@ -10,6 +10,20 @@ describe('TxDetailService', () => {
     expect(s.request()).toBeNull();
   });
 
+  it('switches the range of an open request and ignores it when closed', () => {
+    const s = TestBed.inject(TxDetailService);
+    s.setRange({ start: '2026-01-01', end: '2026-01-31' });
+    expect(s.request()).toBeNull();
+    const ranges = [
+      { label: 'Year', start: '2025-10-21', end: '2026-10-20' },
+      { label: 'Period', start: '2026-10-01', end: '2026-10-31' },
+    ];
+    s.open('Netflix', { bill: '4', start: ranges[0].start, end: ranges[0].end }, undefined, ranges);
+    s.setRange(ranges[1]);
+    expect(s.request()!.filter).toEqual({ bill: '4', start: '2026-10-01', end: '2026-10-31' });
+    expect(s.request()!.ranges).toEqual(ranges);
+  });
+
   it('opens a grouped request: category ids go in the filter, members in the breakdown', () => {
     const s = TestBed.inject(TxDetailService);
     const rows = [

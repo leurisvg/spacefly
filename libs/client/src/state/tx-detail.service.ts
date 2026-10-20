@@ -8,6 +8,13 @@ export interface BreakdownRow {
   value: number;
 }
 
+/** A date range the sheet can switch between (e.g. "Last 12 months" / "Selected period"). */
+export interface TxRange {
+  label: string;
+  start: string;
+  end: string;
+}
+
 export interface TxDetailRequest {
   title: string;
   subtitle?: string;
@@ -15,6 +22,8 @@ export interface TxDetailRequest {
   filter: Partial<TxFilter>;
   /** When the request covers a group of categories: what it is made of, with amounts. */
   breakdown?: BreakdownRow[];
+  /** When set, the sheet offers these ranges as a switch; the filter's own start/end picks the active one. */
+  ranges?: TxRange[];
 }
 
 /** Opens the side sheet with the transactions behind any chart element or row. */
@@ -22,8 +31,13 @@ export interface TxDetailRequest {
 export class TxDetailService {
   readonly request = signal<TxDetailRequest | null>(null);
 
-  open(title: string, filter: Partial<TxFilter>, subtitle?: string): void {
-    this.request.set({ title, filter, subtitle });
+  open(title: string, filter: Partial<TxFilter>, subtitle?: string, ranges?: TxRange[]): void {
+    this.request.set({ title, filter, subtitle, ranges });
+  }
+
+  /** Re-queries the open request over another range. */
+  setRange(range: Pick<TxRange, 'start' | 'end'>): void {
+    this.request.update((r) => r && { ...r, filter: { ...r.filter, start: range.start, end: range.end } });
   }
 
   /** Transactions of a group of categories (a folded "Others" slice) plus a clickable breakdown of its members. */

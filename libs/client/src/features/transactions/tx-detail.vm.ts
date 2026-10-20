@@ -2,7 +2,7 @@ import { httpResource } from '@angular/common/http';
 import { computed, inject } from '@angular/core';
 import type { Report, TxListResponse, TxRow } from '@spacefly/shared';
 import { FiltersStore } from '../../state/filters.store';
-import { TxDetailService, type BreakdownRow } from '../../state/tx-detail.service';
+import { TxDetailService, type BreakdownRow, type TxRange } from '../../state/tx-detail.service';
 import { signedAmount } from './explorer.vm';
 
 export interface TxGroup {
@@ -57,6 +57,8 @@ export function txDetailViewModel() {
     res,
     data,
     groups,
+
+    isActiveRange: (r: TxRange): boolean => r.start === range().start && r.end === range().end,
 
     /** Narrows a grouped request down to one of its members, keeping the same period and type. */
     drill(row: BreakdownRow): void {

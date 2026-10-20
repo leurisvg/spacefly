@@ -399,6 +399,8 @@
     "none": "You have no subscriptions in Firefly",
     "costRanking": "Yearly cost per subscription",
     "costRankingHint": "Active subscriptions only",
+    "last12Months": "Last 12 months",
+    "selectedPeriod": "Selected period",
     "statuses": { "paid": "Paid", "pending": "Pending", "not-expected": "Not due" },
     "freq": { "weekly": "Weekly", "monthly": "Monthly", "quarterly": "Quarterly", "half-year": "Half-yearly", "yearly": "Yearly" }
   },

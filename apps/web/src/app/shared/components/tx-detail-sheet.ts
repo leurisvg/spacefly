@@ -3,6 +3,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NavigationStart, Router } from '@angular/router';
 import { filter } from 'rxjs';
 import { TranslocoPipe } from '@jsverse/transloco';
+import { HlmButton } from '@spartan-ng/helm/button';
 import { HlmSheetImports } from '@spartan-ng/helm/sheet';
 import { HlmSkeleton } from '@spartan-ng/helm/skeleton';
 import { FORMAT_PIPES } from '@spacefly/client/format/pipes';
@@ -13,7 +14,7 @@ import { txDetailViewModel } from '@spacefly/client/features/transactions/tx-det
 /** Right-hand sheet listing the transactions behind a clicked chart element / row, grouped by type and category. */
 @Component({
   selector: 'sf-tx-detail-sheet',
-  imports: [HlmSheetImports, HlmSkeleton, TranslocoPipe, Money, TransactionList, ...FORMAT_PIPES],
+  imports: [HlmButton, HlmSheetImports, HlmSkeleton, TranslocoPipe, Money, TransactionList, ...FORMAT_PIPES],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <hlm-sheet side="right" [state]="vm.open() ? 'open' : 'closed'" (closed)="vm.detail.close()">
@@ -23,6 +24,13 @@ import { txDetailViewModel } from '@spacefly/client/features/transactions/tx-det
           <p hlmSheetDescription class="text-xs">
             {{ vm.req()?.subtitle ?? '' }} {{ vm.range().start | fdate: 'short' }} – {{ vm.range().end | fdate: 'long' }}
           </p>
+          @if (vm.req()?.ranges; as ranges) {
+            <div class="mt-2 flex flex-wrap gap-2" role="group">
+              @for (r of ranges; track r.label) {
+                <button hlmBtn size="sm" type="button" [variant]="vm.isActiveRange(r) ? 'default' : 'outline'" [attr.aria-pressed]="vm.isActiveRange(r)" (click)="vm.detail.setRange(r)">{{ r.label }}</button>
+              }
+            </div>
+          }
           @if (vm.data(); as d) {
             <div class="mt-3 flex flex-wrap gap-x-6 gap-y-1 text-sm">
               @if (d.totals.income) {

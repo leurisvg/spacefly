@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/c
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideCircleCheck, lucideClock, lucideMinus, lucidePencil, lucidePlus, lucideTriangleAlert } from '@ng-icons/lucide';
 import { TranslocoPipe } from '@jsverse/transloco';
-import type { BillRow, BillsReport } from '@spacefly/shared';
+import { addDays, addMonths, todayIso, type BillRow, type BillsReport } from '@spacefly/shared';
 import { HlmBadge } from '@spartan-ng/helm/badge';
 import { HlmButton } from '@spartan-ng/helm/button';
 import { reportResource } from '@spacefly/client/api/report-resource';
@@ -19,6 +19,7 @@ import { KpiCard } from '../../shared/components/kpi-card';
 import { Money } from '../../shared/components/money';
 import { PageHeader } from '../../shared/components/page-header';
 import { TxDetailService } from '@spacefly/client/state/tx-detail.service';
+import { FiltersStore } from '@spacefly/client/state/filters.store';
 import { EntityEditor } from '@spacefly/client/state/entity-editor.service';
 
 @Component({
@@ -106,6 +107,7 @@ export class Bills {
   protected readonly detail = inject(TxDetailService);
   protected readonly editor = inject(EntityEditor);
   private readonly f = inject(FormatService);
+  private readonly filters = inject(FiltersStore);
   protected readonly res = reportResource<BillsReport>('reports/bills');
   protected readonly r = this.res.data;
 
@@ -121,7 +123,13 @@ export class Bills {
   protected openBar(index: number): void {
     // The bars are drawn bottom-up and the builder keeps only the top 12, so the clicked index counts from the end of that slice.
     const bill = this.active().slice(0, 12).reverse()[index];
-    if (bill) this.detail.open(bill.name, { bill: bill.id });
+    if (!bill) return;
+    // The bar is a yearly estimate, so open on the last 12 months and let the sheet switch to the global period.
+    const end = todayIso();
+    const year = { label: this.i18n.t('bills.last12Months'), start: addDays(addMonths(end, -12), 1), end };
+    const { start, end: periodEnd } = this.filters.period();
+    const period = { label: this.i18n.t('bills.selectedPeriod'), start, end: periodEnd };
+    this.detail.open(bill.name, { bill: bill.id, start: year.start, end: year.end }, undefined, [year, period]);
   }
 
   protected edit(event: Event, id: string): void {
