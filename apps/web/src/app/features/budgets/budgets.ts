@@ -1,28 +1,18 @@
-import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed } from '@angular/core';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucidePencil, lucidePlus } from '@ng-icons/lucide';
 import { TranslocoPipe } from '@jsverse/transloco';
-import type { BudgetDetail, BudgetsReport } from '@spacefly/shared';
 import { HlmBadge } from '@spartan-ng/helm/badge';
 import { HlmButton } from '@spartan-ng/helm/button';
-import { reportResource } from '@spacefly/client/api/report-resource';
-import { FormatService } from '@spacefly/client/format/format.service';
+import { budgetsViewModel } from '@spacefly/client/features/analysis/budgets.vm';
 import { FORMAT_PIPES } from '@spacefly/client/format/pipes';
-import { I18n } from '@spacefly/client/i18n/i18n';
-import { FiltersStore } from '@spacefly/client/state/filters.store';
-import { rankingBarsOption } from '@spacefly/client/charts/builders';
 import { Chart } from '../../shared/charts/chart';
 import { ChartCard } from '../../shared/charts/chart-card';
-import type { ChartTable } from '@spacefly/client/charts/chart-table';
-import { tooltipRow, tooltipTitle } from '@spacefly/client/charts/chart-theme';
-import { money } from '@spacefly/client/charts/series-colors';
 import { EmptyState } from '../../shared/components/empty-state';
 import { KpiCard } from '../../shared/components/kpi-card';
 import { Meter } from '../../shared/components/meter';
 import { Money } from '../../shared/components/money';
 import { PageHeader } from '../../shared/components/page-header';
-import { TxDetailService } from '@spacefly/client/state/tx-detail.service';
-import { EntityEditor } from '@spacefly/client/state/entity-editor.service';
 
 @Component({
   selector: 'sf-budgets',
@@ -31,35 +21,35 @@ import { EntityEditor } from '@spacefly/client/state/entity-editor.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'flex flex-col gap-4 sm:gap-5' },
   template: `
-    <sf-page-header [title]="i18n.t('nav.budgets')" [description]="i18n.t('budget.description')">
-      <button hlmBtn size="sm" variant="outline" type="button" (click)="editor.open('budget')">
+    <sf-page-header [title]="vm.i18n.t('nav.budgets')" [description]="vm.i18n.t('budget.description')">
+      <button hlmBtn size="sm" variant="outline" type="button" (click)="vm.editor.open('budget')">
         <ng-icon name="lucidePlus" aria-hidden="true" />{{ 'editor.entity.budget.new' | transloco }}
       </button>
     </sf-page-header>
 
     <section class="grid grid-cols-2 gap-3 lg:grid-cols-4">
-      <sf-kpi [label]="i18n.t('budget.totalLimit')" [value]="totals().limit" accent="var(--money-budget)" [loading]="res.initialLoading()" />
-      <sf-kpi [label]="i18n.t('budget.spentInBudgets')" [value]="r()?.available?.spentInBudgets ?? totals().spent" accent="var(--money-expense)" [loading]="res.initialLoading()" />
-      <sf-kpi [label]="i18n.t('budget.unbudgeted')" [value]="r()?.unbudgeted ?? null" accent="var(--money-other)" [loading]="res.initialLoading()" />
-      <sf-kpi [label]="i18n.t('budget.available')" [value]="r()?.available?.amount ?? null" accent="var(--money-income)" [loading]="res.initialLoading()" />
+      <sf-kpi [label]="vm.i18n.t('budget.totalLimit')" [value]="vm.totals().limit" accent="var(--money-budget)" [loading]="vm.res.initialLoading()" />
+      <sf-kpi [label]="vm.i18n.t('budget.spentInBudgets')" [value]="vm.r()?.available?.spentInBudgets ?? vm.totals().spent" accent="var(--money-expense)" [loading]="vm.res.initialLoading()" />
+      <sf-kpi [label]="vm.i18n.t('budget.unbudgeted')" [value]="vm.r()?.unbudgeted ?? null" accent="var(--money-other)" [loading]="vm.res.initialLoading()" />
+      <sf-kpi [label]="vm.i18n.t('budget.available')" [value]="vm.r()?.available?.amount ?? null" accent="var(--money-income)" [loading]="vm.res.initialLoading()" />
     </section>
 
-    @if (r(); as data) {
+    @if (vm.r(); as data) {
       @if (data.budgets.length) {
         <section class="grid gap-3 md:grid-cols-2 2xl:grid-cols-3">
           @for (b of data.budgets; track b.id) {
             <!-- The whole card selects the budget (stretched button); the pencil sits above it. -->
             <article
               class="relative flex flex-col gap-3 rounded-xl border bg-card p-4 text-left transition hover:border-primary/50"
-              [class.border-primary]="selected()?.id === b.id"
-              [class.border-border]="selected()?.id !== b.id"
+              [class.border-primary]="vm.selected()?.id === b.id"
+              [class.border-border]="vm.selected()?.id !== b.id"
             >
               <div class="flex items-center gap-2">
                 <button
                   type="button"
                   class="flex-1 truncate text-left font-medium after:absolute after:inset-0 after:rounded-xl after:content-['']"
-                  [attr.aria-pressed]="selected()?.id === b.id"
-                  (click)="filters.setParams({ budget: b.id })"
+                  [attr.aria-pressed]="vm.selected()?.id === b.id"
+                  (click)="vm.select(b.id)"
                 >
                   {{ b.name }}
                 </button>
@@ -97,108 +87,32 @@ import { EntityEditor } from '@spacefly/client/state/entity-editor.service';
           }
         </section>
 
-        @if (selected(); as b) {
+        @if (vm.selected(); as b) {
           <section class="grid gap-4 xl:grid-cols-2">
-            <sf-chart-card [title]="i18n.t('budget.history', { name: b.name })" [table]="historyTable()" fileName="budget-history">
-              <sf-chart [options]="historyOpts()!" height="18rem" />
+            <sf-chart-card [title]="vm.i18n.t('budget.history', { name: b.name })" [table]="vm.historyTable()" fileName="budget-history">
+              <sf-chart [options]="vm.historyOpts()!" height="18rem" />
             </sf-chart-card>
-            <sf-chart-card [title]="i18n.t('budget.byCategory', { name: b.name })" [table]="categoryTable()" fileName="budget-categories">
+            <sf-chart-card [title]="vm.i18n.t('budget.byCategory', { name: b.name })" [table]="vm.categoryTable()" fileName="budget-categories">
               @if (b.categories.length) {
-                <sf-chart [options]="categoryOpts()!" [height]="categoryHeight()" (chartClick)="openCategory($event.dataIndex)" />
+                <sf-chart [options]="vm.categoryOpts()!" [height]="categoryHeight()" (chartClick)="vm.openCategory($event.dataIndex)" />
               } @else {
-                <sf-empty [title]="i18n.t('common.noData')" />
+                <sf-empty [title]="vm.i18n.t('common.noData')" />
               }
             </sf-chart-card>
           </section>
         }
       } @else {
-        <sf-empty [title]="i18n.t('budget.none')" />
+        <sf-empty [title]="vm.i18n.t('budget.none')" />
       }
     }
   `,
 })
 export class Budgets {
-  protected readonly i18n = inject(I18n);
-  protected readonly filters = inject(FiltersStore);
-  private readonly f = inject(FormatService);
-  private readonly detail = inject(TxDetailService);
-  protected readonly editor = inject(EntityEditor);
-  protected readonly res = reportResource<BudgetsReport>('reports/budgets');
-  protected readonly r = this.res.data;
-  private readonly budgetParam = this.filters.param('budget');
-
-  protected readonly totals = computed(() => {
-    const b = this.r()?.budgets ?? [];
-    return { limit: b.reduce((s, x) => s + x.limit, 0), spent: b.reduce((s, x) => s + x.spent, 0) };
-  });
-
-  protected readonly selected = computed<BudgetDetail | null>(() => {
-    const list = this.r()?.budgets ?? [];
-    return list.find((b) => b.id === this.budgetParam()) ?? list[0] ?? null;
-  });
-
-  protected readonly historyOpts = computed(() => {
-    const b = this.selected();
-    if (!b) return null;
-    const h = b.history;
-    const spentName = this.i18n.t('budget.spent');
-    const limitName = this.i18n.t('budget.limit');
-    return {
-      grid: { left: 8, right: 16, top: 40, bottom: 8, containLabel: true },
-      legend: { top: 0, left: 0, data: [spentName, limitName] },
-      tooltip: {
-        trigger: 'axis',
-        formatter: (p: { dataIndex: number }[]) => {
-          const x = h[p[0].dataIndex];
-          return (
-            tooltipTitle(this.f.date(x.month, 'month')) +
-            tooltipRow(money.expense(), spentName, this.f.money(x.spent)) +
-            tooltipRow(money.ink2(), limitName, this.f.money(x.limit)) +
-            (x.limit ? tooltipRow(money.ink2(), '%', this.f.pct(x.spent / x.limit, 0)) : '')
-          );
-        },
-      },
-      xAxis: { type: 'category', data: h.map((x) => this.f.monthLabel(x.month)) },
-      yAxis: { type: 'value', axisLabel: { formatter: (v: number) => this.f.compact(v) }, splitNumber: 4 },
-      series: [
-        {
-          name: spentName,
-          type: 'bar',
-          data: h.map((x) => ({ value: x.spent, itemStyle: { color: x.limit && x.spent > x.limit ? money.expense() : money.budget() } })),
-        },
-        { name: limitName, type: 'line', step: 'middle', data: h.map((x) => x.limit), showSymbol: false, lineStyle: { color: money.ink2(), width: 2 }, itemStyle: { color: money.ink2() } },
-      ],
-    };
-  });
-
-  protected readonly historyTable = computed<ChartTable | null>(() => {
-    const b = this.selected();
-    return b
-      ? {
-          columns: [this.i18n.t('common.month'), this.i18n.t('budget.limit'), this.i18n.t('budget.spent'), '%'],
-          rows: b.history.map((x) => [this.f.date(x.month, 'month'), this.f.money(x.limit), this.f.money(x.spent), x.limit ? this.f.pct(x.spent / x.limit, 0) : '—']),
-          numeric: [1, 2, 3],
-        }
-      : null;
-  });
-
-  private readonly categoryRows = computed(() => (this.selected()?.categories ?? []).map((c) => ({ id: c.id, name: this.i18n.name(c.name, c.id), value: c.value })));
-  protected readonly categoryOpts = computed(() => rankingBarsOption(this.f, this.categoryRows(), money.expense()));
-  protected readonly categoryHeight = computed(() => `${Math.max(8, Math.min(this.categoryRows().length, 12) * 2 + 2)}rem`);
-  protected readonly categoryTable = computed<ChartTable | null>(() =>
-    this.categoryRows().length
-      ? { columns: [this.i18n.t('common.category'), this.i18n.t('common.amount')], rows: this.categoryRows().map((c) => [c.name, this.f.money(c.value)]), numeric: [1] }
-      : null,
-  );
+  protected readonly vm = budgetsViewModel();
+  protected readonly categoryHeight = computed(() => `${Math.max(8, this.vm.categoryCount() * 2 + 2)}rem`);
 
   protected edit(event: Event, id: string): void {
     event.stopPropagation();
-    this.editor.open('budget', id);
-  }
-
-  protected openCategory(index: number): void {
-    const b = this.selected();
-    const c = this.categoryRows().slice(0, 12).reverse()[index];
-    if (b && c) this.detail.open(`${b.name} · ${c.name}`, { type: 'withdrawal', budget: b.id, category: c.id ?? 'none' });
+    this.vm.editor.open('budget', id);
   }
 }

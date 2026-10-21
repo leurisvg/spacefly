@@ -21,6 +21,7 @@ export const MORE_SECTIONS: MoreSection[] = [
       { labelKey: 'nav.tags', route: '/analysis/tags' },
       { labelKey: 'nav.merchants', route: '/analysis/merchants' },
       { labelKey: 'nav.incomeSources', route: '/analysis/income-sources' },
+      { labelKey: 'nav.budgets', route: '/analysis/budgets' },
     ],
   },
   { titleKey: 'nav.sections.transactions', items: [{ labelKey: 'nav.newTransaction', route: '/transactions/new' }] },

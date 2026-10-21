@@ -4,6 +4,7 @@ import { formatTestProviders } from '../../testing/format-providers';
 import { FormatService } from '../format/format.service';
 import { PrivacyStore } from '../state/privacy.store';
 import {
+  budgetHistoryOption,
   categoryBarsOption,
   dailyBalanceOption,
   divergingOption,
@@ -80,6 +81,7 @@ function builders(f: FormatService): Record<string, () => unknown> {
     sankeyHorizontal: () => sankeyOption(f, sankey, (n) => n.label, false),
     sankeyVertical: () => sankeyOption(f, sankey, (n) => n.label, true),
     dailyBalance: () => dailyBalanceOption(f, 'Balance', days),
+    budgetHistory: () => budgetHistoryOption(f, { spent: 'Spent', limit: 'Limit' }, months.map((month, i) => ({ month, limit: i === 2 ? 0 : 1000, spent: 400 * (i + 1) }))),
     categoryBars: () => categoryBarsOption(f, ['L', 'M', 'X'], [10, 0, 2500], '#3987e5', 'Gasto'),
   };
 }

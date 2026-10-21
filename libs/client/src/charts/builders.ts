@@ -511,6 +511,36 @@ export function dailyBalanceOption(f: Fmt, label: string, days: AccountDay[], ow
   };
 }
 
+/** A budget's spent-vs-limit history: spent as columns (red over the limit) with the limit as a step line. */
+export function budgetHistoryOption(f: Fmt, names: { spent: string; limit: string }, history: { month: string; limit: number; spent: number }[]): EChartsCoreOption {
+  return {
+    grid: GRID,
+    legend: legendTop([names.spent, names.limit]),
+    tooltip: {
+      trigger: 'axis',
+      formatter: byIndex(history.length, (i) => {
+        const x = history[i];
+        return (
+          tooltipTitle(f.date(x.month, 'month')) +
+          tooltipRow(money.expense(), names.spent, f.money(x.spent)) +
+          tooltipRow(money.ink2(), names.limit, f.money(x.limit)) +
+          (x.limit ? tooltipRow(money.ink2(), '%', f.pct(x.spent / x.limit, 0)) : '')
+        );
+      }),
+    },
+    xAxis: { type: 'category', data: history.map((x) => f.monthLabel(x.month)) },
+    yAxis: moneyAxis(f),
+    series: [
+      {
+        name: names.spent,
+        type: 'bar',
+        data: history.map((x) => ({ value: x.spent, itemStyle: { color: x.limit && x.spent > x.limit ? money.expense() : money.budget() } })),
+      },
+      { name: names.limit, type: 'line', step: 'middle', data: history.map((x) => x.limit), showSymbol: false, lineStyle: { color: money.ink2(), width: 2 }, itemStyle: { color: money.ink2() } },
+    ],
+  };
+}
+
 /** One series over fixed categories (weekdays): single hue, value labels, no legend. */
 export function categoryBarsOption(f: Fmt, labels: string[], values: number[], color: string, name: string, own?: { currency: string; values: number[] }): EChartsCoreOption {
   const plotted = own?.values ?? values;

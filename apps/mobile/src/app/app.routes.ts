@@ -14,5 +14,6 @@ export const routes: Routes = [
   { path: 'analysis/tags', loadComponent: () => import('./screens/ranking').then((m) => m.Ranking), canActivate: authed, data: { by: 'tag', kind: 'expense', key: 'tags' } },
   { path: 'analysis/merchants', loadComponent: () => import('./screens/ranking').then((m) => m.Ranking), canActivate: authed, data: { by: 'counterparty', kind: 'expense', key: 'merchants', fixedKind: true } },
   { path: 'analysis/income-sources', loadComponent: () => import('./screens/ranking').then((m) => m.Ranking), canActivate: authed, data: { by: 'counterparty', kind: 'income', key: 'incomeSources', fixedKind: true } },
+  { path: 'analysis/budgets', loadComponent: () => import('./screens/budgets').then((m) => m.Budgets), canActivate: authed },
   { path: '**', redirectTo: '' },
 ];

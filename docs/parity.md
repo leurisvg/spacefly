@@ -14,7 +14,7 @@ Every screen has a view-model in `libs/client/src/features` when it exists on mo
 | Drill into a chart slice | sheet / explorer filters | `/drill` | `explorer.vm.ts` |
 | Monthly, annual, flow, calendar, compare | `/reports/*` | web-only | – |
 | Categories, tags, merchants, income sources | `/analysis/*` | same paths (from the More tab) | `ranking.vm.ts` |
-| Budgets | `/analysis/budgets` | web-only | – |
+| Budgets | `/analysis/budgets` | same path (from the More tab) | `budgets.vm.ts` |
 | Account detail, net worth, savings, counterparties | `/accounts/*` | web-only | – |
 | Subscriptions, recurring, goals, projection | `/planning/*` | web-only | – |
 | Entity editors (category, tag, budget, account, goal…) | sheets | web-only | – |
