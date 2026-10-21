@@ -16,7 +16,7 @@ Every screen has a view-model in `libs/client/src/features` when it exists on mo
 | Annual report | `/reports/annual` | same path (the matrix shows 10 categories instead of 15) | `annual.vm.ts` |
 | Money flow | `/reports/flow` | same path (vertical Sankey; the small-flow threshold is a list of presets, not a slider) | `flow.vm.ts` |
 | Calendar | `/reports/calendar` | same path (native month grid, year heatmap vertical) | `calendar.vm.ts` |
-| Compare | `/reports/compare` | web-only | – |
+| Compare | `/reports/compare` | same path (period B dates are typed as YYYY-MM-DD) | `compare.vm.ts` |
 | Categories, tags, merchants, income sources | `/analysis/*` | same paths (from the More tab) | `ranking.vm.ts` |
 | Budgets | `/analysis/budgets` | same path (from the More tab) | `budgets.vm.ts` |
 | Account detail, net worth, savings, counterparties | `/accounts/*` | web-only | – |
