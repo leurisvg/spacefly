@@ -1,4 +1,5 @@
-import { readFile } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
+import { readdir, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { Hono, type MiddlewareHandler } from 'hono';
 import { serveStatic } from '@hono/node-server/serve-static';
@@ -10,6 +11,23 @@ import { oauthRoutes, requireSession } from './auth/oauth.routes';
 import { writeGuard } from './auth/write-guard';
 import { apiRoutes } from './routes/api.routes';
 import { writeRoutes } from './routes/write.routes';
+
+/**
+ * Short hash of the translation catalogs. Their file names carry no hash, so a browser or a CDN can keep serving an old
+ * `/i18n/es.json` after a deploy: the page tells the web app which version to ask for (`?v=`), and a new one is a new URL.
+ */
+export async function catalogVersion(root: string): Promise<string | null> {
+  try {
+    const dir = join(root, 'i18n');
+    const names = (await readdir(dir)).filter((n) => n.endsWith('.json')).sort();
+    if (!names.length) return null;
+    const hash = createHash('sha1');
+    for (const name of names) hash.update(await readFile(join(dir, name)));
+    return hash.digest('hex').slice(0, 10);
+  } catch {
+    return null;
+  }
+}
 
 /** Fixed-window rate limit keyed by client IP (Cloudflare first). */
 export function rateLimit(limit: number, windowMs: number): MiddlewareHandler<AppEnv> {
@@ -85,6 +103,12 @@ export function createApp(s: Services) {
 
   // Angular SPA: hashed assets are immutable; everything else falls back to index.html.
   const root = s.config.STATIC_DIR;
+  // serveStatic sends Last-Modified and no Cache-Control, which lets a browser keep a file for days without asking again.
+  // The catalogs have no hash in their names, so they must always be revalidated.
+  app.use('/i18n/*', async (c, next) => {
+    await next();
+    c.header('Cache-Control', 'no-cache');
+  });
   app.use(
     '/*',
     serveStatic({
@@ -98,7 +122,12 @@ export function createApp(s: Services) {
   );
   let indexHtml: string | null = null;
   app.get('*', async (c) => {
-    indexHtml ??= await readFile(join(root, 'index.html'), 'utf8').catch(() => null);
+    indexHtml ??= await readFile(join(root, 'index.html'), 'utf8')
+      .then(async (html) => {
+        const version = await catalogVersion(root);
+        return version ? html.replace('</head>', `<meta name="sf-i18n" content="${version}"></head>`) : html;
+      })
+      .catch(() => null);
     if (!indexHtml) return c.text('SpaceFly web build not found. Run `npm run build`.', 404);
     c.header('Cache-Control', 'no-cache');
     return c.html(indexHtml);
