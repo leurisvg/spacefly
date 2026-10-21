@@ -4,6 +4,7 @@ import { TabName, TabState } from '../platform/tab-state';
 import { PeriodBar } from '../ui/period-bar';
 import { Accounts } from './accounts';
 import { Dashboard } from './dashboard';
+import { More } from './more';
 import { Settings } from './settings';
 import { Transactions } from './transactions';
 
@@ -11,16 +12,17 @@ const TABS: { name: TabName; labelKey: string }[] = [
   { name: 'dashboard', labelKey: 'nav.dashboard' },
   { name: 'transactions', labelKey: 'nav.explorer' },
   { name: 'accounts', labelKey: 'nav.assetAccounts' },
+  { name: 'more', labelKey: 'nav.more' },
   { name: 'settings', labelKey: 'nav.settings' },
 ];
 
 /**
- * The home screen: four tabs on one page. Tabs are built the first time they are opened and then only hidden, so each keeps its
+ * The home screen: five tabs on one page. Tabs are built the first time they are opened and then only hidden, so each keeps its
  * scroll position and data (named router outlets in a native tab view are fragile; this needs none).
  */
 @Component({
   selector: 'ns-home',
-  imports: [PeriodBar, Dashboard, Transactions, Accounts, Settings],
+  imports: [PeriodBar, Dashboard, Transactions, Accounts, More, Settings],
   schemas: [NO_ERRORS_SCHEMA],
   template: `
     <ActionBar [title]="title()"></ActionBar>
@@ -40,11 +42,14 @@ const TABS: { name: TabName; labelKey: string }[] = [
         @if (visited().has('accounts')) {
           <GridLayout [visibility]="visibility('accounts')"><ns-accounts /></GridLayout>
         }
+        @if (visited().has('more')) {
+          <GridLayout [visibility]="visibility('more')"><ns-more /></GridLayout>
+        }
         @if (visited().has('settings')) {
           <GridLayout [visibility]="visibility('settings')"><ns-settings /></GridLayout>
         }
       </GridLayout>
-      <GridLayout row="2" columns="*, *, *, *" class="tab-bar">
+      <GridLayout row="2" columns="*, *, *, *, *" class="tab-bar">
         @for (t of tabs; track t.name; let i = $index) {
           <Label [col]="i" [text]="i18n.t(t.labelKey)" class="tab" [class.tab-on]="tab.current() === t.name" (tap)="tab.current.set(t.name)"></Label>
         }

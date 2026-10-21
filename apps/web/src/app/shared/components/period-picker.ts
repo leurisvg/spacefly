@@ -3,7 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideCalendarRange, lucideCheck, lucideChevronLeft, lucideChevronRight } from '@ng-icons/lucide';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
-import { addMonths, isIsoDate, presetPeriod, todayIso, type PeriodPreset } from '@spacefly/shared';
+import { isIsoDate, todayIso } from '@spacefly/shared';
 import { HlmButton } from '@spartan-ng/helm/button';
 import { HlmInput } from '@spartan-ng/helm/input';
 import { HlmLabel } from '@spartan-ng/helm/label';
@@ -11,12 +11,7 @@ import { HlmPopoverImports } from '@spartan-ng/helm/popover';
 import { HlmSeparator } from '@spartan-ng/helm/separator';
 import { FormatService } from '@spacefly/client/format/format.service';
 import { FiltersStore } from '@spacefly/client/state/filters.store';
-
-interface PresetOption {
-  key: string;
-  preset: Exclude<PeriodPreset, 'custom'>;
-  anchor: () => string;
-}
+import { isPresetSelected, PERIOD_PRESET_OPTIONS, periodLabel, type PresetOption } from '@spacefly/client/ui-logic/period-presets';
 
 /** ◀ [period ▾] ▶ — month / quarter / year / YTD / last-30-days / last-6-months presets plus a custom range. */
 @Component({
@@ -79,32 +74,11 @@ export class PeriodPicker {
   protected customStart = '';
   protected customEnd = '';
 
-  protected readonly options: PresetOption[] = [
-    { key: 'thisMonth', preset: 'month', anchor: () => todayIso() },
-    { key: 'lastMonth', preset: 'month', anchor: () => addMonths(todayIso(), -1) },
-    { key: 'last30', preset: 'last30', anchor: () => todayIso() },
-    { key: 'last6m', preset: 'last6m', anchor: () => todayIso() },
-    { key: 'thisQuarter', preset: 'quarter', anchor: () => todayIso() },
-    { key: 'thisYear', preset: 'year', anchor: () => todayIso() },
-    { key: 'lastYear', preset: 'year', anchor: () => addMonths(todayIso(), -12) },
-    { key: 'ytd', preset: 'ytd', anchor: () => todayIso() },
-  ];
+  protected readonly options = PERIOD_PRESET_OPTIONS;
 
   protected readonly label = computed(() => {
     this.f.lang();
-    const p = this.filters.period();
-    switch (this.filters.preset()) {
-      case 'month':
-        return this.f.date(p.start, 'month');
-      case 'quarter':
-        return `${this.t.translate('period.quarterShort')}${Math.floor((Number(p.start.slice(5, 7)) - 1) / 3) + 1} ${p.start.slice(0, 4)}`;
-      case 'year':
-        return p.start.slice(0, 4);
-      case 'ytd':
-        return `${this.t.translate('period.ytdShort')} ${p.start.slice(0, 4)}`;
-      default:
-        return `${this.f.date(p.start, 'short')} – ${this.f.date(p.end, 'long')}`;
-    }
+    return periodLabel(this.filters.preset(), this.filters.period(), { date: (iso, style) => this.f.date(iso, style), translate: (key) => this.t.translate(key) });
   });
 
   /** A rolling window reads as its name ("Last 30 days") only while it ends today; after ◀ it is just a range. */
@@ -121,9 +95,7 @@ export class PeriodPicker {
   }
 
   protected isSelected(o: PresetOption): boolean {
-    const p = presetPeriod(o.preset, o.anchor());
-    const cur = this.filters.period();
-    return this.filters.preset() === o.preset && p.start === cur.start && p.end === cur.end;
+    return isPresetSelected(o, this.filters.preset(), this.filters.period());
   }
 
   protected pick(o: PresetOption): void {

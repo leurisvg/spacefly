@@ -1,10 +1,10 @@
-import { Component, NO_ERRORS_SCHEMA } from '@angular/core';
+import { Component, inject, NO_ERRORS_SCHEMA } from '@angular/core';
 import { RouterExtensions } from '@nativescript/angular';
-import { inject } from '@angular/core';
 import { dashboardViewModel } from '@spacefly/client/features/dashboard/dashboard.vm';
 import { FormatService } from '@spacefly/client/format/format.service';
 import { money } from '@spacefly/client/charts/series-colors';
 import { ChartClick, ChartWebView } from '../ui/chart-webview';
+import { DrillLauncher } from '../ui/drill-launcher';
 import { EmptyState } from '../ui/empty-state';
 import { KpiCard } from '../ui/kpi-card';
 import { Meter } from '../ui/meter';
@@ -108,10 +108,11 @@ export class Dashboard {
   protected readonly money = money;
   protected readonly f = inject(FormatService);
   private readonly router = inject(RouterExtensions);
+  private readonly drills = inject(DrillLauncher);
 
   protected month(click: ChartClick): void {
     this.vm.openMonth(click.dataIndex);
-    this.toDrill();
+    this.drills.show();
   }
 
   protected category(click: ChartClick): void {
@@ -120,19 +121,14 @@ export class Dashboard {
 
   protected openCategory(index: number): void {
     this.vm.openCategory(index);
-    this.toDrill();
+    this.drills.show();
   }
 
   protected drill(title: string, filter: Record<string, string>): void {
-    this.vm.detail.open(title, filter);
-    this.toDrill();
+    this.drills.open(title, filter);
   }
 
   protected open(groupId: string): void {
     void this.router.navigate(['/transactions', groupId]);
-  }
-
-  private toDrill(): void {
-    if (this.vm.detail.request()) void this.router.navigate(['/drill']);
   }
 }
