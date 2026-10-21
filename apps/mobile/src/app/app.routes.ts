@@ -16,5 +16,6 @@ export const routes: Routes = [
   { path: 'analysis/income-sources', loadComponent: () => import('./screens/ranking').then((m) => m.Ranking), canActivate: authed, data: { by: 'counterparty', kind: 'income', key: 'incomeSources', fixedKind: true } },
   { path: 'analysis/budgets', loadComponent: () => import('./screens/budgets').then((m) => m.Budgets), canActivate: authed },
   { path: 'reports/monthly', loadComponent: () => import('./screens/monthly').then((m) => m.Monthly), canActivate: authed },
+  { path: 'reports/annual', loadComponent: () => import('./screens/annual').then((m) => m.Annual), canActivate: authed },
   { path: '**', redirectTo: '' },
 ];

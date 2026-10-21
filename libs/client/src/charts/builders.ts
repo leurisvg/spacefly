@@ -348,6 +348,31 @@ export function yearHeatmapOption(f: Fmt, t: (k: string) => string, year: number
   };
 }
 
+/** Savings rate per month as columns (red below zero) on a 0–100 % axis; months without income have no bar. */
+export function savingsRateOption(f: Fmt, t: (k: string) => string, months: string[], rates: (number | null)[]): EChartsCoreOption {
+  const color = money.savings();
+  return {
+    grid: { left: 8, right: 16, top: 16, bottom: 8, containLabel: true },
+    tooltip: {
+      trigger: 'axis',
+      formatter: byIndex(months.length, (i) => {
+        const v = rates[i];
+        return tooltipTitle(f.date(months[i], 'month')) + tooltipRow(color, t('common.savingsRate'), v === null ? '—' : f.pct(v / 100));
+      }),
+    },
+    xAxis: { type: 'category', data: months.map((m) => f.monthLabel(m, false)) },
+    // Privacy mode flattens every tick to 0 %, like the compact money axes.
+    yAxis: { type: 'value', axisLabel: { formatter: f.hidden() ? constant('0%') : '{value}%' }, splitNumber: 4 },
+    series: [
+      {
+        type: 'bar',
+        data: rates.map((v) => (v === null ? null : { value: v, itemStyle: { color: v >= 0 ? color : money.expense(), borderRadius: v >= 0 ? [4, 4, 0, 0] : [0, 0, 4, 4] } })),
+        markLine: { silent: true, symbol: 'none', label: { show: false }, lineStyle: { color: palette.chartAxis, type: 'solid' }, data: [{ yAxis: 0 }] },
+      },
+    ],
+  };
+}
+
 /** Month × category matrix for the annual report. */
 export function matrixHeatmapOption(f: Fmt, months: string[], categories: { name: string; values: number[] }[]): EChartsCoreOption {
   const max = Math.max(1, ...categories.flatMap((c) => c.values));

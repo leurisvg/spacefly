@@ -13,7 +13,8 @@ Every screen has a view-model in `libs/client/src/features` when it exists on mo
 | Login | `/login` | `/login` | `login.vm.ts` |
 | Drill into a chart slice | sheet / explorer filters | `/drill` | `explorer.vm.ts` |
 | Monthly summary | `/reports/monthly` | same path (from the More tab; the Sankey and the savings multiples are web-only) | `monthly.vm.ts` |
-| Annual, flow, calendar, compare | `/reports/*` | web-only | – |
+| Annual report | `/reports/annual` | same path (the matrix shows 10 categories instead of 15) | `annual.vm.ts` |
+| Flow, calendar, compare | `/reports/*` | web-only | – |
 | Categories, tags, merchants, income sources | `/analysis/*` | same paths (from the More tab) | `ranking.vm.ts` |
 | Budgets | `/analysis/budgets` | same path (from the More tab) | `budgets.vm.ts` |
 | Account detail, net worth, savings, counterparties | `/accounts/*` | web-only | – |
