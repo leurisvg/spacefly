@@ -313,6 +313,14 @@ ActionBar {
   color: var(--foreground);
 }
 
+.cal-dot-bill {
+  color: var(--status-warning);
+}
+
+.cal-dot-recurrence {
+  color: var(--primary);
+}
+
 .cal-dot {
   font-size: 8;
   color: var(--status-warning);

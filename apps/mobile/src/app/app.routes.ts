@@ -18,5 +18,6 @@ export const routes: Routes = [
   { path: 'reports/monthly', loadComponent: () => import('./screens/monthly').then((m) => m.Monthly), canActivate: authed },
   { path: 'reports/annual', loadComponent: () => import('./screens/annual').then((m) => m.Annual), canActivate: authed },
   { path: 'reports/flow', loadComponent: () => import('./screens/flow').then((m) => m.Flow), canActivate: authed },
+  { path: 'reports/calendar', loadComponent: () => import('./screens/calendar').then((m) => m.Calendar), canActivate: authed },
   { path: '**', redirectTo: '' },
 ];

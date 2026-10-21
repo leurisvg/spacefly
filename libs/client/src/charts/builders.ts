@@ -491,6 +491,32 @@ export function sankeyOption(
 const dayLabel = (f: Fmt, days: { date: string }[]) => (d: { date: string }) => (days.length <= 31 ? d.date.slice(8) : f.date(d.date, 'short'));
 const zoomFor = (count: number) => (count > 60 ? [{ type: 'inside', zoomLock: false }] : []);
 
+/** The running balance of a month: one line over the days that have a balance, with a zero line for when it dips below. */
+export function runningBalanceOption(f: Fmt, label: string, days: { date: string; balance: number | null }[]): EChartsCoreOption {
+  const color = money.net();
+  const known = days.filter((d) => d.balance !== null);
+  return {
+    grid: { left: 8, right: 16, top: 16, bottom: 8, containLabel: true },
+    tooltip: {
+      trigger: 'axis',
+      formatter: byIndex(known.length, (i) => tooltipTitle(f.date(known[i].date, 'full')) + tooltipRow(color, label, f.money(known[i].balance))),
+    },
+    xAxis: { type: 'category', data: known.map((d) => d.date.slice(8)), boundaryGap: false },
+    yAxis: { ...moneyAxis(f), scale: true },
+    series: [
+      {
+        type: 'line',
+        data: known.map((d) => d.balance),
+        showSymbol: false,
+        lineStyle: { color, width: 2 },
+        itemStyle: { color },
+        areaStyle: { color, opacity: 0.1 },
+        markLine: { silent: true, symbol: 'none', lineStyle: { color: palette.chartAxis, type: 'solid' }, label: { show: false }, data: [{ yAxis: 0 }] },
+      },
+    ],
+  };
+}
+
 /** Balance at the end of each day (future days stay empty), with a zero line when it dips below it. */
 export function dailyBalanceOption(f: Fmt, label: string, days: AccountDay[], own?: string): EChartsCoreOption {
   const color = money.net();
