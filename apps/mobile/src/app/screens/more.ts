@@ -14,6 +14,7 @@ interface MoreSection {
 
 /** Every mobile screen that is not a tab, grouped like the web sidebar. A screen appears here when its route exists. */
 export const MORE_SECTIONS: MoreSection[] = [
+  { titleKey: 'nav.sections.reports', items: [{ labelKey: 'nav.monthly', route: '/reports/monthly' }] },
   {
     titleKey: 'nav.sections.analysis',
     items: [

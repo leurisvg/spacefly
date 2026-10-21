@@ -276,6 +276,49 @@ ActionBar {
   color: var(--primary-foreground);
 }
 
+.category-bar {
+  height: 3;
+  border-radius: 2;
+  background-color: var(--primary);
+  opacity: 0.35;
+  margin-top: 2;
+}
+
+/* ── Calendar ───────────────────────────────────────────────────────────── */
+.cal-cell {
+  background-color: var(--card);
+  border-color: var(--border);
+  border-width: 1;
+  border-radius: 6;
+  margin: 1;
+}
+
+.cal-today {
+  border-color: var(--primary);
+}
+
+.cal-income {
+  background-color: var(--money-income);
+  opacity: 0.85;
+}
+
+.cal-expense {
+  background-color: var(--money-expense);
+  opacity: 0.85;
+}
+
+.cal-num {
+  font-size: 12;
+  font-weight: 700;
+  color: var(--foreground);
+}
+
+.cal-dot {
+  font-size: 8;
+  color: var(--status-warning);
+  margin: 2;
+}
+
 /* ── Tab bar ────────────────────────────────────────────────────────────── */
 .tab-bar {
   background-color: var(--card);

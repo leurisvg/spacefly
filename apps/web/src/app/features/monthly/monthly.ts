@@ -1,14 +1,11 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideChevronRight } from '@ng-icons/lucide';
 import { TranslocoPipe } from '@jsverse/transloco';
-import type { CalendarReport, CategoryRow, MonthlyReport, SankeyNode, SankeyReport } from '@spacefly/shared';
 import { HlmButton } from '@spartan-ng/helm/button';
-import { reportResource } from '@spacefly/client/api/report-resource';
-import { FormatService } from '@spacefly/client/format/format.service';
+import { monthlyViewModel } from '@spacefly/client/features/reports/monthly.vm';
 import { FORMAT_PIPES } from '@spacefly/client/format/pipes';
-import { I18n } from '@spacefly/client/i18n/i18n';
 import { SankeyChart } from '../../shared/charts/sankey-chart';
 import { SavingsMultiples } from '../../shared/charts/savings-multiples';
 import { CalendarGrid } from '../../shared/components/calendar-grid';
@@ -18,10 +15,8 @@ import { Meter } from '../../shared/components/meter';
 import { Money } from '../../shared/components/money';
 import { PageHeader } from '../../shared/components/page-header';
 import { TransactionList } from '../../shared/components/transaction-list';
-import { TxDetailService } from '@spacefly/client/state/tx-detail.service';
 import { Section } from '../../shared/components/section';
 
-/** The email report, interactive: same sections, same order, any period. */
 @Component({
   selector: 'sf-monthly',
   imports: [
@@ -45,22 +40,22 @@ import { Section } from '../../shared/components/section';
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'flex flex-col gap-4 sm:gap-5' },
   template: `
-    <sf-page-header [title]="i18n.t('nav.monthly')" [description]="i18n.t('monthly.description')" />
-    @if (res.error() && !d()) {
-      <sf-empty [error]="true" [title]="i18n.t('errors.load')" />
+    <sf-page-header [title]="vm.i18n.t('nav.monthly')" [description]="vm.i18n.t('monthly.description')" />
+    @if (vm.res.error() && !vm.d()) {
+      <sf-empty [error]="true" [title]="vm.i18n.t('errors.load')" />
     }
 
     <!-- Highlights -->
     <section class="grid grid-cols-2 gap-3 lg:grid-cols-4">
-      <sf-kpi [label]="i18n.t('monthly.earned')" [value]="d()?.kpis?.earned ?? null" accent="var(--money-income)" [loading]="res.initialLoading()" />
-      <sf-kpi [label]="i18n.t('monthly.spent')" [value]="d()?.kpis?.spent ?? null" accent="var(--money-expense)" [loading]="res.initialLoading()" />
-      <sf-kpi [label]="i18n.t('monthly.netChange')" [value]="d()?.kpis?.net ?? null" accent="var(--money-net)" [loading]="res.initialLoading()" />
-      <sf-kpi [label]="i18n.t('common.savingsRate')" format="pct" [value]="d()?.kpis?.savingsRate ?? null" accent="var(--money-savings)" [loading]="res.initialLoading()" />
+      <sf-kpi [label]="vm.i18n.t('monthly.earned')" [value]="vm.d()?.kpis?.earned ?? null" accent="var(--money-income)" [loading]="vm.res.initialLoading()" />
+      <sf-kpi [label]="vm.i18n.t('monthly.spent')" [value]="vm.d()?.kpis?.spent ?? null" accent="var(--money-expense)" [loading]="vm.res.initialLoading()" />
+      <sf-kpi [label]="vm.i18n.t('monthly.netChange')" [value]="vm.d()?.kpis?.net ?? null" accent="var(--money-net)" [loading]="vm.res.initialLoading()" />
+      <sf-kpi [label]="vm.i18n.t('common.savingsRate')" format="pct" [value]="vm.d()?.kpis?.savingsRate ?? null" accent="var(--money-savings)" [loading]="vm.res.initialLoading()" />
     </section>
 
     <!-- Category summary -->
-    <sf-section [title]="i18n.t('monthly.categories')" [loading]="res.initialLoading()">
-      @if (d(); as data) {
+    <sf-section [title]="vm.i18n.t('monthly.categories')" [loading]="vm.res.initialLoading()">
+      @if (vm.d(); as data) {
         <div class="overflow-x-auto">
           <table class="w-full min-w-[34rem] text-sm">
             <thead>
@@ -72,20 +67,21 @@ import { Section } from '../../shared/components/section';
             </thead>
             <tbody>
               @for (c of data.categories; track c.id) {
-                <tr class="cursor-pointer border-b border-border/60 hover:bg-muted/40" (click)="openCategory(c)">
+                <tr class="cursor-pointer border-b border-border/60 hover:bg-muted/40" (click)="vm.openCategory(c)">
                   <td class="py-2 pr-3">
-                    <div class="font-medium">{{ i18n.name(c.name, c.id) }}</div>
-                    <div class="mt-1 h-[3px] rounded-full bg-primary/35" [style.width.%]="relative(c)"></div>
+                    <div class="font-medium">{{ vm.i18n.name(c.name, c.id) }}</div>
+                    <div class="mt-1 h-[3px] rounded-full bg-primary/35" [style.width.%]="vm.relative(c)"></div>
                   </td>
                   <td class="py-2 text-right"><sf-money [value]="c.total.value" [parts]="c.total.parts" tone="auto" [signed]="true" /></td>
                   <td class="py-2 pl-3 text-right text-xs">
-                    @if (c.previous === 0) {
+                    @let ch = vm.change(c);
+                    @if (ch.isNew) {
                       <span class="text-muted-foreground">—</span><br /><span class="text-positive">{{ 'monthly.new' | transloco }}</span>
                     } @else {
                       <sf-money [value]="c.previous" tone="auto" class="text-muted-foreground" /><br />
-                      <span [class]="hidden() ? 'text-muted-foreground' : c.total.value - c.previous > 0 ? 'text-positive' : 'text-negative'" class="num">
-                        {{ c.total.value - c.previous | money: null : true }}
-                        {{ hidden() ? '' : c.total.value - c.previous > 0 ? '↑' : '↓' }}{{ abs((c.total.value - c.previous) / c.previous) | pct: 1 }}
+                      <span [class]="vm.hidden() ? 'text-muted-foreground' : ch.up ? 'text-positive' : 'text-negative'" class="num">
+                        {{ ch.delta | money: null : true }}
+                        {{ vm.hidden() ? '' : ch.up ? '↑' : '↓' }}{{ ch.ratio | pct: 1 }}
                       </span>
                     }
                   </td>
@@ -105,26 +101,26 @@ import { Section } from '../../shared/components/section';
 
     <!-- Money flow + daily cash flow -->
     <section class="grid gap-4 xl:grid-cols-5">
-      <sf-section class="xl:col-span-3" [title]="i18n.t('monthly.moneyFlow')" [loading]="sankey.initialLoading()">
+      <sf-section class="xl:col-span-3" [title]="vm.i18n.t('monthly.moneyFlow')" [loading]="vm.sankey.initialLoading()">
         <a section-actions hlmBtn variant="link" size="xs" routerLink="/reports/flow" queryParamsHandling="preserve">{{ 'monthly.openInteractive' | transloco }}</a>
-        @if (sankey.data(); as s) {
+        @if (vm.sankey.data(); as s) {
           @if (s.links.length) {
-            <sf-sankey-chart [report]="s" (nodeClick)="openNode($event)" />
+            <sf-sankey-chart [report]="s" (nodeClick)="vm.openNode($event)" />
           } @else {
-            <sf-empty [title]="i18n.t('common.noData')" />
+            <sf-empty [title]="vm.i18n.t('common.noData')" />
           }
         }
       </sf-section>
-      <sf-section class="xl:col-span-2" [title]="i18n.t('monthly.dailyCashFlow')" [loading]="calendar.initialLoading()">
-        @if (calendar.data(); as c) {
-          <sf-calendar-grid [days]="c.days" [scheduled]="c.scheduled" (dayClick)="openDay($event)" />
+      <sf-section class="xl:col-span-2" [title]="vm.i18n.t('monthly.dailyCashFlow')" [loading]="vm.calendar.initialLoading()">
+        @if (vm.calendar.data(); as c) {
+          <sf-calendar-grid [days]="c.days" [scheduled]="c.scheduled" (dayClick)="vm.openDay($event)" />
         }
       </sf-section>
     </section>
 
     <!-- Budgets -->
-    <sf-section [title]="i18n.t('monthly.budgets')" [loading]="res.initialLoading()">
-      @if (d(); as data) {
+    <sf-section [title]="vm.i18n.t('monthly.budgets')" [loading]="vm.res.initialLoading()">
+      @if (vm.d(); as data) {
         @if (data.budgets.length || data.zeroBudgets.names.length) {
           <div class="overflow-x-auto">
             <table class="w-full min-w-[34rem] text-sm">
@@ -138,7 +134,7 @@ import { Section } from '../../shared/components/section';
               </thead>
               <tbody>
                 @for (b of data.budgets; track b.id) {
-                  <tr class="cursor-pointer border-b border-border/60 hover:bg-muted/40" (click)="detail.open(b.name, { type: 'withdrawal', budget: b.id })">
+                  <tr class="cursor-pointer border-b border-border/60 hover:bg-muted/40" (click)="vm.openBudget(b)">
                     <td class="py-2 pr-4">
                       <div class="font-medium">{{ b.name }}</div>
                       @if (b.pct !== null) {
@@ -162,19 +158,19 @@ import { Section } from '../../shared/components/section';
             </table>
           </div>
         } @else {
-          <sf-empty [title]="i18n.t('budget.none')" />
+          <sf-empty [title]="vm.i18n.t('budget.none')" />
         }
       }
     </sf-section>
 
     <section class="grid gap-4 xl:grid-cols-2">
       <!-- Top 5 -->
-      <sf-section [title]="i18n.t('monthly.top5')" [loading]="res.initialLoading()">
-        <sf-transaction-list [rows]="d()?.topExpenses ?? []" />
+      <sf-section [title]="vm.i18n.t('monthly.top5')" [loading]="vm.res.initialLoading()">
+        <sf-transaction-list [rows]="vm.d()?.topExpenses ?? []" />
       </sf-section>
 
       <!-- Asset account activity -->
-      <sf-section [title]="i18n.t('monthly.assetActivity')" [loading]="res.initialLoading()">
+      <sf-section [title]="vm.i18n.t('monthly.assetActivity')" [loading]="vm.res.initialLoading()">
         <div class="overflow-x-auto">
           <table class="w-full min-w-[30rem] text-sm">
             <thead>
@@ -186,11 +182,11 @@ import { Section } from '../../shared/components/section';
               </tr>
             </thead>
             <tbody>
-              @for (a of d()?.assets ?? []; track a.id) {
-                <tr class="cursor-pointer border-b border-border/60 hover:bg-muted/40" (click)="toggleAsset(a.id)" [attr.aria-expanded]="expanded().has(a.id)">
+              @for (a of vm.d()?.assets ?? []; track a.id) {
+                <tr class="cursor-pointer border-b border-border/60 hover:bg-muted/40" (click)="vm.toggleAsset(a.id)" [attr.aria-expanded]="vm.expanded().has(a.id)">
                   <td class="py-2">
                     <span class="inline-flex items-center gap-1">
-                      <ng-icon name="lucideChevronRight" class="text-muted-foreground transition-transform" [class.rotate-90]="expanded().has(a.id)" />
+                      <ng-icon name="lucideChevronRight" class="text-muted-foreground transition-transform" [class.rotate-90]="vm.expanded().has(a.id)" />
                       {{ a.name }}
                     </span>
                   </td>
@@ -198,7 +194,7 @@ import { Section } from '../../shared/components/section';
                   <td class="py-2 text-right"><sf-money [value]="-a.expense" tone="expense" [signed]="true" /></td>
                   <td class="py-2 text-right"><sf-money [value]="a.net" tone="auto" /></td>
                 </tr>
-                @if (expanded().has(a.id)) {
+                @if (vm.expanded().has(a.id)) {
                   <tr class="border-b border-border/60 bg-background/40">
                     <td colspan="4" class="px-3 py-2">
                       @if (a.topIncome.length) {
@@ -220,19 +216,19 @@ import { Section } from '../../shared/components/section';
     </section>
 
     <!-- Savings accounts -->
-    <sf-section [title]="i18n.t('monthly.savings', { n: d()?.savings?.months?.length ?? 6 })" [loading]="res.initialLoading()">
-      @if (d()?.savings; as s) {
+    <sf-section [title]="vm.i18n.t('monthly.savings', { n: vm.d()?.savings?.months?.length ?? 6 })" [loading]="vm.res.initialLoading()">
+      @if (vm.d()?.savings; as s) {
         @if (s.accounts.length) {
           <sf-savings-multiples [series]="s" />
         } @else {
-          <sf-empty [title]="i18n.t('common.noData')" />
+          <sf-empty [title]="vm.i18n.t('common.noData')" />
         }
       }
     </sf-section>
 
     <!-- Financial overview -->
-    <sf-section [title]="i18n.t('monthly.overview')" [loading]="res.initialLoading()">
-      @if (d()?.overview; as o) {
+    <sf-section [title]="vm.i18n.t('monthly.overview')" [loading]="vm.res.initialLoading()">
+      @if (vm.d()?.overview; as o) {
         <div class="grid gap-4 lg:grid-cols-2">
           @for (block of [{ key: 'monthly.thisPeriod', v: o.month }, { key: 'monthly.ytd', v: o.ytd }]; track block.key) {
             <div>
@@ -263,39 +259,5 @@ import { Section } from '../../shared/components/section';
   `,
 })
 export class Monthly {
-  protected readonly i18n = inject(I18n);
-  protected readonly detail = inject(TxDetailService);
-  private readonly f = inject(FormatService);
-  protected readonly hidden = this.f.hidden;
-  protected readonly res = reportResource<MonthlyReport>('reports/monthly');
-  protected readonly sankey = reportResource<SankeyReport>('reports/sankey');
-  protected readonly calendar = reportResource<CalendarReport>('reports/calendar');
-  protected readonly d = this.res.data;
-  protected readonly expanded = signal(new Set<string>());
-  protected readonly abs = Math.abs;
-
-  private readonly maxAbs = computed(() => Math.max(1, ...(this.d()?.categories ?? []).map((c) => Math.abs(c.total.value))));
-
-  protected relative(c: CategoryRow): number {
-    return (Math.abs(c.total.value) / this.maxAbs()) * 100;
-  }
-
-  protected toggleAsset(id: string): void {
-    const next = new Set(this.expanded());
-    if (next.has(id)) next.delete(id);
-    else next.add(id);
-    this.expanded.set(next);
-  }
-
-  protected openCategory(c: CategoryRow): void {
-    this.detail.open(this.i18n.name(c.name, c.id), { category: c.id ?? 'none' });
-  }
-
-  protected openNode(n: SankeyNode): void {
-    this.detail.open(n.labelKey ? this.i18n.t(n.labelKey) : n.label, n.filter ?? {});
-  }
-
-  protected openDay(date: string): void {
-    this.detail.open(this.f.date(date, 'full'), { start: date, end: date });
-  }
+  protected readonly vm = monthlyViewModel({ sankey: true, calendar: true });
 }
