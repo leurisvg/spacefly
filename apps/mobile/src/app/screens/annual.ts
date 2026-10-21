@@ -1,4 +1,5 @@
 import { Component, computed, inject, NO_ERRORS_SCHEMA } from '@angular/core';
+import { ActionBarComponent } from '@nativescript/angular';
 import { annualViewModel } from '@spacefly/client/features/reports/annual.vm';
 import { money } from '@spacefly/client/charts/series-colors';
 import { FormatService } from '@spacefly/client/format/format.service';
@@ -11,7 +12,7 @@ import { ScreenHeader } from '../ui/screen-header';
 /** The annual report: income and expenses per month, savings rate, best and worst month and the category × month matrix. */
 @Component({
   selector: 'ns-annual',
-  imports: [ChartWebView, KpiCard, Money, ScreenHeader],
+  imports: [ActionBarComponent, ChartWebView, KpiCard, Money, ScreenHeader],
   schemas: [NO_ERRORS_SCHEMA],
   template: `
     <ActionBar [title]="vm.i18n.t('annual.title', { year: vm.year() })"></ActionBar>

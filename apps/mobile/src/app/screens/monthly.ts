@@ -1,6 +1,6 @@
 import { Component, inject, NO_ERRORS_SCHEMA } from '@angular/core';
 import type { CategoryRow } from '@spacefly/shared';
-import { RouterExtensions } from '@nativescript/angular';
+import { ActionBarComponent, RouterExtensions } from '@nativescript/angular';
 import { monthlyViewModel } from '@spacefly/client/features/reports/monthly.vm';
 import { FormatService } from '@spacefly/client/format/format.service';
 import { money } from '@spacefly/client/charts/series-colors';
@@ -15,7 +15,7 @@ import { ScreenHeader } from '../ui/screen-header';
 /** The monthly summary: highlights, categories against the previous period, daily cash flow, budgets, top expenses, account activity and overview. */
 @Component({
   selector: 'ns-monthly',
-  imports: [CalendarGrid, EmptyState, KpiCard, Meter, Money, ScreenHeader],
+  imports: [ActionBarComponent, CalendarGrid, EmptyState, KpiCard, Meter, Money, ScreenHeader],
   schemas: [NO_ERRORS_SCHEMA],
   template: `
     <ActionBar [title]="vm.i18n.t('nav.monthly')"></ActionBar>

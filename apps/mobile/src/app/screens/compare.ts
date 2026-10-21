@@ -1,4 +1,5 @@
 import { Component, computed, inject, NO_ERRORS_SCHEMA } from '@angular/core';
+import { ActionBarComponent } from '@nativescript/angular';
 import { COMPARE_MODES, compareViewModel, isImprovement } from '@spacefly/client/features/reports/compare.vm';
 import { FormatService } from '@spacefly/client/format/format.service';
 import { ChartClick, ChartWebView } from '../ui/chart-webview';
@@ -12,7 +13,7 @@ import { Segmented } from '../ui/segmented';
 /** Compare period A (the period bar) with a period B, grouped by category, tag, budget, account or merchant. */
 @Component({
   selector: 'ns-compare',
-  imports: [ChartWebView, EmptyState, Money, ScreenHeader, Segmented],
+  imports: [ActionBarComponent, ChartWebView, EmptyState, Money, ScreenHeader, Segmented],
   schemas: [NO_ERRORS_SCHEMA],
   template: `
     <ActionBar [title]="vm.i18n.t('nav.compare')"></ActionBar>

@@ -1,5 +1,5 @@
 import { Component, inject, NO_ERRORS_SCHEMA, OnDestroy } from '@angular/core';
-import { RouterExtensions } from '@nativescript/angular';
+import { ActionBarComponent, RouterExtensions } from '@nativescript/angular';
 import { txDetailViewModel } from '@spacefly/client/features/transactions/tx-detail.vm';
 import { FormatService } from '@spacefly/client/format/format.service';
 import { I18n } from '@spacefly/client/i18n/i18n';
@@ -9,7 +9,7 @@ import { Money } from '../ui/money';
 /** The transactions behind a tapped chart element or row (income vs expense month, a category, a budget), grouped by type and category. */
 @Component({
   selector: 'ns-drill',
-  imports: [EmptyState, Money],
+  imports: [ActionBarComponent, EmptyState, Money],
   schemas: [NO_ERRORS_SCHEMA],
   template: `
     <ActionBar [title]="vm.req()?.title ?? ''"></ActionBar>

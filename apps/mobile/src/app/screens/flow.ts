@@ -1,4 +1,5 @@
 import { Component, computed, inject, NO_ERRORS_SCHEMA } from '@angular/core';
+import { ActionBarComponent } from '@nativescript/angular';
 import { FLOW_THRESHOLDS, flowViewModel } from '@spacefly/client/features/reports/flow.vm';
 import { sankeyOption } from '@spacefly/client/charts/builders';
 import { money } from '@spacefly/client/charts/series-colors';
@@ -14,7 +15,7 @@ import { Segmented } from '../ui/segmented';
 /** Money flow: the vertical Sankey of income → budgets / tags / categories → savings, with the same options as the web. */
 @Component({
   selector: 'ns-flow',
-  imports: [ChartWebView, EmptyState, KpiCard, ScreenHeader, Segmented],
+  imports: [ActionBarComponent, ChartWebView, EmptyState, KpiCard, ScreenHeader, Segmented],
   schemas: [NO_ERRORS_SCHEMA],
   template: `
     <ActionBar [title]="vm.i18n.t('nav.flow')"></ActionBar>

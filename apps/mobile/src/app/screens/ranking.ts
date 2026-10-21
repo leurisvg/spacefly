@@ -1,6 +1,6 @@
 import { Component, computed, inject, NO_ERRORS_SCHEMA } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { RouterExtensions } from '@nativescript/angular';
+import { ActionBarComponent, RouterExtensions } from '@nativescript/angular';
 import type { GroupBy } from '@spacefly/shared';
 import { rankingViewModel, type RankingKind, type RankingView } from '@spacefly/client/features/analysis/ranking.vm';
 import { FormatService } from '@spacefly/client/format/format.service';
@@ -16,7 +16,7 @@ import { Segmented } from '../ui/segmented';
 /** Categories · Tags · Merchants · Income sources: totals, distribution (bars / treemap / budgets), trend and the ranked list. */
 @Component({
   selector: 'ns-ranking',
-  imports: [ChartWebView, Delta, EmptyState, KpiCard, Money, ScreenHeader, Segmented],
+  imports: [ActionBarComponent, ChartWebView, Delta, EmptyState, KpiCard, Money, ScreenHeader, Segmented],
   schemas: [NO_ERRORS_SCHEMA],
   template: `
     <ActionBar [title]="vm.i18n.t('nav.' + key)"></ActionBar>

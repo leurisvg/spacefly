@@ -1,4 +1,5 @@
 import { Component, computed, inject, NO_ERRORS_SCHEMA } from '@angular/core';
+import { ActionBarComponent } from '@nativescript/angular';
 import { calendarViewModel } from '@spacefly/client/features/reports/calendar.vm';
 import { money } from '@spacefly/client/charts/series-colors';
 import { FormatService } from '@spacefly/client/format/format.service';
@@ -16,7 +17,7 @@ type Filter = 'account' | 'category' | 'tag';
 /** The calendar: a native month grid of daily cash flow with its running balance and scheduled items, or the year as a spending heatmap. */
 @Component({
   selector: 'ns-calendar',
-  imports: [CalendarGrid, ChartWebView, KpiCard, Money, ScreenHeader, Segmented],
+  imports: [ActionBarComponent, CalendarGrid, ChartWebView, KpiCard, Money, ScreenHeader, Segmented],
   schemas: [NO_ERRORS_SCHEMA],
   template: `
     <ActionBar [title]="vm.i18n.t('nav.calendar')"></ActionBar>

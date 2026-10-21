@@ -1,6 +1,6 @@
 import { Component, computed, inject, NO_ERRORS_SCHEMA } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { RouterExtensions } from '@nativescript/angular';
+import { ActionBarComponent, RouterExtensions } from '@nativescript/angular';
 import { I18n } from '@spacefly/client/i18n/i18n';
 import type { EntityKind } from '@spacefly/client/state/entity-editor.service';
 import type { AccountWriteType } from '@spacefly/shared';
@@ -17,7 +17,7 @@ const ACCOUNT_TYPES: AccountWriteType[] = ['asset', 'liability', 'expense', 'rev
 /** Create (`/edit/:kind`) or edit (`/edit/:kind/:id`) a category, tag, budget, subscription, account or goal. */
 @Component({
   selector: 'ns-entity-form',
-  imports: [AccountForm, BillForm, BudgetForm, CategoryForm, PiggyForm, TagForm],
+  imports: [ActionBarComponent, AccountForm, BillForm, BudgetForm, CategoryForm, PiggyForm, TagForm],
   schemas: [NO_ERRORS_SCHEMA],
   template: `
     <ActionBar [title]="title()"></ActionBar>

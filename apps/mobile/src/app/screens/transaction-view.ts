@@ -1,6 +1,6 @@
 import { Component, inject, NO_ERRORS_SCHEMA, signal } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { RouterExtensions } from '@nativescript/angular';
+import { ActionBarComponent, RouterExtensions } from '@nativescript/angular';
 import { Utils } from '@nativescript/core';
 import { txViewViewModel } from '@spacefly/client/features/transactions/tx-view.vm';
 import { FormatService } from '@spacefly/client/format/format.service';
@@ -10,7 +10,7 @@ import { Money } from '../ui/money';
 /** One transaction: its fields, with edit and delete when SpaceFly can edit it (single-part expenses, income and transfers). */
 @Component({
   selector: 'ns-transaction-view',
-  imports: [EmptyState, Money],
+  imports: [ActionBarComponent, EmptyState, Money],
   schemas: [NO_ERRORS_SCHEMA],
   template: `
     <ActionBar [title]="vm.tx()?.description ?? vm.i18n.t('nav.explorer')"></ActionBar>

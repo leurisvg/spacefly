@@ -1,5 +1,5 @@
 import { Component, computed, inject, NO_ERRORS_SCHEMA } from '@angular/core';
-import { RouterExtensions } from '@nativescript/angular';
+import { ActionBarComponent, RouterExtensions } from '@nativescript/angular';
 import { budgetsViewModel } from '@spacefly/client/features/analysis/budgets.vm';
 import { money } from '@spacefly/client/charts/series-colors';
 import { budgetStatus } from '@spacefly/client/ui-logic/budget-status';
@@ -14,7 +14,7 @@ import { ScreenHeader } from '../ui/screen-header';
 /** Budgets: totals, each budget with its meter and status, and for the selected one its history and spending by category. */
 @Component({
   selector: 'ns-budgets',
-  imports: [ChartWebView, EmptyState, KpiCard, Meter, Money, ScreenHeader],
+  imports: [ActionBarComponent, ChartWebView, EmptyState, KpiCard, Meter, Money, ScreenHeader],
   schemas: [NO_ERRORS_SCHEMA],
   template: `
     <ActionBar [title]="vm.i18n.t('nav.budgets')"></ActionBar>

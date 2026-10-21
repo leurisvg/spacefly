@@ -148,12 +148,8 @@
 
 Page,
 ActionBar {
-  background-color: var(--background);
-  color: var(--foreground);
-}
-
-ActionBar {
   background-color: var(--card);
+  color: var(--foreground);
 }
 
 /* ── Layout ─────────────────────────────────────────────────────────────── */
@@ -188,7 +184,7 @@ ActionBar {
 .eyebrow {
   font-size: 11;
   color: var(--muted-foreground);
-  letter-spacing: 0.5;
+  letter-spacing: 0.1;
 }
 
 .muted {
@@ -332,18 +328,49 @@ ActionBar {
   background-color: var(--card);
   border-top-color: var(--border);
   border-top-width: 1;
+  padding: 8 4 6 4;
 }
 
 .tab {
-  text-align: center;
-  padding: 10 0;
-  font-size: 12;
-  color: var(--chart-muted);
+  padding: 2 0;
 }
 
-.tab-on {
+/* The pill behind the icon marks the open tab (shape, not just color). */
+.tab-pill {
+  width: 60;
+  height: 32;
+  border-radius: 16;
+  horizontal-alignment: center;
+}
+
+.tab-icon {
+  font-family: lucide;
+  font-size: 22;
+  color: var(--chart-muted);
+  text-align: center;
+  vertical-align: middle;
+  horizontal-alignment: center;
+  vertical-alignment: center;
+}
+
+.tab-label {
+  font-size: 12;
+  text-align: center;
+  color: var(--chart-muted);
+  margin-top: 3;
+}
+
+.tab-on .tab-pill {
+  background-color: var(--muted);
+}
+
+.tab-on .tab-icon {
   color: var(--primary);
-  font-weight: 600;
+}
+
+.tab-on .tab-label {
+  color: var(--primary);
+  font-weight: 700;
 }
 
 /* ── Money and meaning ──────────────────────────────────────────────────── */

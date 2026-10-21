@@ -1,6 +1,6 @@
 import { Component, inject, NO_ERRORS_SCHEMA, signal } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { RouterExtensions } from '@nativescript/angular';
+import { ActionBarComponent, RouterExtensions } from '@nativescript/angular';
 import { loginViewModel } from '@spacefly/client/features/settings/login.vm';
 import { SignInError } from '../platform/mobile-auth-platform';
 import { normalizeServerUrl, ServerConfig } from '../platform/server-config';
@@ -8,9 +8,10 @@ import { normalizeServerUrl, ServerConfig } from '../platform/server-config';
 /** First screen: which server to talk to, and the sign-in button (the sign-in itself happens in the system browser). */
 @Component({
   selector: 'ns-login',
+  imports: [ActionBarComponent],
   schemas: [NO_ERRORS_SCHEMA],
   template: `
-    <ActionBar title="SpaceFly"></ActionBar>
+    <ActionBar title="SpaceFly" class="root-bar"></ActionBar>
     <ScrollView class="screen">
       <StackLayout class="screen-pad">
         <Label text="SpaceFly" class="kpi-value" horizontalAlignment="center" marginTop="32"></Label>

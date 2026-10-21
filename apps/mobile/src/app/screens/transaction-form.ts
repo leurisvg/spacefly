@@ -1,4 +1,5 @@
 import { Component, computed, inject, NO_ERRORS_SCHEMA, signal } from '@angular/core';
+import { ActionBarComponent } from '@nativescript/angular';
 import { ActivatedRoute } from '@angular/router';
 import { accountPickerViewModel } from '@spacefly/client/features/editor/account-picker.vm';
 import { fieldErrorMessages } from '@spacefly/client/features/editor/field-errors';
@@ -14,7 +15,7 @@ import { pickOne, type PickerOption } from '../ui/picker';
  */
 @Component({
   selector: 'ns-transaction-form',
-  imports: [NsField],
+  imports: [ActionBarComponent, NsField],
   schemas: [NO_ERRORS_SCHEMA],
   template: `
     <ActionBar [title]="vm.i18n.t(vm.isEdit() ? 'nav.editTransaction' : 'nav.newTransaction')"></ActionBar>
