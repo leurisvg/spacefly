@@ -61,6 +61,11 @@ import { ScreenHeader } from '../ui/screen-header';
               </StackLayout>
             }
 
+            <GridLayout columns="*, auto" class="card" (tap)="flow()">
+              <Label col="0" [text]="vm.i18n.t('monthly.moneyFlow')" class="card-title"></Label>
+              <Label col="1" [text]="vm.i18n.t('monthly.openInteractive') + ' ›'" class="muted small"></Label>
+            </GridLayout>
+
             <StackLayout class="card">
               <Label [text]="vm.i18n.t('monthly.budgets')" class="card-title"></Label>
               @for (b of data.budgets; track b.id) {
@@ -169,6 +174,10 @@ export class Monthly {
   protected day(date: string): void {
     this.vm.openDay(date);
     this.drills.show();
+  }
+
+  protected flow(): void {
+    void this.router.navigate(['/reports/flow']);
   }
 
   protected open(groupId: string): void {

@@ -19,6 +19,7 @@ export const MORE_SECTIONS: MoreSection[] = [
     items: [
       { labelKey: 'nav.monthly', route: '/reports/monthly' },
       { labelKey: 'nav.annual', route: '/reports/annual' },
+      { labelKey: 'nav.flow', route: '/reports/flow' },
     ],
   },
   {
