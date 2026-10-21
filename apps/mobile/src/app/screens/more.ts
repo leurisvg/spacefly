@@ -34,7 +34,18 @@ export const MORE_SECTIONS: MoreSection[] = [
       { labelKey: 'nav.budgets', route: '/analysis/budgets' },
     ],
   },
-  { titleKey: 'nav.sections.transactions', items: [{ labelKey: 'nav.newTransaction', route: '/transactions/new' }] },
+  {
+    titleKey: 'nav.sections.create',
+    items: [
+      { labelKey: 'nav.newTransaction', route: '/transactions/new' },
+      { labelKey: 'editor.entity.category.new', route: '/edit/category' },
+      { labelKey: 'editor.entity.tag.new', route: '/edit/tag' },
+      { labelKey: 'editor.entity.budget.new', route: '/edit/budget' },
+      { labelKey: 'editor.entity.bill.new', route: '/edit/bill' },
+      { labelKey: 'editor.entity.account.new', route: '/edit/account' },
+      { labelKey: 'editor.entity.piggy.new', route: '/edit/piggy' },
+    ],
+  },
 ];
 
 /** The "More" tab: a list of the sections that have no tab of their own. */

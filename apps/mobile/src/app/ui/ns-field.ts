@@ -2,7 +2,7 @@ import { afterNextRender, Directive, effect, ElementRef, inject, input } from '@
 import type { FieldTree } from '@angular/forms/signals';
 import { Switch, TextField, TextView, type View } from '@nativescript/core';
 
-type Bound = FieldTree<string> | FieldTree<boolean>;
+type Bound = FieldTree<string> | FieldTree<boolean> | FieldTree<number>;
 
 /**
  * Connects a NativeScript `TextField` / `TextView` / `Switch` to a signal-forms field: the control shows the field's value and
@@ -31,7 +31,9 @@ export class NsField {
       const view = this.view;
       const write = (value: string | boolean) => {
         const state = this.nsField()();
-        if (state.value() !== value) (state.value as { set(v: string | boolean): void }).set(value);
+        // A numeric field keeps a number: its text is parsed (an empty or non-numeric text is NaN, which the rules reject).
+        const next = typeof state.value() === 'number' && typeof value === 'string' ? (value.trim() === '' ? NaN : Number(value)) : value;
+        if (state.value() !== next && !(Number.isNaN(next) && Number.isNaN(state.value()))) (state.value as { set(v: string | boolean | number): void }).set(next);
       };
       if (view instanceof Switch) {
         view.on('checkedChange', (args) => write((args.object as Switch).checked));

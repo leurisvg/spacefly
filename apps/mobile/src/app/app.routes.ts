@@ -20,5 +20,7 @@ export const routes: Routes = [
   { path: 'reports/flow', loadComponent: () => import('./screens/flow').then((m) => m.Flow), canActivate: authed },
   { path: 'reports/calendar', loadComponent: () => import('./screens/calendar').then((m) => m.Calendar), canActivate: authed },
   { path: 'reports/compare', loadComponent: () => import('./screens/compare').then((m) => m.Compare), canActivate: authed },
+  { path: 'edit/:kind', loadComponent: () => import('./screens/entity-form').then((m) => m.EntityFormScreen), canActivate: authed },
+  { path: 'edit/:kind/:id', loadComponent: () => import('./screens/entity-form').then((m) => m.EntityFormScreen), canActivate: authed },
   { path: '**', redirectTo: '' },
 ];

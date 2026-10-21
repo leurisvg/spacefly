@@ -1,4 +1,5 @@
-import { Component, NO_ERRORS_SCHEMA } from '@angular/core';
+import { Component, inject, NO_ERRORS_SCHEMA } from '@angular/core';
+import { RouterExtensions } from '@nativescript/angular';
 import { accountsViewModel } from '@spacefly/client/features/accounts/accounts.vm';
 import { money } from '@spacefly/client/charts/series-colors';
 import { ChartWebView } from '../ui/chart-webview';
@@ -6,7 +7,7 @@ import { KpiCard } from '../ui/kpi-card';
 import { Money } from '../ui/money';
 import { EmptyState } from '../ui/empty-state';
 
-/** The accounts tab: total balance, each asset account with its balance, and the balance history. Reordering is web-only for now. */
+/** The accounts tab: total balance, each asset account with its balance, and the balance history. Tapping an account edits it; reordering is web-only for now. */
 @Component({
   selector: 'ns-accounts',
   imports: [ChartWebView, EmptyState, KpiCard, Money],
@@ -21,7 +22,7 @@ import { EmptyState } from '../ui/empty-state';
 
         <StackLayout class="card" marginTop="8">
           @for (a of vm.rows(); track a.id) {
-            <GridLayout columns="auto, *, auto" rows="auto, auto" class="row-divider">
+            <GridLayout columns="auto, *, auto" rows="auto, auto" class="row-divider" (tap)="edit(a.id)">
               <Label col="0" row="0" rowSpan="2" text="●" [style.color]="vm.colors.color('account', a.id)" marginRight="8" verticalAlignment="center"></Label>
               <Label col="1" row="0" [text]="a.name" textWrap="false" [opacity]="a.excluded ? 0.5 : 1"></Label>
               <Label col="1" row="1" [text]="a.currency + (a.role ? ' · ' + vm.i18n.t('accounts.roles.' + a.role) : '')" class="muted small"></Label>
@@ -48,4 +49,9 @@ import { EmptyState } from '../ui/empty-state';
 export class Accounts {
   protected readonly vm = accountsViewModel();
   protected readonly money = money;
+  private readonly router = inject(RouterExtensions);
+
+  protected edit(id: string): void {
+    void this.router.navigate(['/edit/account', id]);
+  }
 }

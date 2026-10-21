@@ -1,5 +1,6 @@
 import { Component, computed, inject, NO_ERRORS_SCHEMA } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
+import { RouterExtensions } from '@nativescript/angular';
 import type { GroupBy } from '@spacefly/shared';
 import { rankingViewModel, type RankingKind, type RankingView } from '@spacefly/client/features/analysis/ranking.vm';
 import { FormatService } from '@spacefly/client/format/format.service';
@@ -70,12 +71,17 @@ import { Segmented } from '../ui/segmented';
           @if (vm.items().length) {
             <StackLayout class="card">
               @for (it of vm.items(); track it.id ?? 'none') {
-                <GridLayout columns="auto, *, auto" rows="auto, auto" class="row-divider" (tap)="open(it)">
-                  <Label col="0" row="0" rowSpan="2" text="●" [style.color]="vm.colorOf(it)" marginRight="8" verticalAlignment="center"></Label>
-                  <Label col="1" row="0" [text]="vm.nameOf(it)" textWrap="false"></Label>
-                  <Label col="1" row="1" [text]="f.pct(it.share) + ' · ' + it.count + ' · ' + vm.i18n.t('ranking.avgTicket') + ' ' + f.compact(it.avg)" class="muted small" textWrap="false"></Label>
-                  <ns-money col="2" row="0" [value]="it.value" />
-                  <ns-delta col="2" row="1" [value]="it.value" [previous]="it.previous || null" [upIsGood]="vm.kindNow() === 'income'" horizontalAlignment="right" />
+                <GridLayout columns="*, auto" class="row-divider">
+                  <GridLayout col="0" columns="auto, *, auto" rows="auto, auto" (tap)="open(it)">
+                    <Label col="0" row="0" rowSpan="2" text="●" [style.color]="vm.colorOf(it)" marginRight="8" verticalAlignment="center"></Label>
+                    <Label col="1" row="0" [text]="vm.nameOf(it)" textWrap="false"></Label>
+                    <Label col="1" row="1" [text]="f.pct(it.share) + ' · ' + it.count + ' · ' + vm.i18n.t('ranking.avgTicket') + ' ' + f.compact(it.avg)" class="muted small" textWrap="false"></Label>
+                    <ns-money col="2" row="0" [value]="it.value" />
+                    <ns-delta col="2" row="1" [value]="it.value" [previous]="it.previous || null" [upIsGood]="vm.kindNow() === 'income'" horizontalAlignment="right" />
+                  </GridLayout>
+                  @if (vm.entityKind() && vm.entityId(it); as eid) {
+                    <Label col="1" text="✎" class="chip" marginLeft="8" verticalAlignment="center" (tap)="edit(eid)"></Label>
+                  }
                 </GridLayout>
               }
             </StackLayout>
@@ -96,6 +102,7 @@ export class Ranking {
   });
   protected readonly f = inject(FormatService);
   protected readonly drills = inject(DrillLauncher);
+  private readonly router = inject(RouterExtensions);
 
   protected readonly kinds = computed(() => [
     { value: 'expense', label: this.vm.i18n.t('common.expenses') },
@@ -113,6 +120,10 @@ export class Ranking {
   protected bar(click: ChartClick): void {
     this.vm.openBar(click.dataIndex);
     this.drills.show();
+  }
+
+  protected edit(id: string): void {
+    void this.router.navigate(['/edit', this.vm.entityKind(), id]);
   }
 
   protected open(it: { id: string | null; name: string }): void {

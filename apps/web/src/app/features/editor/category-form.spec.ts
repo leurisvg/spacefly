@@ -55,7 +55,8 @@ describe('CategoryForm', () => {
     h.answer('GET', '/api/categories/4', { id: '4', name: 'Comida', notes: null });
     await h.settle();
     await h.click('Delete');
-    await new Promise((r) => setTimeout(r, 20));
+    // The dialog is loaded on first use.
+    await vi.waitFor(() => expect(document.body.querySelector('sf-confirm-dialog')).not.toBeNull());
     const dialog = document.body.querySelector('sf-confirm-dialog') as HTMLElement;
     expect(dialog.textContent).toContain('Comida');
     h.http.expectNone((r) => r.method === 'DELETE');
@@ -72,7 +73,8 @@ describe('CategoryForm', () => {
     h.answer('GET', '/api/categories/4', { id: '4', name: 'Comida', notes: null });
     await h.settle();
     await h.click('Delete');
-    await new Promise((r) => setTimeout(r, 20));
+    // The dialog is loaded on first use.
+    await vi.waitFor(() => expect(document.body.querySelector('sf-confirm-dialog')).not.toBeNull());
     const dialog = document.body.querySelector('sf-confirm-dialog') as HTMLElement;
     ([...dialog.querySelectorAll('button')].find((b) => b.textContent!.trim() === 'Cancel') as HTMLButtonElement).click();
     await new Promise((r) => setTimeout(r, 20));

@@ -154,7 +154,8 @@ describe('AccountForm', () => {
     h.answer('GET', '/api/accounts/3', EXISTING);
     await h.settle();
     await h.click('Delete');
-    await new Promise((r) => setTimeout(r, 20));
+    // The dialog is loaded on first use.
+    await vi.waitFor(() => expect(document.body.querySelector('sf-confirm-dialog')).not.toBeNull());
     const dialog = document.body.querySelector('sf-confirm-dialog') as HTMLElement;
     expect(dialog.textContent).toContain('Its 12 transactions will be deleted too.');
     expect(dialog.textContent).toContain('Type “Tarjeta Visa” to confirm');

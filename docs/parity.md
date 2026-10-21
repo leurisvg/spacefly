@@ -21,7 +21,7 @@ Every screen has a view-model in `libs/client/src/features` when it exists on mo
 | Budgets | `/analysis/budgets` | same path (from the More tab) | `budgets.vm.ts` |
 | Account detail, net worth, savings, counterparties | `/accounts/*` | web-only | – |
 | Subscriptions, recurring, goals, projection | `/planning/*` | web-only | – |
-| Entity editors (category, tag, budget, account, goal…) | sheets | web-only | – |
+| Entity editors (category, tag, budget, subscription, account, goal) | side sheet | `/edit/:kind/:id?` (new from More; edit from Budgets, Ranking rows and the Accounts tab) | `entity-form.vm.ts` and one `*-form.vm.ts` per entity |
 | Server settings (excluded accounts, balance window, Sankey threshold, rates in use) | section of `/settings` | cards in the Settings tab | `settings.vm.ts` |
 | Exchange rates (add, replace, delete) | section of `/settings` | card in the Settings tab (the date is typed as YYYY-MM-DD) | `exchange-rates.vm.ts` |
 | Reordering accounts, CSV export | web | web-only (needs a file picker / share sheet) | – |

@@ -8,12 +8,13 @@ async function mount(inputs: Record<string, unknown> = {}) {
   const h = await mountEditor(PiggyForm, inputs);
   h.http.expectOne((r) => r.url === '/api/lookups/editor').flush(EDITOR_LOOKUPS);
   await h.settle();
-  const form = h.fixture.componentInstance as unknown as {
-    addAccount(id: string): void;
-    model: () => { currency: string; accounts: { accountId: string; currentAmount: string; adjust: string }[] };
-    accountOptions(): { value: string }[];
-  };
+  const form = (h.fixture.componentInstance as unknown as { vm: PiggyVm }).vm;
   return { ...h, form };
+}
+interface PiggyVm {
+  addAccount(id: string): void;
+  model: () => { currency: string; accounts: { accountId: string; currentAmount: string; adjust: string }[] };
+  accountOptions(): { value: string }[];
 }
 type Harness = Awaited<ReturnType<typeof mount>>;
 const rows = (h: Harness) => [...h.el.querySelectorAll('fieldset [role=group]')] as HTMLElement[];

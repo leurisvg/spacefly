@@ -1,4 +1,5 @@
 import { Component, computed, inject, NO_ERRORS_SCHEMA } from '@angular/core';
+import { RouterExtensions } from '@nativescript/angular';
 import { budgetsViewModel } from '@spacefly/client/features/analysis/budgets.vm';
 import { money } from '@spacefly/client/charts/series-colors';
 import { budgetStatus } from '@spacefly/client/ui-logic/budget-status';
@@ -46,7 +47,10 @@ import { ScreenHeader } from '../ui/screen-header';
                   <StackLayout col="2"><Label [text]="vm.i18n.t('budget.remaining')" class="eyebrow"></Label><ns-money [value]="b.remaining" tone="auto" /></StackLayout>
                 </GridLayout>
                 @if (vm.selected()?.id === b.id) {
-                  <Label [text]="vm.i18n.t('nav.explorer') + ' ›'" class="muted small" marginTop="8" (tap)="open(b)"></Label>
+                  <GridLayout columns="*, auto" marginTop="8">
+                    <Label col="0" [text]="vm.i18n.t('nav.explorer') + ' ›'" class="muted small" (tap)="open(b)"></Label>
+                    <Label col="1" [text]="vm.i18n.t('editor.tx.edit')" class="chip" (tap)="edit(b.id)"></Label>
+                  </GridLayout>
                 }
               </StackLayout>
             } @empty {
@@ -79,12 +83,17 @@ export class Budgets {
   protected readonly vm = budgetsViewModel();
   protected readonly money = money;
   private readonly drills = inject(DrillLauncher);
+  private readonly router = inject(RouterExtensions);
   protected readonly status = budgetStatus;
   protected readonly categoryHeight = computed(() => Math.max(140, this.vm.categoryCount() * 32 + 16));
 
   protected category(click: ChartClick): void {
     this.vm.openCategory(click.dataIndex);
     this.drills.show();
+  }
+
+  protected edit(id: string): void {
+    void this.router.navigate(['/edit/budget', id]);
   }
 
   protected open(b: { id: string; name: string }): void {
