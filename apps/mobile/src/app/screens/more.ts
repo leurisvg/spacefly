@@ -14,6 +14,15 @@ interface MoreSection {
 
 /** Every mobile screen that is not a tab, grouped like the web sidebar. A screen appears here when its route exists. */
 export const MORE_SECTIONS: MoreSection[] = [
+  {
+    titleKey: 'nav.sections.analysis',
+    items: [
+      { labelKey: 'nav.categories', route: '/analysis/categories' },
+      { labelKey: 'nav.tags', route: '/analysis/tags' },
+      { labelKey: 'nav.merchants', route: '/analysis/merchants' },
+      { labelKey: 'nav.incomeSources', route: '/analysis/income-sources' },
+    ],
+  },
   { titleKey: 'nav.sections.transactions', items: [{ labelKey: 'nav.newTransaction', route: '/transactions/new' }] },
 ];
 

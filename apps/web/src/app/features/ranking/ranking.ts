@@ -1,31 +1,19 @@
-import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucidePencil, lucidePlus } from '@ng-icons/lucide';
 import { TranslocoPipe } from '@jsverse/transloco';
-import type { BudgetsReport, GroupBy, RankingReport } from '@spacefly/shared';
+import type { GroupBy } from '@spacefly/shared';
 import { HlmButton } from '@spartan-ng/helm/button';
 import { HlmToggleGroupImports } from '@spartan-ng/helm/toggle-group';
-import { reportResource } from '@spacefly/client/api/report-resource';
-import { FormatService } from '@spacefly/client/format/format.service';
+import { rankingViewModel, type RankingKind } from '@spacefly/client/features/analysis/ranking.vm';
 import { FORMAT_PIPES } from '@spacefly/client/format/pipes';
-import { I18n } from '@spacefly/client/i18n/i18n';
-import { FiltersStore } from '@spacefly/client/state/filters.store';
-import { MetaStore } from '@spacefly/client/state/meta.store';
-import { linesOption, rankingBarsOption, sunburstOption, treemapOption, type Slice } from '@spacefly/client/charts/builders';
 import { Chart } from '../../shared/charts/chart';
 import { ChartCard } from '../../shared/charts/chart-card';
-import type { ChartTable } from '@spacefly/client/charts/chart-table';
-import { money, SeriesColors } from '@spacefly/client/charts/series-colors';
 import { Delta } from '../../shared/components/delta';
 import { EmptyState } from '../../shared/components/empty-state';
 import { KpiCard } from '../../shared/components/kpi-card';
 import { Money } from '../../shared/components/money';
 import { PageHeader } from '../../shared/components/page-header';
-import { TxDetailService } from '@spacefly/client/state/tx-detail.service';
-import { EntityEditor } from '@spacefly/client/state/entity-editor.service';
-
-type View = 'bars' | 'treemap' | 'sunburst';
-type Item = RankingReport['items'][number];
 
 /** Categories · Tags · Merchants (expense accounts) · Income sources (revenue accounts). */
 @Component({
@@ -35,14 +23,14 @@ type Item = RankingReport['items'][number];
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'flex flex-col gap-4 sm:gap-5' },
   template: `
-    <sf-page-header [title]="i18n.t('nav.' + key())" [description]="i18n.t('ranking.descriptions.' + key())">
-      @if (entityKind(); as kind) {
-        <button hlmBtn size="sm" variant="outline" type="button" (click)="create(kind)">
+    <sf-page-header [title]="vm.i18n.t('nav.' + key())" [description]="vm.i18n.t('ranking.descriptions.' + key())">
+      @if (vm.entityKind(); as kind) {
+        <button hlmBtn size="sm" variant="outline" type="button" (click)="vm.create(kind)">
           <ng-icon name="lucidePlus" aria-hidden="true" />{{ 'editor.entity.' + kind + '.new' | transloco }}
         </button>
       }
       @if (!fixedKind()) {
-        <hlm-toggle-group type="single" variant="outline" size="sm" [value]="kindNow()" [nullable]="false" (valueChange)="$event && filters.setParams({ kind: $any($event) })">
+        <hlm-toggle-group type="single" variant="outline" size="sm" [value]="vm.kindNow()" [nullable]="false" (valueChange)="$event && vm.setKind($any($event))">
           <button hlmToggleGroupItem value="expense">{{ 'common.expenses' | transloco }}</button>
           <button hlmToggleGroupItem value="income">{{ 'common.income' | transloco }}</button>
         </hlm-toggle-group>
@@ -50,41 +38,41 @@ type Item = RankingReport['items'][number];
     </sf-page-header>
 
     <section class="grid grid-cols-2 gap-3 lg:grid-cols-4">
-      <sf-kpi [label]="i18n.t('common.total')" [value]="r()?.total ?? null" [accent]="accent()" [loading]="res.initialLoading()" />
-      <sf-kpi [label]="i18n.t('ranking.items')" format="compact" [value]="r()?.items?.length ?? null" [accent]="accent()" [loading]="res.initialLoading()" />
-      <sf-kpi [label]="i18n.t('ranking.transactions')" format="compact" [value]="count()" [accent]="accent()" [loading]="res.initialLoading()" />
-      <sf-kpi [label]="i18n.t('ranking.avgTicket')" [value]="avgTicket()" [accent]="accent()" [loading]="res.initialLoading()" />
+      <sf-kpi [label]="vm.i18n.t('common.total')" [value]="vm.r()?.total ?? null" [accent]="vm.accent()" [loading]="vm.res.initialLoading()" />
+      <sf-kpi [label]="vm.i18n.t('ranking.items')" format="compact" [value]="vm.r()?.items?.length ?? null" [accent]="vm.accent()" [loading]="vm.res.initialLoading()" />
+      <sf-kpi [label]="vm.i18n.t('ranking.transactions')" format="compact" [value]="vm.count()" [accent]="vm.accent()" [loading]="vm.res.initialLoading()" />
+      <sf-kpi [label]="vm.i18n.t('ranking.avgTicket')" [value]="vm.avgTicket()" [accent]="vm.accent()" [loading]="vm.res.initialLoading()" />
     </section>
 
     <section class="grid gap-4 xl:grid-cols-2">
-      <sf-chart-card [title]="i18n.t('ranking.distribution')" [table]="table()" [loading]="res.loading()" [initialLoading]="res.initialLoading()" [fileName]="key() + '-distribution'">
-        <hlm-toggle-group card-actions type="single" variant="outline" size="sm" [value]="view()" [nullable]="false" (valueChange)="$event && filters.setParams({ view: $any($event) })">
+      <sf-chart-card [title]="vm.i18n.t('ranking.distribution')" [table]="vm.table()" [loading]="vm.res.loading()" [initialLoading]="vm.res.initialLoading()" [fileName]="key() + '-distribution'">
+        <hlm-toggle-group card-actions type="single" variant="outline" size="sm" [value]="vm.view()" [nullable]="false" (valueChange)="$event && vm.setView($any($event))">
           <button hlmToggleGroupItem value="bars" class="text-xs">{{ 'ranking.views.bars' | transloco }}</button>
           <button hlmToggleGroupItem value="treemap" class="text-xs">{{ 'ranking.views.treemap' | transloco }}</button>
-          @if (by() === 'category' && kindNow() === 'expense') {
+          @if (vm.canSunburst()) {
             <button hlmToggleGroupItem value="sunburst" class="text-xs">{{ 'ranking.views.sunburst' | transloco }}</button>
           }
         </hlm-toggle-group>
-        @if (items().length) {
-          @switch (view()) {
+        @if (vm.items().length) {
+          @switch (vm.view()) {
             @case ('treemap') {
-              <sf-chart [options]="treemapOpts()" height="24rem" (chartClick)="openId($any($event.data).id)" />
+              <sf-chart [options]="vm.treemapOpts()" height="24rem" (chartClick)="vm.openId($any($event.data).id)" />
             }
             @case ('sunburst') {
-              @if (sunburstOpts(); as o) {
+              @if (vm.sunburstOpts(); as o) {
                 <sf-chart [options]="o" height="24rem" />
               }
             }
             @default {
-              <sf-chart [options]="barsOpts()" [height]="barsHeight()" (chartClick)="openBar($event.dataIndex)" />
+              <sf-chart [options]="vm.barsOpts()" [height]="barsHeight()" (chartClick)="vm.openBar($event.dataIndex)" />
             }
           }
-        } @else if (!res.initialLoading()) {
-          <sf-empty [title]="i18n.t('common.noData')" />
+        } @else if (!vm.res.initialLoading()) {
+          <sf-empty [title]="vm.i18n.t('common.noData')" />
         }
       </sf-chart-card>
-      <sf-chart-card [title]="i18n.t('ranking.trend')" [subtitle]="i18n.t('ranking.trendHint')" [loading]="res.loading()" [initialLoading]="res.initialLoading()" [fileName]="key() + '-trend'">
-        @if (trendOpts(); as o) {
+      <sf-chart-card [title]="vm.i18n.t('ranking.trend')" [subtitle]="vm.i18n.t('ranking.trendHint')" [loading]="vm.res.loading()" [initialLoading]="vm.res.initialLoading()" [fileName]="key() + '-trend'">
+        @if (vm.trendOpts(); as o) {
           <sf-chart [options]="o" height="24rem" />
         }
       </sf-chart-card>
@@ -100,18 +88,18 @@ type Item = RankingReport['items'][number];
             <th class="eyebrow py-2 text-right">{{ 'ranking.count' | transloco }}</th>
             <th class="eyebrow py-2 text-right">{{ 'ranking.avgTicket' | transloco }}</th>
             <th class="eyebrow py-2 text-right">{{ 'ranking.previous' | transloco }}</th>
-            @if (entityKind()) {
+            @if (vm.entityKind()) {
               <th class="w-8"><span class="sr-only">{{ 'editor.tx.edit' | transloco }}</span></th>
             }
           </tr>
         </thead>
         <tbody>
-          @for (it of items(); track it.id) {
-            <tr class="cursor-pointer border-b border-border/60 hover:bg-muted/40" (click)="open(it)">
+          @for (it of vm.items(); track it.id) {
+            <tr class="cursor-pointer border-b border-border/60 hover:bg-muted/40" (click)="vm.open(it)">
               <td class="py-2">
                 <span class="inline-flex items-center gap-2">
-                  <span class="size-2.5 shrink-0 rounded-sm" [style.background]="colorOf(it)"></span>
-                  {{ nameOf(it) }}
+                  <span class="size-2.5 shrink-0 rounded-sm" [style.background]="vm.colorOf(it)"></span>
+                  {{ vm.nameOf(it) }}
                 </span>
               </td>
               <td class="py-2 text-right"><sf-money [value]="it.value" /></td>
@@ -121,13 +109,13 @@ type Item = RankingReport['items'][number];
               <td class="py-2 text-right">
                 <span class="inline-flex items-center gap-2">
                   <sf-money class="text-xs text-muted-foreground" [value]="it.previous" />
-                  <sf-delta [value]="it.value" [previous]="it.previous || null" [upIsGood]="kindNow() === 'income'" />
+                  <sf-delta [value]="it.value" [previous]="it.previous || null" [upIsGood]="vm.kindNow() === 'income'" />
                 </span>
               </td>
-              @if (entityKind()) {
+              @if (vm.entityKind()) {
                 <td class="py-2 text-right">
-                  @if (entityId(it); as eid) {
-                    <button hlmBtn variant="ghost" size="icon-sm" type="button" [attr.aria-label]="('editor.tx.edit' | transloco) + ': ' + nameOf(it)" (click)="edit($event, eid)">
+                  @if (vm.entityId(it); as eid) {
+                    <button hlmBtn variant="ghost" size="icon-sm" type="button" [attr.aria-label]="('editor.tx.edit' | transloco) + ': ' + vm.nameOf(it)" (click)="edit($event, eid)">
                       <ng-icon name="lucidePencil" aria-hidden="true" />
                     </button>
                   }
@@ -141,134 +129,17 @@ type Item = RankingReport['items'][number];
   `,
 })
 export class Ranking {
-  protected readonly i18n = inject(I18n);
-  protected readonly filters = inject(FiltersStore);
-  private readonly f = inject(FormatService);
-  private readonly colors = inject(SeriesColors);
-  private readonly detail = inject(TxDetailService);
-  private readonly meta = inject(MetaStore);
-  protected readonly editor = inject(EntityEditor);
-
   // Route data (withComponentInputBinding)
   readonly by = input<GroupBy>('category');
-  readonly kind = input<'expense' | 'income'>('expense');
+  readonly kind = input<RankingKind>('expense');
   readonly key = input('categories');
   readonly fixedKind = input(false);
 
-  private readonly kindParam = this.filters.param('kind');
-  private readonly viewParam = this.filters.param('view');
-  protected readonly kindNow = computed(() => (this.fixedKind() ? this.kind() : this.kindParam() === 'income' ? 'income' : this.kindParam() === 'expense' ? 'expense' : this.kind()));
-  protected readonly view = computed<View>(() => {
-    const v = this.viewParam() as View;
-    if (v === 'sunburst' && !(this.by() === 'category' && this.kindNow() === 'expense')) return 'bars';
-    return v === 'treemap' || v === 'sunburst' ? v : 'bars';
-  });
-
-  protected readonly res = reportResource<RankingReport>('reports/ranking', () => ({ by: this.by(), kind: this.kindNow() }));
-  protected readonly budgets = reportResource<BudgetsReport>('reports/budgets', () => (this.view() === 'sunburst' ? {} : null));
-  protected readonly r = this.res.data;
-  protected readonly items = computed(() => this.r()?.items ?? []);
-  protected readonly count = computed(() => this.items().reduce((s, i) => s + i.count, 0) || null);
-  protected readonly avgTicket = computed(() => (this.count() ? (this.r()?.total ?? 0) / this.count()! : null));
-  protected readonly accent = computed(() => (this.kindNow() === 'income' ? 'var(--money-income)' : 'var(--money-expense)'));
-
-  private readonly colorKind = computed(() => `${this.by()}:${this.kindNow()}`);
-  private readonly fallbackKey = computed(() => (this.by() === 'tag' ? 'common.untagged' : this.by() === 'budget' ? 'common.noBudget' : 'common.uncategorized'));
-
-  protected nameOf(it: { id: string | null; name: string }): string {
-    return this.i18n.name(it.name, it.id, this.fallbackKey());
-  }
-
-  /** Top 7 keep their own slot (stable per entity); the rest share the "other" gray. */
-  protected colorOf(it: Item): string {
-    const rank = this.items().indexOf(it);
-    return rank >= 0 && rank < 7 ? this.colors.color(this.colorKind(), it.id) : money.other();
-  }
-
-  private readonly slices = computed<Slice[]>(() => this.items().map((it) => ({ id: it.id, name: this.nameOf(it), value: it.value, color: this.colorOf(it) })));
-
-  protected readonly barsOpts = computed(() => rankingBarsOption(this.f, this.slices(), this.kindNow() === 'income' ? money.income() : money.expense()));
-  protected readonly barsHeight = computed(() => `${Math.max(10, Math.min(this.items().length, 12) * 2 + 2)}rem`);
-  protected readonly treemapOpts = computed(() => treemapOption(this.f, this.slices().slice(0, 30)));
-
-  protected readonly sunburstOpts = computed(() => {
-    const b = this.budgets.data();
-    if (!b) return null;
-    const budgeted = new Map<string | null, number>();
-    const groups: Parameters<typeof sunburstOption>[1] = b.budgets
-      .filter((x) => x.spent > 0)
-      .map((x) => {
-        for (const c of x.categories) budgeted.set(c.id, (budgeted.get(c.id) ?? 0) + c.value);
-        return {
-          id: x.id,
-          name: x.name,
-          color: this.colors.color('budget', x.id),
-          children: x.categories.map((c) => ({ id: c.id, name: this.i18n.name(c.name, c.id), value: c.value })),
-        };
-      });
-    const rest = this.items()
-      .map((it) => ({ id: it.id, name: this.nameOf(it), value: Math.max(0, it.value - (budgeted.get(it.id) ?? 0)) }))
-      .filter((c) => c.value > 0.005);
-    if (rest.length) groups.push({ id: null, name: this.i18n.t('common.noBudget'), color: money.other(), children: rest });
-    return sunburstOption(this.f, groups);
-  });
-
-  protected readonly trendOpts = computed(() => {
-    const r = this.r();
-    if (!r?.trend.length) return null;
-    return linesOption(
-      this.f,
-      r.months,
-      r.trend.slice(0, 6).map((t) => ({ id: t.id, name: this.nameOf(t), values: t.points.map((p) => p.value), color: this.colors.color(this.colorKind(), t.id) })),
-      { zeroBased: true },
-    );
-  });
-
-  protected readonly table = computed<ChartTable | null>(() =>
-    this.items().length
-      ? {
-          columns: [this.i18n.t('ranking.name'), this.i18n.t('common.total'), this.i18n.t('ranking.share'), this.i18n.t('ranking.count'), this.i18n.t('ranking.avgTicket')],
-          rows: this.items().map((it) => [this.nameOf(it), this.f.money(it.value), this.f.pct(it.share), String(it.count), this.f.money(it.avg)]),
-          numeric: [1, 2, 3, 4],
-        }
-      : null,
-  );
-
-  /** Categories, tags and merchants / income sources (expense and revenue accounts) can be created and edited from here. */
-  protected readonly entityKind = computed<'category' | 'tag' | 'account' | null>(() =>
-    this.by() === 'category' ? 'category' : this.by() === 'tag' ? 'tag' : this.by() === 'counterparty' ? 'account' : null,
-  );
-
-  /** Tag rows are identified by their name, so the editor needs the id from the lookups. */
-  protected entityId(it: { id: string | null; name: string }): string | null {
-    if (!it.id) return null;
-    if (this.by() === 'tag') return this.meta.lookups()?.tags.find((t) => t.name === it.id)?.id ?? null;
-    return this.by() === 'category' || this.by() === 'counterparty' ? it.id : null;
-  }
-
-  protected create(kind: 'category' | 'tag' | 'account'): void {
-    this.editor.open(kind, null, kind === 'account' ? { accountType: this.kindNow() === 'income' ? 'revenue' : 'expense' } : {});
-  }
+  protected readonly vm = rankingViewModel({ by: this.by, kind: this.kind, fixedKind: this.fixedKind });
+  protected readonly barsHeight = computed(() => `${Math.max(10, this.vm.barsCount() * 2 + 2)}rem`);
 
   protected edit(event: Event, id: string): void {
     event.stopPropagation();
-    const kind = this.entityKind();
-    if (kind) this.editor.open(kind, id);
-  }
-
-  protected open(it: { id: string | null; name: string }): void {
-    const key = { category: 'category', tag: 'tag', budget: 'budget', account: 'account', counterparty: 'counterparty' }[this.by()];
-    this.detail.open(this.nameOf(it), { type: this.kindNow() === 'income' ? 'deposit' : 'withdrawal', [key]: it.id ?? 'none' });
-  }
-
-  protected openBar(index: number): void {
-    const shown = this.slices().slice(0, 12).reverse();
-    const s = shown[index];
-    if (s) this.open(s);
-  }
-
-  protected openId(id: string | null): void {
-    const it = this.items().find((i) => i.id === id);
-    if (it) this.open(it);
+    this.vm.edit(id);
   }
 }
