@@ -1,5 +1,6 @@
 import { Component, input, NO_ERRORS_SCHEMA, output } from '@angular/core';
 import { piggyFormViewModel } from '@spacefly/client/features/editor/piggy-form.vm';
+import { DateField } from '../../ui/date-field';
 import { FieldBox } from '../../ui/field-box';
 import { FormShell } from '../../ui/form-shell';
 import { NsField } from '../../ui/ns-field';
@@ -9,7 +10,7 @@ import { SelectField } from '../../ui/select-field';
 /** Create or edit a goal: target, dates and the accounts it saves from, each with its amount and an add / remove adjustment. */
 @Component({
   selector: 'ns-piggy-form',
-  imports: [FieldBox, FormShell, NsField, SelectField],
+  imports: [DateField, FieldBox, FormShell, NsField, SelectField],
   schemas: [NO_ERRORS_SCHEMA],
   template: `
     <ns-form-shell [vm]="vm">
@@ -20,12 +21,8 @@ import { SelectField } from '../../ui/select-field';
       <ns-field-box [label]="vm.i18n.t('editor.entity.piggy.target')" [field]="vm.f.targetAmount">
         <TextField class="field" keyboardType="number" [nsField]="vm.f.targetAmount"></TextField>
       </ns-field-box>
-      <ns-field-box [label]="vm.i18n.t('editor.entity.piggy.startDate')" [field]="vm.f.startDate">
-        <TextField class="field" hint="YYYY-MM-DD" [nsField]="vm.f.startDate"></TextField>
-      </ns-field-box>
-      <ns-field-box [label]="vm.i18n.t('editor.entity.piggy.targetDate')" [field]="vm.f.targetDate">
-        <TextField class="field" hint="YYYY-MM-DD" [nsField]="vm.f.targetDate"></TextField>
-      </ns-field-box>
+      <ns-date-field [label]="vm.i18n.t('editor.entity.piggy.startDate')" [field]="vm.f.startDate" />
+      <ns-date-field [label]="vm.i18n.t('editor.entity.piggy.targetDate')" [field]="vm.f.targetDate" />
 
       <Label [text]="vm.i18n.t('editor.entity.piggy.accounts')" class="card-title" marginTop="4"></Label>
       <Label [text]="vm.i18n.t('editor.entity.piggy.adjustHint')" class="muted small" textWrap="true" marginBottom="6"></Label>

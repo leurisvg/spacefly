@@ -1,6 +1,7 @@
 import { Component, input, NO_ERRORS_SCHEMA, output } from '@angular/core';
 import { accountFormViewModel } from '@spacefly/client/features/editor/account-form.vm';
 import type { AccountWriteType } from '@spacefly/shared';
+import { DateField } from '../../ui/date-field';
 import { FieldBox } from '../../ui/field-box';
 import { FormShell } from '../../ui/form-shell';
 import { NsField } from '../../ui/ns-field';
@@ -9,7 +10,7 @@ import { SelectField } from '../../ui/select-field';
 /** Create or edit an account of any kind; the fields shown follow the kind. */
 @Component({
   selector: 'ns-account-form',
-  imports: [FieldBox, FormShell, NsField, SelectField],
+  imports: [DateField, FieldBox, FormShell, NsField, SelectField],
   schemas: [NO_ERRORS_SCHEMA],
   template: `
     <ns-form-shell [vm]="vm">
@@ -45,9 +46,7 @@ import { SelectField } from '../../ui/select-field';
         <ns-field-box [label]="vm.i18n.t(vm.isLiability() ? 'editor.entity.account.owed' : 'editor.entity.account.openingBalance')" [field]="vm.f.openingBalance">
           <TextField class="field" keyboardType="number" [nsField]="vm.f.openingBalance"></TextField>
         </ns-field-box>
-        <ns-field-box [label]="vm.i18n.t(vm.isLiability() ? 'editor.entity.account.startDate' : 'editor.entity.account.openingBalanceDate')" [field]="vm.f.openingBalanceDate">
-          <TextField class="field" hint="YYYY-MM-DD" [nsField]="vm.f.openingBalanceDate"></TextField>
-        </ns-field-box>
+        <ns-date-field [label]="vm.i18n.t(vm.isLiability() ? 'editor.entity.account.startDate' : 'editor.entity.account.openingBalanceDate')" [field]="vm.f.openingBalanceDate" />
         <GridLayout columns="*, auto" marginBottom="8">
           <Label col="0" [text]="vm.i18n.t('editor.entity.account.includeNetWorth')" verticalAlignment="center" textWrap="true"></Label>
           <Switch col="1" [nsField]="vm.f.includeNetWorth"></Switch>

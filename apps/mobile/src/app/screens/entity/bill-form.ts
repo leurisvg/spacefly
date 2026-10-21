@@ -1,5 +1,6 @@
 import { Component, input, NO_ERRORS_SCHEMA, output } from '@angular/core';
 import { billFormViewModel } from '@spacefly/client/features/editor/bill-form.vm';
+import { DateField } from '../../ui/date-field';
 import { FieldBox } from '../../ui/field-box';
 import { FormShell } from '../../ui/form-shell';
 import { NsField } from '../../ui/ns-field';
@@ -8,7 +9,7 @@ import { SelectField } from '../../ui/select-field';
 /** Create or edit a subscription. */
 @Component({
   selector: 'ns-bill-form',
-  imports: [FieldBox, FormShell, NsField, SelectField],
+  imports: [DateField, FieldBox, FormShell, NsField, SelectField],
   schemas: [NO_ERRORS_SCHEMA],
   template: `
     <ns-form-shell [vm]="vm">
@@ -36,12 +37,8 @@ import { SelectField } from '../../ui/select-field';
       </ns-field-box>
       <Label [text]="vm.i18n.t('editor.entity.bill.skipHint')" class="muted small" textWrap="true" marginBottom="8"></Label>
 
-      <ns-field-box [label]="vm.i18n.t('editor.entity.bill.date')" [required]="true" [field]="vm.f.date">
-        <TextField class="field" hint="YYYY-MM-DD" [nsField]="vm.f.date"></TextField>
-      </ns-field-box>
-      <ns-field-box [label]="vm.i18n.t('editor.entity.bill.endDate')" [field]="vm.f.endDate">
-        <TextField class="field" hint="YYYY-MM-DD" [nsField]="vm.f.endDate"></TextField>
-      </ns-field-box>
+      <ns-date-field [label]="vm.i18n.t('editor.entity.bill.date')" [required]="true" [field]="vm.f.date" />
+      <ns-date-field [label]="vm.i18n.t('editor.entity.bill.endDate')" [field]="vm.f.endDate" />
 
       <GridLayout columns="*, auto" marginBottom="8">
         <Label col="0" [text]="vm.i18n.t('editor.fields.active')" verticalAlignment="center"></Label>

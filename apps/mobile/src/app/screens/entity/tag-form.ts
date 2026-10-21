@@ -1,5 +1,6 @@
 import { Component, input, NO_ERRORS_SCHEMA, output } from '@angular/core';
 import { tagFormViewModel } from '@spacefly/client/features/editor/tag-form.vm';
+import { DateField } from '../../ui/date-field';
 import { FieldBox } from '../../ui/field-box';
 import { FormShell } from '../../ui/form-shell';
 import { NsField } from '../../ui/ns-field';
@@ -7,16 +8,14 @@ import { NsField } from '../../ui/ns-field';
 /** Create or edit a tag. */
 @Component({
   selector: 'ns-tag-form',
-  imports: [FieldBox, FormShell, NsField],
+  imports: [DateField, FieldBox, FormShell, NsField],
   schemas: [NO_ERRORS_SCHEMA],
   template: `
     <ns-form-shell [vm]="vm">
       <ns-field-box [label]="vm.i18n.t('editor.fields.name')" [required]="true" [field]="vm.f.tag">
         <TextField class="field" [nsField]="vm.f.tag"></TextField>
       </ns-field-box>
-      <ns-field-box [label]="vm.i18n.t('editor.entity.tag.date')" [field]="vm.f.date">
-        <TextField class="field" hint="YYYY-MM-DD" [nsField]="vm.f.date"></TextField>
-      </ns-field-box>
+      <ns-date-field [label]="vm.i18n.t('editor.entity.tag.date')" [field]="vm.f.date" />
       <ns-field-box [label]="vm.i18n.t('editor.fields.description')" [field]="vm.f.description">
         <TextView class="field" height="90" [nsField]="vm.f.description"></TextView>
       </ns-field-box>

@@ -24,7 +24,7 @@ export class SelectField {
   protected readonly shown = computed(() => this.options().find((o) => o.value === this.field()().value())?.label ?? '');
 
   protected async choose(): Promise<void> {
-    const picked = await pickOne(this.label(), this.options(), this.i18n.t('forms.cancel'));
+    const picked = await pickOne(this.label(), this.options(), this.i18n.t('forms.cancel'), { selected: this.field()().value() });
     if (picked !== null) this.field()().value.set(picked);
   }
 }

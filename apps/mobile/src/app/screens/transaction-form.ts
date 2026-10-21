@@ -5,8 +5,10 @@ import { accountPickerViewModel } from '@spacefly/client/features/editor/account
 import { fieldErrorMessages } from '@spacefly/client/features/editor/field-errors';
 import { transactionFormViewModel, type TxQueryValues } from '@spacefly/client/features/editor/transaction-form.vm';
 import type { AccountInput, AccountSlot } from '@spacefly/shared';
+import { DateField } from '../ui/date-field';
 import { NsField } from '../ui/ns-field';
 import { pickOne, type PickerOption } from '../ui/picker';
+import { TimeField } from '../ui/time-field';
 
 /**
  * Create (`/transactions/new`) or edit (`/transactions/:id/edit`) a transaction. All rules (type from the two accounts, other
@@ -15,7 +17,7 @@ import { pickOne, type PickerOption } from '../ui/picker';
  */
 @Component({
   selector: 'ns-transaction-form',
-  imports: [ActionBarComponent, NsField],
+  imports: [ActionBarComponent, DateField, NsField, TimeField],
   schemas: [NO_ERRORS_SCHEMA],
   template: `
     <ActionBar [title]="vm.i18n.t(vm.isEdit() ? 'nav.editTransaction' : 'nav.newTransaction')"></ActionBar>
@@ -63,17 +65,10 @@ import { pickOne, type PickerOption } from '../ui/picker';
               <Label [text]="error('foreignAmount')" class="field-error" visibility="{{ error('foreignAmount') ? 'visible' : 'collapse' }}" textWrap="true"></Label>
             }
 
-            <GridLayout columns="*, *">
-              <StackLayout col="0" marginRight="6">
-                <Label [text]="vm.i18n.t('editor.tx.date')" class="field-label"></Label>
-                <TextField class="field" hint="YYYY-MM-DD" [nsField]="vm.f.date"></TextField>
-              </StackLayout>
-              <StackLayout col="1" marginLeft="6">
-                <Label [text]="vm.i18n.t('editor.tx.time')" class="field-label"></Label>
-                <TextField class="field" hint="HH:mm" [nsField]="vm.f.time"></TextField>
-              </StackLayout>
+            <GridLayout columns="2*, *">
+              <ns-date-field col="0" marginRight="6" [label]="vm.i18n.t('editor.tx.date')" [required]="true" [field]="vm.f.date" />
+              <ns-time-field col="1" marginLeft="6" [label]="vm.i18n.t('editor.tx.time')" [field]="vm.f.time" />
             </GridLayout>
-            <Label [text]="error('date') || error('time')" class="field-error" visibility="{{ error('date') || error('time') ? 'visible' : 'collapse' }}" textWrap="true"></Label>
 
             @if (vm.showOtherCurrency()) {
               <GridLayout columns="*, auto" marginBottom="8">
@@ -89,11 +84,8 @@ import { pickOne, type PickerOption } from '../ui/picker';
               }
             }
 
-            <GridLayout columns="*, auto">
-              <Label col="0" [text]="vm.i18n.t('common.category')" class="field-label"></Label>
-              <Label col="1" text="▾" class="muted" (tap)="choose('category', vm.categoryOptions())"></Label>
-            </GridLayout>
-            <TextField class="field" [nsField]="vm.f.category"></TextField>
+            <Label [text]="vm.i18n.t('common.category')" class="field-label"></Label>
+            <Label [text]="vm.model().category || vm.i18n.t('editor.tx.categoryPlaceholder')" class="field" [class.field-placeholder]="!vm.model().category" (tap)="chooseCategory()"></Label>
 
             @if (vm.showBudgetBill()) {
               <Label [text]="vm.i18n.t('common.budget')" class="field-label"></Label>
@@ -185,9 +177,21 @@ export class TransactionFormScreen {
     if (picked) picker.select({ value: picked });
   }
 
-  protected async choose(field: 'foreignCurrency' | 'category' | 'budgetId' | 'billId', options: readonly PickerOption[]): Promise<void> {
-    const picked = await pickOne(this.vm.i18n.t(field === 'category' ? 'common.category' : field === 'budgetId' ? 'common.budget' : field === 'billId' ? 'editor.tx.bill' : 'editor.tx.foreignCurrency'), options, this.vm.i18n.t('forms.cancel'));
+  protected async choose(field: 'foreignCurrency' | 'budgetId' | 'billId', options: readonly PickerOption[]): Promise<void> {
+    const title = this.vm.i18n.t(field === 'budgetId' ? 'common.budget' : field === 'billId' ? 'editor.tx.bill' : 'editor.tx.foreignCurrency');
+    const picked = await pickOne(title, options, this.vm.i18n.t('forms.cancel'), { selected: this.vm.model()[field] });
     if (picked !== null) this.vm.f[field]().value.set(picked);
+  }
+
+  /** Searchable list of the existing categories; what is typed can be used as a new one, like the web combobox (`allowCreate`). */
+  protected async chooseCategory(): Promise<void> {
+    const options: PickerOption[] = [{ value: '', label: this.vm.i18n.t('common.uncategorized') }, ...this.vm.categoryOptions()];
+    const picked = await pickOne(this.vm.i18n.t('common.category'), options, this.vm.i18n.t('forms.cancel'), {
+      search: true,
+      selected: this.vm.model().category,
+      create: (name) => this.vm.i18n.t('forms.createOption', { name }),
+    });
+    if (picked !== null) this.vm.f.category().value.set(picked);
   }
 
   protected optionLabel(options: readonly PickerOption[], value: string): string {

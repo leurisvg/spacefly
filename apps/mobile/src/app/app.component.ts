@@ -4,6 +4,7 @@ import { NavigationEnd, Router } from '@angular/router';
 import { PageRouterOutlet, RouterExtensions } from '@nativescript/angular';
 import { ActionBar, Frame, NavigationButton } from '@nativescript/core';
 import { filter } from 'rxjs';
+import { SheetHost } from './ui/sheet-host';
 import { ToastHost } from './ui/toast-host';
 
 /** The ActionBar class of the screens that are the bottom of the stack (home, login): they get no back arrow. */
@@ -11,11 +12,12 @@ const ROOT_BAR = 'root-bar';
 
 @Component({
   selector: 'ns-app',
-  imports: [PageRouterOutlet, ToastHost],
+  imports: [PageRouterOutlet, SheetHost, ToastHost],
   schemas: [NO_ERRORS_SCHEMA],
   template: `
     <GridLayout>
       <page-router-outlet />
+      <ns-sheet-host />
       <ns-toast-host />
     </GridLayout>
   `,

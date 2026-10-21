@@ -373,6 +373,49 @@ ActionBar {
   font-weight: 700;
 }
 
+/* ── Sheets (pickers) ───────────────────────────────────────────────────── */
+.sheet-backdrop {
+  background-color: #99000000;
+}
+
+.sheet {
+  background-color: var(--card);
+  border-top-left-radius: 16;
+  border-top-right-radius: 16;
+  border-top-color: var(--border);
+  border-top-width: 1;
+  padding: 14 16 24 16;
+}
+
+.sheet-title {
+  font-size: 16;
+  font-weight: 700;
+  color: var(--foreground);
+  margin-bottom: 10;
+}
+
+.sheet-row {
+  padding: 13 4;
+  font-size: 16;
+  color: var(--foreground);
+  border-bottom-color: var(--border);
+  border-bottom-width: 1;
+}
+
+.sheet-row-on {
+  color: var(--primary);
+  font-weight: 700;
+}
+
+.sheet-row-create {
+  color: var(--primary);
+}
+
+/* A form field that shows its value (or placeholder) and opens a sheet when tapped. */
+.field-placeholder {
+  color: var(--chart-muted);
+}
+
 /* ── Money and meaning ──────────────────────────────────────────────────── */
 .tone-positive {
   color: var(--money-income);

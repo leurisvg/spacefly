@@ -19,7 +19,8 @@
     </style>
 
     <!-- theme to use AFTER launch screen is loaded-->
-    <style name="AppThemeBase" parent="Theme.AppCompat.Light.NoActionBar">
+    <!-- Dark: every app theme is dark, and the native dialogs (confirm, prompt) follow this one. -->
+    <style name="AppThemeBase" parent="Theme.AppCompat.NoActionBar">
         <item name="toolbarStyle">@style/NativeScriptToolbarStyle</item>
 
         <item name="colorPrimary">@color/ns_primary</item>
