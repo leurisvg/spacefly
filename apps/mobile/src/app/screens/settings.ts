@@ -6,12 +6,18 @@ import { Toast } from '@spacefly/client/platform/toast';
 import { firstValueFrom } from 'rxjs';
 import { isAccessLoginPage } from '../platform/bearer.interceptor';
 import { ServerConfig } from '../platform/server-config';
+import { ExchangeRates } from './exchange-rates';
+import { ServerSettings } from './server-settings';
 
 type TestResult = { kind: 'idle' } | { kind: 'busy' } | { kind: 'ok' } | { kind: 'blocked' } | { kind: 'failed' };
 
-/** The settings tab: language, theme, privacy, currency, the server and its Cloudflare Access credentials, refresh and sign-out. */
+/**
+ * The settings tab: language, theme, privacy, currency, the server and its Cloudflare Access credentials, the server-side settings
+ * (excluded accounts, balance window, Sankey threshold, exchange rates), refresh and sign-out.
+ */
 @Component({
   selector: 'ns-settings',
+  imports: [ExchangeRates, ServerSettings],
   schemas: [NO_ERRORS_SCHEMA],
   template: `
     <ScrollView>
@@ -79,6 +85,9 @@ type TestResult = { kind: 'idle' } | { kind: 'busy' } | { kind: 'ok' } | { kind:
             }
           }
         </StackLayout>
+
+        <ns-server-settings />
+        <ns-exchange-rates />
 
         <Button [text]="vm.i18n.t('topbar.refresh')" class="btn btn-outline" [isEnabled]="!vm.refreshing()" (tap)="vm.refresh()"></Button>
         <Button [text]="vm.i18n.t('topbar.logout')" class="btn btn-danger" marginTop="8" marginBottom="24" (tap)="vm.logout()"></Button>
