@@ -1,18 +1,16 @@
 import { Component, computed, inject, input, NO_ERRORS_SCHEMA } from '@angular/core';
 import type { FieldTree } from '@angular/forms/signals';
 import { I18n } from '@spacefly/client/i18n/i18n';
-import { FieldBox } from './field-box';
 import { pickOne, type PickerOption } from './picker';
+import { TapField } from './tap-field';
 
-/** A form field that is one of a list: shows the chosen label, and a tap opens the native action sheet. */
+/** A form field that is one of a list: shows the chosen label, and a tap opens the picker sheet. */
 @Component({
   selector: 'ns-select-field',
-  imports: [FieldBox],
+  imports: [TapField],
   schemas: [NO_ERRORS_SCHEMA],
   template: `
-    <ns-field-box [label]="label()" [required]="required()" [field]="field()">
-      <Label [text]="(shown() || '—') + ' ▾'" class="field" [isEnabled]="!field()().disabled()" (tap)="choose()"></Label>
-    </ns-field-box>
+    <ns-tap-field [label]="label()" [required]="required()" [field]="field()" [value]="shown()" [chevron]="true" [disabled]="field()().disabled()" (pressed)="choose()" />
   `,
 })
 export class SelectField {

@@ -234,16 +234,134 @@ ActionBar {
 }
 
 .field {
-  background-color: var(--background);
+  background-color: transparent;
   border-color: var(--input);
   border-width: 1;
-  border-radius: 10;
+  border-radius: 8;
   padding: 14 12;
   min-height: 52;
   font-size: 17;
   color: var(--foreground);
   placeholder-color: var(--chart-muted);
   margin-bottom: 8;
+}
+
+/* Tighter box for the amount | date | time row. */
+.field-compact {
+  padding: 14 8;
+  font-size: 16;
+}
+
+/* Room at the end of the box for the clear / chevron icon (or the swap button). */
+.field-end {
+  padding-right: 40;
+}
+
+/*
+ * Outlined fields (Material style). ns-field-box lays the label over the top-left of the box: raised, it sits on the border and its
+ * background (the surface the field is on) cuts the line; lowered, it is where the text goes and lets the touch through.
+ */
+.float-label {
+  font-size: 12;
+  color: var(--muted-foreground);
+  background-color: var(--background);
+  padding: 0 4;
+  margin-left: 10;
+  horizontal-align: left;
+  vertical-align: top;
+}
+
+.float-label-card {
+  background-color: var(--card);
+}
+
+.float-label-on {
+  color: var(--primary);
+}
+
+.float-label-in {
+  font-size: 17;
+  color: var(--chart-muted);
+  padding: 17 13 11 13;
+  margin-top: 8;
+  horizontal-align: left;
+  vertical-align: top;
+}
+
+.float-label-in-compact {
+  font-size: 16;
+  padding: 17 9 11 9;
+}
+
+/* The icon column of a row, level with the first line of its box. */
+.row-icon {
+  font-family: lucide;
+  font-size: 22;
+  color: var(--muted-foreground);
+  text-align: center;
+  vertical-align: top;
+  padding-top: 14;
+  margin-top: 8;
+}
+
+/* The currency code in the column left of an amount box. */
+.currency-code {
+  font-size: 14;
+  font-weight: 600;
+  color: var(--muted-foreground);
+  text-align: center;
+  vertical-align: top;
+  padding-top: 24;
+}
+
+/* An icon inside the box, at its end: the clear button, the chevron. */
+.field-end-icon {
+  font-family: lucide;
+  font-size: 18;
+  color: var(--muted-foreground);
+  width: 40;
+  text-align: center;
+  horizontal-align: right;
+  vertical-align: top;
+  padding-top: 12;
+  margin-top: 8;
+}
+
+/* Rows that share a tinted card (category, tags, notes…). */
+.form-card {
+  background-color: var(--card);
+  border-radius: 16;
+  padding: 12 12 4 12;
+  margin-bottom: 12;
+}
+
+/* Round button with a border (swap accounts). */
+.icon-btn {
+  font-family: lucide;
+  font-size: 18;
+  width: 40;
+  height: 40;
+  border-radius: 20;
+  border-color: var(--input);
+  border-width: 1;
+  background-color: var(--card);
+  color: var(--foreground);
+  text-align: center;
+  vertical-align: middle;
+}
+
+/* Save as a pill in the action bar. */
+.save-pill {
+  background-color: var(--primary);
+  color: var(--primary-foreground);
+  font-weight: 600;
+  font-size: 15;
+  border-radius: 20;
+  padding: 8 18;
+}
+
+.save-pill-off {
+  opacity: 0.5;
 }
 
 .field-error {
@@ -382,18 +500,23 @@ ActionBar {
 
 .sheet {
   background-color: var(--card);
-  border-top-left-radius: 16;
-  border-top-right-radius: 16;
-  border-top-color: var(--border);
-  border-top-width: 1;
-  padding: 14 16 24 16;
+  border-top-left-radius: 28;
+  border-top-right-radius: 28;
+  padding: 22 20 16 20;
 }
 
 .sheet-title {
-  font-size: 16;
-  font-weight: 700;
+  font-size: 22;
   color: var(--foreground);
-  margin-bottom: 10;
+  margin-bottom: 14;
+}
+
+/* The text buttons at the bottom right of a sheet (Cancel, OK). */
+.sheet-action {
+  color: var(--primary);
+  font-size: 15;
+  font-weight: 600;
+  padding: 10 12;
 }
 
 .sheet-row {
@@ -413,30 +536,18 @@ ActionBar {
   color: var(--primary);
 }
 
-/* A small action that still has a thumb-sized target (swap accounts…). */
-.btn-chip {
-  border-color: var(--input);
-  border-width: 1;
-  border-radius: 10;
-  padding: 10 16;
-  margin-bottom: 4;
-  font-size: 15;
-  font-weight: 600;
-  color: var(--foreground);
-}
-
-/* Suggestions under a text field. */
+/* Suggestions under a text field: a raised surface joined to the box above it. */
 .suggest-list {
-  background-color: var(--background);
+  background-color: var(--muted);
   border-color: var(--input);
   border-width: 1;
   border-radius: 8;
-  margin-top: -4;
+  margin-top: -8;
   margin-bottom: 8;
 }
 
 .suggest-row {
-  padding: 14 12;
+  padding: 16 14;
   font-size: 16;
   color: var(--foreground);
   border-bottom-color: var(--border);

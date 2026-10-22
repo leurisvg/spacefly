@@ -3,18 +3,26 @@ import type { FieldTree } from '@angular/forms/signals';
 import { FormatService } from '@spacefly/client/format/format.service';
 import { I18n } from '@spacefly/client/i18n/i18n';
 import { todayIso } from '@spacefly/shared';
-import { FieldBox } from './field-box';
 import { pickDate } from './picker';
+import { TapField } from './tap-field';
 
 /** A `YYYY-MM-DD` form field: shows the date and a tap opens the date picker. An optional date can be cleared there. */
 @Component({
   selector: 'ns-date-field',
-  imports: [FieldBox],
+  imports: [TapField],
   schemas: [NO_ERRORS_SCHEMA],
   template: `
-    <ns-field-box [label]="label()" [required]="required()" [field]="field()">
-      <Label [text]="shown()" class="field" [class.field-placeholder]="!field()().value()" [isEnabled]="!field()().disabled()" (tap)="choose()"></Label>
-    </ns-field-box>
+    <ns-tap-field
+      [label]="label()"
+      [required]="required()"
+      [field]="field()"
+      [value]="shown()"
+      [icon]="icon()"
+      [surface]="surface()"
+      [compact]="compact()"
+      [disabled]="field()().disabled()"
+      (pressed)="choose()"
+    />
   `,
 })
 export class DateField {
@@ -23,9 +31,14 @@ export class DateField {
   readonly label = input.required<string>();
   readonly required = input(false);
   readonly field = input.required<FieldTree<string>>();
+  readonly icon = input('');
+  readonly surface = input<'background' | 'card'>('background');
+  /** The tight box of the amount | date | time row: the short date with its year. */
+  readonly compact = input(false);
   protected readonly shown = computed(() => {
     const value = this.field()().value();
-    return value ? this.f.date(value, 'long') : '—';
+    if (!value) return '';
+    return this.compact() ? `${this.f.date(value, 'short')} ${value.slice(0, 4)}` : this.f.date(value, 'long');
   });
 
   protected async choose(): Promise<void> {

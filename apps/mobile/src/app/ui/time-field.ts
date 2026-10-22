@@ -2,18 +2,26 @@ import { Component, inject, input, NO_ERRORS_SCHEMA } from '@angular/core';
 import type { FieldTree } from '@angular/forms/signals';
 import { I18n } from '@spacefly/client/i18n/i18n';
 import { nowTime } from '@spacefly/client/ui-logic/time';
-import { FieldBox } from './field-box';
 import { pickTime } from './picker';
+import { TapField } from './tap-field';
 
 /** An `HH:mm` form field: shows the time and a tap opens the time picker. An optional time can be cleared there. */
 @Component({
   selector: 'ns-time-field',
-  imports: [FieldBox],
+  imports: [TapField],
   schemas: [NO_ERRORS_SCHEMA],
   template: `
-    <ns-field-box [label]="label()" [required]="required()" [field]="field()">
-      <Label [text]="field()().value() || '—'" class="field" [class.field-placeholder]="!field()().value()" [isEnabled]="!field()().disabled()" (tap)="choose()"></Label>
-    </ns-field-box>
+    <ns-tap-field
+      [label]="label()"
+      [required]="required()"
+      [field]="field()"
+      [value]="field()().value()"
+      [icon]="icon()"
+      [surface]="surface()"
+      [compact]="compact()"
+      [disabled]="field()().disabled()"
+      (pressed)="choose()"
+    />
   `,
 })
 export class TimeField {
@@ -21,6 +29,9 @@ export class TimeField {
   readonly label = input.required<string>();
   readonly required = input(false);
   readonly field = input.required<FieldTree<string>>();
+  readonly icon = input('');
+  readonly surface = input<'background' | 'card'>('background');
+  readonly compact = input(false);
 
   protected async choose(): Promise<void> {
     const state = this.field()();

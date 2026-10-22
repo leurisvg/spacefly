@@ -43,34 +43,30 @@ const MAX_LIST_HEIGHT = 330;
             } @else {
               <Label [text]="i18n.t('common.noResults')" class="muted" marginBottom="8"></Label>
             }
-            <Button [text]="l.cancel" class="btn btn-outline" marginTop="8" (tap)="dismiss()"></Button>
+            <Label [text]="l.cancel" class="sheet-action" horizontalAlignment="right" marginTop="4" (tap)="dismiss()"></Label>
           }
 
           @if (date(); as d) {
             <DatePicker [date]="dateStart()" (dateChange)="draftDate.set($any($event).value)"></DatePicker>
-            <GridLayout columns="auto, auto, *" marginTop="4">
-              <Label col="0" [text]="d.todayLabel" class="chip" (tap)="finish(d.today)"></Label>
+            <GridLayout columns="auto, auto, *, auto, auto" marginTop="8">
+              <Label col="0" [text]="d.todayLabel" class="chip" verticalAlignment="center" (tap)="finish(d.today)"></Label>
               @if (d.clear) {
-                <Label col="1" [text]="d.clear" class="chip" (tap)="finish('')"></Label>
+                <Label col="1" [text]="d.clear" class="chip" verticalAlignment="center" (tap)="finish('')"></Label>
               }
-            </GridLayout>
-            <GridLayout columns="*, *" marginTop="8">
-              <Button col="0" [text]="d.cancel" class="btn btn-outline" marginRight="4" (tap)="dismiss()"></Button>
-              <Button col="1" [text]="d.ok" class="btn" marginLeft="4" (tap)="finish(dateToIso(draftDate() ?? dateStart()))"></Button>
+              <Label col="3" [text]="d.cancel" class="sheet-action" (tap)="dismiss()"></Label>
+              <Label col="4" [text]="d.ok" class="sheet-action" (tap)="finish(dateToIso(draftDate() ?? dateStart()))"></Label>
             </GridLayout>
           }
 
           @if (time(); as t) {
             <TimePicker [time]="timeStart()" (timeChange)="draftTime.set($any($event).value)"></TimePicker>
-            <GridLayout columns="auto, auto, *" marginTop="4">
-              <Label col="0" [text]="t.nowLabel" class="chip" (tap)="finish(t.now)"></Label>
+            <GridLayout columns="auto, auto, *, auto, auto" marginTop="8">
+              <Label col="0" [text]="t.nowLabel" class="chip" verticalAlignment="center" (tap)="finish(t.now)"></Label>
               @if (t.clear) {
-                <Label col="1" [text]="t.clear" class="chip" (tap)="finish('')"></Label>
+                <Label col="1" [text]="t.clear" class="chip" verticalAlignment="center" (tap)="finish('')"></Label>
               }
-            </GridLayout>
-            <GridLayout columns="*, *" marginTop="8">
-              <Button col="0" [text]="t.cancel" class="btn btn-outline" marginRight="4" (tap)="dismiss()"></Button>
-              <Button col="1" [text]="t.ok" class="btn" marginLeft="4" (tap)="finish(timeToTime(draftTime() ?? timeStart()))"></Button>
+              <Label col="3" [text]="t.cancel" class="sheet-action" (tap)="dismiss()"></Label>
+              <Label col="4" [text]="t.ok" class="sheet-action" (tap)="finish(timeToTime(draftTime() ?? timeStart()))"></Label>
             </GridLayout>
           }
         </StackLayout>

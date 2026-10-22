@@ -22,7 +22,8 @@ export class NsField {
       if (view instanceof Switch) {
         if (view.checked !== !!value) view.checked = !!value;
       } else if (view instanceof TextField || view instanceof TextView) {
-        const text = String(value ?? '');
+        // An emptied numeric field holds NaN, which is shown as nothing.
+        const text = typeof value === 'number' && Number.isNaN(value) ? '' : String(value ?? '');
         if (view.text !== text) view.text = text;
       }
     });
