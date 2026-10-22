@@ -47,6 +47,8 @@ Thumbs.db
 .env
 /data
 /apps/server/test/fixtures/captured
+/apps/mobile/build
+/apps/mobile/.dart_tool
 *.apk
 *.ipa
 *.aab

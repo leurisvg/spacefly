@@ -1,16 +1,16 @@
 # Web / mobile parity
 
-**Pending: Flutter app.** The NativeScript app was removed and the mobile app is being rebuilt in Flutter, so the "Mobile route" column is empty on purpose. It gets filled in as each screen is ported. The web routes and view-models below are the reference for what to port. Update this table in the same change as any new screen.
+**The mobile app is being rebuilt in Flutter, in phases.** The NativeScript app was removed; the "Mobile route" column is filled in as each screen is ported (an empty cell is not ported yet). The web routes and view-models below are the reference for what to port. Update this table in the same change as any new screen.
 
 | Feature | Web route | Mobile route | View-model |
 |---|---|---|---|
-| Dashboard | `/` | | `dashboard.vm.ts` |
-| Transactions list | `/transactions` | | `explorer.vm.ts` |
+| Dashboard | `/` | `/` (tab, placeholder) | `dashboard.vm.ts` |
+| Transactions list | `/transactions` | `/transactions` (tab, placeholder) | `explorer.vm.ts` |
 | Transaction detail | detail sheet over the list | | `tx-detail.vm.ts`, `tx-view.vm.ts` |
 | New / edit transaction | `/transactions/new`, `/transactions/:id/edit` | | `transaction-form.vm.ts`, `account-picker.vm.ts` |
-| Accounts | `/accounts` | | `accounts.vm.ts` |
-| Settings | `/settings` | | `preferences.vm.ts`, `settings.vm.ts` |
-| Login | `/login` | | `login.vm.ts` |
+| Accounts | `/accounts` | `/accounts` (tab, placeholder) | `accounts.vm.ts` |
+| Settings | `/settings` | `/settings` (tab: theme, language, server, sign out; server settings and rates pending) | `preferences.vm.ts`, `settings.vm.ts` |
+| Login | `/login` | `/login`, plus `/server` for the server URL and Cloudflare Access credentials | `login.vm.ts` |
 | Drill into a chart slice | sheet / explorer filters | | `explorer.vm.ts` |
 | Monthly summary | `/reports/monthly` | | `monthly.vm.ts` |
 | Annual report | `/reports/annual` | | `annual.vm.ts` |

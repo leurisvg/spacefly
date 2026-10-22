@@ -21,7 +21,12 @@
     "check:deps": "node scripts/check-single-angular.mjs",
     "test:client": "ng test client",
     "typecheck": "tsc -p apps/web/tsconfig.app.json --noEmit && tsc -p libs/client/tsconfig.lib.json --noEmit && npm run typecheck:server",
-    "verify": "npm run check:deps && npm run lint && npm run typecheck && npm test && npm run build"
+    "gen:mobile": "tsx scripts/gen-flutter-models.ts && tsx scripts/gen-flutter-theme.ts && tsx scripts/gen-flutter-i18n.ts",
+    "check:mobile-gen": "node scripts/check-mobile-gen.mjs",
+    "dev:mobile": "cd apps/mobile && flutter run",
+    "test:mobile": "cd apps/mobile && flutter analyze && flutter test",
+    "build:mobile:android": "cd apps/mobile && flutter build apk",
+    "verify": "npm run check:deps && npm run check:mobile-gen && npm run lint && npm run typecheck && npm test && npm run test:mobile && npm run build"
   },
   "private": true,
   "packageManager": "npm@11.6.2",
@@ -71,6 +76,7 @@
     "jsdom": "^30.0.0",
     "postcss": "^8.5.28",
     "prettier": "^3.8.1",
+    "quicktype": "^26.0.0",
     "tailwindcss": "^4.3.3",
     "tsup": "^8.5.1",
     "tsx": "^4.23.15",

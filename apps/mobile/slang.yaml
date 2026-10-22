@@ -1,0 +1,11 @@
+base_locale: en
+fallback_strategy: base_locale
+input_directory: lib/i18n
+input_file_pattern: .i18n.json
+output_directory: lib/i18n
+output_file_name: strings.g.dart
+string_interpolation: double_braces
+timestamp: false
+key_case: camel
+# The catalog is shared with the web, where keys like `half-year` or `opening balance` are looked up at runtime;
+# camelCase makes every key a valid Dart identifier (`halfYear`, `openingBalance`).
