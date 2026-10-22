@@ -59,20 +59,24 @@ class KpiCard extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 6),
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Expanded(
-                      child: loading || value == null
-                          ? const Align(alignment: Alignment.centerLeft, child: Skeleton(width: 110, height: 26))
-                          : FittedBox(
-                              fit: BoxFit.scaleDown,
-                              alignment: Alignment.centerLeft,
-                              child: Text(_show(value!), style: numStyle(context, size: 22, weight: FontWeight.w600, color: negative ? scheme.error : scheme.onSurface)),
-                            ),
-                    ),
-                    if (spark != null && !loading) Padding(padding: const EdgeInsets.only(left: 8), child: SizedBox(width: 48, height: 26, child: SparkLine(values: spark!, color: accent))),
-                  ],
+                // A fixed height: the value is scaled to fit, so its own height says nothing about the row (KpiGrid sizes cards by it).
+                SizedBox(
+                  height: 28,
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Expanded(
+                        child: loading || value == null
+                            ? const Align(alignment: Alignment.centerLeft, child: Skeleton(width: 110, height: 26))
+                            : FittedBox(
+                                fit: BoxFit.scaleDown,
+                                alignment: Alignment.centerLeft,
+                                child: Text(_show(value!), maxLines: 1, softWrap: false, style: numStyle(context, size: 22, weight: FontWeight.w600, color: negative ? scheme.error : scheme.onSurface)),
+                              ),
+                      ),
+                      if (spark != null && !loading) Padding(padding: const EdgeInsets.only(left: 8), child: SizedBox(width: 48, height: 26, child: SparkLine(values: spark!, color: accent))),
+                    ],
+                  ),
                 ),
                 const SizedBox(height: 6),
                 if (previous != null && !loading)
