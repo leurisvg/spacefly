@@ -12,6 +12,9 @@ import 'screens/server_screen.dart';
 import 'screens/settings_tab.dart';
 import 'screens/shell.dart';
 import 'screens/transactions_screen.dart';
+import 'screens/exchange_rates_screen.dart';
+import 'screens/server_settings_screen.dart';
+import 'screens/transaction_form_screen.dart';
 import 'screens/tx_detail_screen.dart';
 import 'storage/server_config.dart';
 
@@ -52,16 +55,30 @@ final routerProvider = Provider<GoRouter>((ref) {
               path: '/transactions',
               builder: (_, __) => const TransactionsScreen(),
               routes: [
+                // `new` before `:id`, or "new" would be taken for an id
+                GoRoute(path: 'new', parentNavigatorKey: rootNavigatorKey, builder: (_, state) => newTransactionScreen(state)),
                 GoRoute(
                   path: ':id',
                   parentNavigatorKey: rootNavigatorKey,
                   builder: (_, state) => TxDetailScreen(id: state.pathParameters['id']!, row: state.extra is TxRow ? state.extra as TxRow : null),
+                  routes: [
+                    GoRoute(path: 'edit', parentNavigatorKey: rootNavigatorKey, builder: (_, state) => TransactionFormScreen(id: state.pathParameters['id']!)),
+                  ],
                 ),
               ],
             ),
           ]),
           StatefulShellBranch(routes: [GoRoute(path: '/accounts', builder: (_, __) => const AccountsScreen())]),
-          StatefulShellBranch(routes: [GoRoute(path: '/settings', builder: (_, __) => const SettingsTab())]),
+          StatefulShellBranch(routes: [
+            GoRoute(
+              path: '/settings',
+              builder: (_, __) => const SettingsTab(),
+              routes: [
+                GoRoute(path: 'server', parentNavigatorKey: rootNavigatorKey, builder: (_, __) => const ServerSettingsScreen()),
+                GoRoute(path: 'exchange-rates', parentNavigatorKey: rootNavigatorKey, builder: (_, __) => const ExchangeRatesScreen()),
+              ],
+            ),
+          ]),
         ],
       ),
     ],

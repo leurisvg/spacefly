@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../api/api_client.dart';
 import '../../api/models.g.dart';
+import '../../state/filters_store.dart';
 
 enum TxViewState { ready, notEditable, missing, error }
 
@@ -18,7 +19,9 @@ class TxViewResult {
   final String? reason;
 }
 
+/// Refetched after any write (the refresh tick), so a transaction that was just edited is not shown as it was.
 final txViewProvider = FutureProvider.autoDispose.family<TxViewResult, String>((ref, id) async {
+  ref.watch(filtersProvider.select((f) => f.refreshTick));
   try {
     final response = await ref.watch(dioProvider).get<Map<String, dynamic>>('/api/transactions/${Uri.encodeComponent(id)}');
     return TxViewResult(TxViewState.ready, tx: TxEditPayload.fromJson(response.data!));

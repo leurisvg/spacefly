@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../api/models.g.dart' hide Ref;
+import '../features/transactions/transaction_actions.dart';
 import '../features/transactions/tx_view_vm.dart';
 import '../format/formatter.dart';
 import '../format/formatter_provider.dart';
@@ -32,10 +34,20 @@ class TxDetailScreen extends ConsumerWidget {
       appBar: AppBar(
         title: Text(t.nav.explorer),
         actions: [
+          if (result.valueOrNull?.state == TxViewState.ready) ...[
+            IconButton(key: const Key('edit'), tooltip: t.editor.tx.edit, icon: const Icon(Icons.edit_outlined), onPressed: () => context.push('/transactions/$id/edit')),
+            IconButton(
+              key: const Key('delete'),
+              tooltip: t.forms.delete,
+              icon: const Icon(Icons.delete_outline),
+              onPressed: () => ref.read(transactionActionsProvider).remove(groupId: id, name: result.value!.tx!.description),
+            ),
+          ],
           if (url != null) IconButton(key: const Key('open-firefly'), tooltip: t.tx.openInFirefly, icon: const Icon(Icons.open_in_new), onPressed: () => launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication)),
         ],
       ),
       body: result.when(
+        skipLoadingOnReload: true,
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (_, __) => EmptyState(icon: Icons.cloud_off_outlined, title: t.editor.tx.loadError, onRetry: () => ref.invalidate(txViewProvider(id))),
         data: (r) => switch (r.state) {

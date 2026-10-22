@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:spacefly_mobile/features/transactions/tx_view_vm.dart';
 import 'package:spacefly_mobile/api/models.g.dart' show TxKind;
+import 'package:spacefly_mobile/state/filters_store.dart';
 
 import 'fixtures.dart';
 import 'support.dart';
@@ -21,7 +22,20 @@ void main() {
     expect(r.state, TxViewState.ready);
     expect((r.tx!.description, r.tx!.type, r.tx!.amount), ('Cena', TxKind.WITHDRAWAL, '250.00'));
     expect(r.tx!.tags, ['familia']);
-    expect((r.tx!.source.name, r.tx!.destination.name), ('Banco', 'Restaurante'));
+    expect((r.tx!.source.name, r.tx!.destination.name), ('Banco Popular', 'Restaurante'));
+  });
+
+  test('is fetched again after a write, so an edited transaction is not shown as it was', () async {
+    var amount = '250.00';
+    final adapter = FakeAdapter((_) => jsonBody({...txEditJson(), 'amount': amount}));
+    final c = TestEnv(config: signedInConfig, adapter: adapter).container();
+    c.listen(txViewProvider('5'), (_, __) {});
+    expect((await c.read(txViewProvider('5').future)).tx!.amount, '250.00');
+
+    amount = '300.00';
+    c.read(filtersProvider.notifier).refresh(); // what every successful write does
+    expect((await c.read(txViewProvider('5').future)).tx!.amount, '300.00');
+    expect(adapter.requests, hasLength(2));
   });
 
   test('maps a 409 to "not editable" with its reason', () async {

@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:url_launcher/url_launcher.dart';
+
 import '../auth/auth_service.dart';
+import '../features/settings/preferences_vm.dart';
 import '../i18n/strings.g.dart';
 import '../state/filters_store.dart';
 import '../state/meta_store.dart';
@@ -26,6 +29,9 @@ class SettingsTab extends ConsumerWidget {
     final prefs = ref.watch(preferencesProvider);
     final config = ref.watch(serverConfigProvider);
     final scheme = Theme.of(context).colorScheme;
+    final meta = ref.watch(metaProvider).valueOrNull;
+    final email = meta?.email ?? '';
+    final fireflyLink = (meta?.fireflyPublicUrl ?? '').isEmpty ? null : meta!.fireflyPublicUrl;
     final titleStyle = Theme.of(context).textTheme.titleSmall?.copyWith(color: scheme.onSurfaceVariant);
 
     return Scaffold(
@@ -89,9 +95,50 @@ class SettingsTab extends ConsumerWidget {
             child: ListTile(
               leading: const Icon(Icons.dns_outlined),
               title: Text(config.apiUrl),
-              subtitle: Text(t.settings.mobile.signedIn),
+              subtitle: Text(email.isEmpty ? t.settings.mobile.signedIn : '${t.settings.mobile.signedIn} · $email'),
               trailing: const Icon(Icons.chevron_right),
               onTap: () => context.push('/server'),
+            ),
+          ),
+          const SizedBox(height: 20),
+          Text(t.settings.preferences, style: titleStyle),
+          const SizedBox(height: 8),
+          Card(
+            child: Column(
+              children: [
+                ListTile(
+                  key: const Key('server-settings-link'),
+                  leading: const Icon(Icons.tune),
+                  title: Text(t.settings.preferences),
+                  subtitle: Text(t.settings.excluded),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => context.push('/settings/server'),
+                ),
+                const Divider(),
+                ListTile(
+                  key: const Key('exchange-rates-link'),
+                  leading: const Icon(Icons.currency_exchange),
+                  title: Text(t.settings.exchange.title),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => context.push('/settings/exchange-rates'),
+                ),
+                const Divider(),
+                ListTile(
+                  key: const Key('refresh'),
+                  leading: ref.watch(refreshingProvider) ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2.5)) : const Icon(Icons.refresh),
+                  title: Text(t.topbar.refresh),
+                  onTap: ref.watch(refreshingProvider) ? null : () => ref.read(refreshingProvider.notifier).refresh(),
+                ),
+                if (fireflyLink != null) ...[
+                  const Divider(),
+                  ListTile(
+                    key: const Key('open-firefly'),
+                    leading: const Icon(Icons.open_in_new),
+                    title: Text(t.topbar.openFirefly),
+                    onTap: () => launchUrl(Uri.parse(fireflyLink), mode: LaunchMode.externalApplication),
+                  ),
+                ],
+              ],
             ),
           ),
           const SizedBox(height: 20),

@@ -132,6 +132,54 @@ Map<String, Object?> txEditJson({String id = '5'}) => {
       'billId': null,
       'tags': ['familia'],
       'notes': 'Con la familia',
-      'source': {'id': 'a1', 'name': 'Banco', 'kind': 'asset'},
+      'source': {'id': '1', 'name': 'Banco Popular', 'kind': 'asset'},
       'destination': {'id': 'a2', 'name': 'Restaurante', 'kind': 'expense'},
+    };
+
+Map<String, Object?> editorLookupsJson() => {
+      'accounts': [
+        {'id': '1', 'name': 'Banco Popular', 'kind': 'asset', 'liabilityType': null, 'currency': 'DOP', 'balance': 1500, 'role': 'defaultAsset', 'group': null},
+        {'id': '2', 'name': 'Cuenta USD', 'kind': 'asset', 'liabilityType': null, 'currency': 'USD', 'balance': 200, 'role': 'savingAsset', 'group': null},
+        {'id': '5', 'name': 'Préstamo', 'kind': 'liability', 'liabilityType': 'loan', 'currency': 'DOP', 'balance': -50000, 'role': null, 'group': null},
+        {'id': '10', 'name': 'Empresa SRL', 'kind': 'revenue', 'liabilityType': null, 'currency': 'DOP', 'balance': 0, 'role': null, 'group': null},
+        {'id': '20', 'name': 'Supermercado', 'kind': 'expense', 'liabilityType': null, 'currency': 'DOP', 'balance': 0, 'role': null, 'group': null},
+      ],
+      'categories': [
+        {'id': '1', 'name': 'Comida'},
+      ],
+      'tags': [
+        {'id': '1', 'name': 'hogar'},
+      ],
+      'budgets': [
+        {'id': '1', 'name': 'Hogar'},
+      ],
+      'bills': [
+        {'id': '1', 'name': 'Luz', 'currency': 'DOP', 'active': true},
+      ],
+      'piggyBanks': [
+        {'id': '1', 'name': 'Fondo', 'currency': 'DOP'},
+      ],
+      'currencies': [
+        {'code': 'DOP', 'name': 'Peso', 'symbol': 'RD\$', 'decimals': 2},
+        {'code': 'USD', 'name': 'Dollar', 'symbol': 'US\$', 'decimals': 2},
+      ],
+      'defaultAccountId': '1',
+    };
+
+Map<String, Object?> exchangeRatesJson() => {
+      'primary': 'DOP',
+      'currencies': ['USD', 'EUR'],
+      'rates': [
+        {'currency': 'USD', 'date': '2026-09-01', 'rate': 61, 'from': 'USD', 'to': 'DOP'},
+        {'currency': 'EUR', 'date': '2026-08-01', 'rate': 65.123456789, 'from': 'EUR', 'to': 'DOP'},
+      ],
+    };
+
+Map<String, Object?> settingsJson() => {
+      'settings': {'excludedAccounts': ['1'], 'balanceMonths': 12, 'sankeyThreshold': 0.02, 'accountOrder': []},
+      'rates': [],
+      'accounts': [
+        {'id': '1', 'name': 'Banco', 'currency': 'DOP', 'role': null},
+        {'id': '2', 'name': 'Ahorros', 'currency': 'DOP', 'role': 'savingAsset'},
+      ],
     };

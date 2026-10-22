@@ -9,6 +9,7 @@ import 'package:spacefly_mobile/api/api_client.dart';
 import 'package:spacefly_mobile/app.dart';
 import 'package:spacefly_mobile/i18n/strings.g.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:spacefly_mobile/platform/platform.dart';
 import 'package:spacefly_mobile/state/filters_store.dart';
 import 'package:spacefly_mobile/state/preferences.dart';
 import 'package:spacefly_mobile/storage/server_config.dart';
@@ -56,6 +57,43 @@ FakeAdapter fakeServer(Map<String, Object> routes) => FakeAdapter((o) {
 /// `{ meta, data }`, the envelope of the report endpoints.
 Map<String, Object> report(Object data) => {'meta': {}, 'data': data};
 
+class RecordedToast {
+  const RecordedToast(this.kind, this.message);
+  final String kind;
+  final String message;
+
+  @override
+  String toString() => '$kind: $message';
+}
+
+class RecordingToast implements Toast {
+  final List<RecordedToast> messages = [];
+
+  @override
+  void success(String message) => messages.add(RecordedToast('success', message));
+
+  @override
+  void error(String message) => messages.add(RecordedToast('error', message));
+}
+
+class FakeConfirm implements Confirm {
+  bool answer = true;
+  final List<Confirmation> asked = [];
+
+  @override
+  Future<bool> confirm(Confirmation request) async {
+    asked.add(request);
+    return answer;
+  }
+}
+
+class FakeBack implements BackNavigation {
+  final List<String> fallbacks = [];
+
+  @override
+  void back(String fallback) => fallbacks.add(fallback);
+}
+
 /// The stores and overrides every test shares: in-memory storage, a fixed clock, no real browser.
 class TestEnv {
   TestEnv({ServerConfig config = const ServerConfig(), Preferences? preferences, this.adapter})
@@ -69,8 +107,14 @@ class TestEnv {
   final ServerConfig initialConfig;
   final Preferences initialPrefs;
   final FakeAdapter? adapter;
+  final toast = RecordingToast();
+  final confirm = FakeConfirm();
+  final back = FakeBack();
 
   List<Override> get overrides => [
+        toastProvider.overrideWithValue(toast),
+        confirmProvider.overrideWithValue(confirm),
+        backNavigationProvider.overrideWithValue(back),
         keyValueStoreProvider.overrideWithValue(prefs),
         credentialStoreProvider.overrideWithValue(secure),
         initialServerConfigProvider.overrideWithValue(initialConfig),

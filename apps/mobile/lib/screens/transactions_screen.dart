@@ -67,6 +67,7 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
         ],
         bottom: const PeriodBar(),
       ),
+      floatingActionButton: FloatingActionButton(key: const Key('new-transaction'), tooltip: t.nav.newTransaction, onPressed: () => context.push('/transactions/new'), child: const Icon(Icons.add)),
       body: RefreshIndicator(
         onRefresh: () => refreshAll(ref),
         child: ListView(
