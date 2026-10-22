@@ -1,4 +1,5 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart' show IconData;
+import 'package:flutter/material.dart' show Icons;
 
 import '../i18n/strings.g.dart';
 
@@ -18,19 +19,4 @@ enum AppTab {
         accounts => t.nav.sections.accounts,
         settings => t.nav.settings,
       };
-}
-
-/// A tab whose screen has not been ported yet: the section title over an empty state.
-class PlaceholderTab extends StatelessWidget {
-  const PlaceholderTab(this.tab, {super.key});
-  final AppTab tab;
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    return Scaffold(
-      appBar: AppBar(title: Text(tab.label(context.t))),
-      body: Center(child: Icon(tab.icon, size: 72, color: scheme.outline)),
-    );
-  }
 }

@@ -319,7 +319,7 @@ It stores the anonymized responses (pseudonymous names and amounts multiplied by
 
 ## Mobile app
 
-`apps/mobile` is a Flutter app (Material 3) for Android and iOS, being built in phases: for now it has sign-in, the server screen, the four-tab shell (Dashboard, Transactions and Accounts are placeholders) and settings with theme and language. [docs/parity.md](docs/parity.md) lists what exists on each side; [CLAUDE.md](CLAUDE.md#mobile-flutter) has the rules (what is generated, how view-models are ported).
+`apps/mobile` is a Flutter app (Material 3) for Android and iOS, being built in phases: for now it has sign-in, the server screen, the four-tab shell and, read-only, the dashboard, the transaction list (search, filters, sort, detail) and the accounts, plus settings with theme, language, display currency and privacy mode. Writing (new and edited transactions) and the reports come next. [docs/parity.md](docs/parity.md) lists what exists on each side; [CLAUDE.md](CLAUDE.md#mobile-flutter) has the rules (what is generated, how view-models are ported).
 
 ### Toolchain (once per machine)
 

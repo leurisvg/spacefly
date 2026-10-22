@@ -4487,19 +4487,49 @@ class TxWriteResult {
 }
 
 class TxEditPayload {
+    
+    ///In the currency of the account on the amount side (see `amountSide`).
+    final String amount;
+    final String? billId;
+    final String? budgetId;
+    final String? category;
     final String currency;
+    final String date;
+    final String description;
     final Destination destination;
+    
+    ///The amount in another currency: the received amount of a cross-currency transfer, or
+    ///"other currency" on expenses/income.
+    final String? foreignAmount;
+    final String? foreignCurrency;
     final String groupId;
     final String journalId;
+    final String? notes;
     final SourceClass source;
+    final List<String> tags;
+    
+    ///`HH:mm` in the user's timezone; `null` keeps the old behaviour (noon, or the stored time
+    ///when the day is unchanged).
+    final String? time;
     final TxKind type;
 
     TxEditPayload({
+        required this.amount,
+        required this.billId,
+        required this.budgetId,
+        required this.category,
         required this.currency,
+        required this.date,
+        required this.description,
         required this.destination,
+        required this.foreignAmount,
+        required this.foreignCurrency,
         required this.groupId,
         required this.journalId,
+        required this.notes,
         required this.source,
+        required this.tags,
+        required this.time,
         required this.type,
     });
 
@@ -4508,20 +4538,42 @@ class TxEditPayload {
     String toRawJson() => json.encode(toJson());
 
     factory TxEditPayload.fromJson(Map<String, dynamic> json) => TxEditPayload(
+        amount: json["amount"],
+        billId: json["billId"],
+        budgetId: json["budgetId"],
+        category: json["category"],
         currency: json["currency"],
+        date: json["date"],
+        description: json["description"],
         destination: Destination.fromJson(json["destination"]),
+        foreignAmount: json["foreignAmount"],
+        foreignCurrency: json["foreignCurrency"],
         groupId: json["groupId"],
         journalId: json["journalId"],
+        notes: json["notes"],
         source: SourceClass.fromJson(json["source"]),
+        tags: List<String>.from(json["tags"].map((x) => x)),
+        time: json["time"],
         type: txKindValues.map[json["type"]]!,
     );
 
     Map<String, dynamic> toJson() => {
+        "amount": amount,
+        "billId": billId,
+        "budgetId": budgetId,
+        "category": category,
         "currency": currency,
+        "date": date,
+        "description": description,
         "destination": destination.toJson(),
+        "foreignAmount": foreignAmount,
+        "foreignCurrency": foreignCurrency,
         "groupId": groupId,
         "journalId": journalId,
+        "notes": notes,
         "source": source.toJson(),
+        "tags": List<dynamic>.from(tags.map((x) => x)),
+        "time": time,
         "type": txKindValues.reverse[type],
     };
 }

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../i18n/strings.g.dart';
-import 'placeholder_tab.dart';
+import 'app_tab.dart';
 
 /// The signed-in frame: the four tabs in a NavigationBar, each tab keeping its own navigation stack.
 class Shell extends StatelessWidget {

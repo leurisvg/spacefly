@@ -52,3 +52,6 @@ class PreferencesNotifier extends Notifier<Preferences> {
     await ref.read(keyValueStoreProvider).setString(langKey, lang.languageCode);
   }
 }
+
+/// The palette of the active theme, for widgets that draw with it (charts).
+final themeTokensProvider = Provider<ThemeTokens>((ref) => themeTokens[ref.watch(preferencesProvider.select((p) => p.theme))]!);

@@ -55,6 +55,11 @@
             <action android:name="android.intent.action.PROCESS_TEXT"/>
             <data android:mimeType="text/plain"/>
         </intent>
+        <!-- Open a link (a transaction in Firefly) in the browser. -->
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="https" />
+        </intent>
         <!-- Chrome Custom Tabs, for the sign-in. -->
         <intent>
             <action android:name="android.support.customtabs.action.CustomTabsService" />

@@ -22,12 +22,38 @@ function tsFiles(dir: string): string[] {
   });
 }
 
+/** Members of `interface <name> { … }` (the text between the braces), or `null`. */
+function interfaceBody(source: string, name: string): string | null {
+  const match = new RegExp(`export interface ${name}\\b[^{]*\\{([\\s\\S]*?)\\n\\}`).exec(source);
+  return match ? match[1] : null;
+}
+
+/**
+ * `interface X extends Omit<Y, 'a' | 'b'> { … }` → `interface X { …Y's members except a and b… }`, so the inherited fields
+ * stay in the generated class. `Y` must be declared in the same file.
+ */
+function inlineOmit(source: string): string {
+  return source.replace(/export interface (\w+) extends Omit<(\w+), ([^>]+)> \{/g, (_, name: string, base: string, keys: string) => {
+    const body = interfaceBody(source, base);
+    if (body === null) throw new Error(`${name} extends Omit<${base}, …>, but ${base} is not declared in the same file`);
+    const omitted = [...keys.matchAll(/'(\w+)'/g)].map((m) => m[1]);
+    const kept = body.split('\n').filter((line, i, lines) => {
+      // a member is `  key: type;` (its doc comment is the lines above it): drop it together with its comment
+      const key = /^ {2}(\w+)\??:/.exec(line)?.[1];
+      if (key && omitted.includes(key)) return false;
+      const next = lines.slice(i + 1).find((l) => /^ {2}\w+\??:/.test(l));
+      const isComment = /^ {2}(\/\*\*|\*|\/\/)/.test(line);
+      return !(isComment && next && omitted.includes(/^ {2}(\w+)/.exec(next)![1]));
+    });
+    return `export interface ${name} {${kept.join('\n')}`;
+  });
+}
+
 /** Rewrites what quicktype's TypeScript reader cannot take. Throws when a pattern it expects is gone. */
 export function simplify(source: string): string {
-  return source
+  return inlineOmit(source)
     .replace(/export interface Report<T> \{[\s\S]*?\n\}\n\n/, '')
-    .replace(/Record<string, ([\w[\]]+)>/g, '{ [key: string]: $1 }')
-    .replace(/ extends Omit<[^{]*>/g, '');
+    .replace(/Record<string, ([\w[\]]+)>/g, '{ [key: string]: $1 }');
 }
 
 const work = mkdtempSync(join(tmpdir(), 'spacefly-dto-'));

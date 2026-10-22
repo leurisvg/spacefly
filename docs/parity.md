@@ -4,11 +4,11 @@
 
 | Feature | Web route | Mobile route | View-model |
 |---|---|---|---|
-| Dashboard | `/` | `/` (tab, placeholder) | `dashboard.vm.ts` |
-| Transactions list | `/transactions` | `/transactions` (tab, placeholder) | `explorer.vm.ts` |
-| Transaction detail | detail sheet over the list | | `tx-detail.vm.ts`, `tx-view.vm.ts` |
+| Dashboard | `/` | `/` (tab: KPIs, income vs expenses, top categories, net worth, budgets, subscriptions, largest; the calendar and the links to the other reports are not ported yet) | `dashboard.vm.ts` |
+| Transactions list | `/transactions` | `/transactions` (tab: search, filters, sort, 50 at a time; CSV export and deleting from the list are not there) | `explorer.vm.ts` |
+| Transaction detail | detail sheet over the list | `/transactions/:id` (read-only until the write screens) and `/drill` (the transactions behind a chart slice or a budget) | `tx-detail.vm.ts`, `tx-view.vm.ts` |
 | New / edit transaction | `/transactions/new`, `/transactions/:id/edit` | | `transaction-form.vm.ts`, `account-picker.vm.ts` |
-| Accounts | `/accounts` | `/accounts` (tab, placeholder) | `accounts.vm.ts` |
+| Accounts | `/accounts` | `/accounts` (tab: balances, flow, balance history; no reordering or editing yet) | `accounts.vm.ts` |
 | Settings | `/settings` | `/settings` (tab: theme, language, server, sign out; server settings and rates pending) | `preferences.vm.ts`, `settings.vm.ts` |
 | Login | `/login` | `/login`, plus `/server` for the server URL and Cloudflare Access credentials | `login.vm.ts` |
 | Drill into a chart slice | sheet / explorer filters | | `explorer.vm.ts` |

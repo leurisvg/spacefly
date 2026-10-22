@@ -8,12 +8,18 @@ import 'package:spacefly_mobile/screens/login_screen.dart';
 import 'package:spacefly_mobile/storage/server_config.dart';
 import 'package:spacefly_mobile/theme/tokens.g.dart';
 
+import 'fixtures.dart';
 import 'support.dart';
 
 void main() {
   FakeAdapter server() => FakeAdapter((o) => switch (o.path) {
         '/auth/mobile/token' => jsonBody({'token': 'session', 'expiresAt': 0, 'email': 'a@b.c'}),
         '/auth/logout' => ResponseBody.fromString('', 204),
+        '/api/meta' => jsonBody(metaJson()),
+        '/api/lookups' => jsonBody(lookupsJson()),
+        '/api/reports/dashboard' => jsonBody(report(dashboardJson())),
+        '/api/reports/accounts' => jsonBody(report(accountsJson())),
+        '/api/transactions' => jsonBody(report({'rows': [txJson()], 'totals': {'income': 0, 'expense': 100, 'transfer': 0}})),
         _ => jsonBody({'authenticated': true}),
       });
 

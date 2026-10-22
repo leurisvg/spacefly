@@ -1,0 +1,77 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../shared/dates.dart';
+import '../storage/stores.dart';
+import 'meta_store.dart';
+
+const currencyKey = 'spacefly.currency';
+
+/// "Today", replaceable in tests.
+final clockProvider = Provider<DateTime Function()>((ref) => DateTime.now);
+
+class FiltersState {
+  const FiltersState({required this.preset, required this.period, this.preferredCurrency, this.refreshTick = 0});
+
+  final PeriodPreset preset;
+  final Period period;
+
+  /// Currency the user prefers (persisted); `null` follows the server's primary currency.
+  final String? preferredCurrency;
+
+  /// Bumped by "Refresh" so every report refetches.
+  final int refreshTick;
+
+  FiltersState copyWith({PeriodPreset? preset, Period? period, String? preferredCurrency, int? refreshTick}) => FiltersState(
+        preset: preset ?? this.preset,
+        period: period ?? this.period,
+        preferredCurrency: preferredCurrency ?? this.preferredCurrency,
+        refreshTick: refreshTick ?? this.refreshTick,
+      );
+}
+
+/// Global report filters: period and display currency. Port of libs/client/src/state/filters.store.ts, with the platform's
+/// in-memory params source: the period lives only for the session, the currency is persisted.
+final filtersProvider = NotifierProvider<FiltersNotifier, FiltersState>(FiltersNotifier.new);
+
+class FiltersNotifier extends Notifier<FiltersState> {
+  @override
+  FiltersState build() {
+    final saved = ref.read(keyValueStoreProvider).getString(currencyKey);
+    return FiltersState(
+      preset: PeriodPreset.month,
+      period: presetPeriod(PeriodPreset.month, _today),
+      preferredCurrency: saved != null && RegExp(r'^[A-Z]{3}$').hasMatch(saved) ? saved : null,
+    );
+  }
+
+  String get _today => todayIso(ref.read(clockProvider)());
+
+  /// `anchor` defaults to today.
+  void setPreset(PeriodPreset preset, {String? anchor}) {
+    state = state.copyWith(preset: preset, period: presetPeriod(preset, anchor ?? _today));
+  }
+
+  void setCustom(Period period) {
+    state = state.copyWith(preset: PeriodPreset.custom, period: period);
+  }
+
+  void shift(int steps) {
+    state = state.copyWith(period: shiftPeriod(state.preset, state.period, steps));
+  }
+
+  Future<void> setCurrency(String code) async {
+    state = state.copyWith(preferredCurrency: code);
+    await ref.read(keyValueStoreProvider).setString(currencyKey, code);
+  }
+
+  void refresh() => state = state.copyWith(refreshTick: state.refreshTick + 1);
+}
+
+/// The display currency: the user's choice, else the server's primary currency.
+final currencyProvider = Provider<String>((ref) => ref.watch(filtersProvider.select((f) => f.preferredCurrency)) ?? ref.watch(primaryCurrencyProvider));
+
+/// Query parameters shared by every report request.
+final filterQueryProvider = Provider<Map<String, Object>>((ref) {
+  final f = ref.watch(filtersProvider);
+  return {'start': f.period.start, 'end': f.period.end, 'currency': ref.watch(currencyProvider), '_r': f.refreshTick};
+});

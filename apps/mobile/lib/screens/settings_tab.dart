@@ -4,7 +4,10 @@ import 'package:go_router/go_router.dart';
 
 import '../auth/auth_service.dart';
 import '../i18n/strings.g.dart';
+import '../state/filters_store.dart';
+import '../state/meta_store.dart';
 import '../state/preferences.dart';
+import '../state/privacy_store.dart';
 import '../storage/server_config.dart';
 import '../theme/tokens.g.dart';
 
@@ -59,6 +62,25 @@ class SettingsTab extends ConsumerWidget {
             ],
             selected: {prefs.lang},
             onSelectionChanged: (v) => ref.read(preferencesProvider.notifier).setLang(v.first),
+          ),
+          const SizedBox(height: 20),
+          Text(t.currency.label, style: titleStyle),
+          const SizedBox(height: 8),
+          SegmentedButton<String>(
+            key: const Key('display-currency'),
+            showSelectedIcon: false,
+            segments: [for (final c in ref.watch(currenciesProvider)) ButtonSegment(value: c.code, label: Text(c.code))],
+            selected: {ref.watch(currencyProvider)},
+            onSelectionChanged: (v) => ref.read(filtersProvider.notifier).setCurrency(v.first),
+          ),
+          const SizedBox(height: 12),
+          Card(
+            child: SwitchListTile(
+              key: const Key('privacy-switch'),
+              title: Text(t.topbar.hideAmounts),
+              value: ref.watch(privacyProvider),
+              onChanged: (v) => ref.read(privacyProvider.notifier).set(v),
+            ),
           ),
           const SizedBox(height: 20),
           Text(t.settings.mobile.server, style: titleStyle),
