@@ -237,8 +237,10 @@ ActionBar {
   background-color: var(--background);
   border-color: var(--input);
   border-width: 1;
-  border-radius: 8;
-  padding: 8 10;
+  border-radius: 10;
+  padding: 14 12;
+  min-height: 52;
+  font-size: 17;
   color: var(--foreground);
   placeholder-color: var(--chart-muted);
   margin-bottom: 8;
@@ -409,6 +411,36 @@ ActionBar {
 
 .sheet-row-create {
   color: var(--primary);
+}
+
+/* A small action that still has a thumb-sized target (swap accounts…). */
+.btn-chip {
+  border-color: var(--input);
+  border-width: 1;
+  border-radius: 10;
+  padding: 10 16;
+  margin-bottom: 4;
+  font-size: 15;
+  font-weight: 600;
+  color: var(--foreground);
+}
+
+/* Suggestions under a text field. */
+.suggest-list {
+  background-color: var(--background);
+  border-color: var(--input);
+  border-width: 1;
+  border-radius: 8;
+  margin-top: -4;
+  margin-bottom: 8;
+}
+
+.suggest-row {
+  padding: 14 12;
+  font-size: 16;
+  color: var(--foreground);
+  border-bottom-color: var(--border);
+  border-bottom-width: 1;
 }
 
 /* A form field that shows its value (or placeholder) and opens a sheet when tapped. */
