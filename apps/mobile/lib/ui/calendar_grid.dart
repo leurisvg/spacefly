@@ -10,16 +10,13 @@ import '../ui_logic/calendar_cells.dart';
 /// inside the bar when it fits or just above it, the day number in the middle and dots for scheduled bills and recurrences.
 /// Port of apps/web/src/app/shared/components/calendar-grid.ts. Tapping a day calls [onDay] with its date.
 class CalendarGrid extends StatelessWidget {
-  const CalendarGrid({super.key, required this.days, required this.f, required this.today, required this.onDay, this.scheduled = const [], this.compact = false, this.scale});
+  const CalendarGrid({super.key, required this.days, required this.f, required this.today, required this.onDay, this.scheduled = const [], this.scale});
 
   final List<CalendarDay> days;
   final List<ScheduledItem> scheduled;
   final Formatter f;
   final String today;
   final void Function(String date) onDay;
-
-  /// Smaller cells without the values, for the dashboard.
-  final bool compact;
 
   /// Value that fills a cell; defaults to the largest day shown.
   final double? scale;
@@ -84,9 +81,9 @@ class CalendarGrid extends StatelessWidget {
                       Align(alignment: Alignment.bottomLeft, child: FractionallySizedBox(widthFactor: 0.5, heightFactor: (c.incH / 100).clamp(0, 1), child: ColoredBox(color: tokens.moneyIncome.withValues(alpha: 0.85)))),
                     if (c.expH > 0)
                       Align(alignment: Alignment.bottomRight, child: FractionallySizedBox(widthFactor: 0.5, heightFactor: (c.expH / 100).clamp(0, 1), child: ColoredBox(color: tokens.moneyExpense.withValues(alpha: 0.85)))),
-                    if (!compact && c.day.income > 0) Positioned.fill(child: value(c.day.income, c.incH, c.incInside, tokens.moneyIncome, Alignment.centerLeft)),
-                    if (!compact && c.day.expense > 0) Positioned.fill(child: value(c.day.expense, c.expH, c.expInside, tokens.moneyExpense, Alignment.centerRight)),
-                    Center(child: Text('${c.num}', style: TextStyle(fontSize: compact ? 10 : 12, fontWeight: FontWeight.w700, color: scheme.onSurface, shadows: const [Shadow(blurRadius: 2, color: Color(0x66000000))]))),
+                    if (c.day.income > 0) Positioned.fill(child: value(c.day.income, c.incH, c.incInside, tokens.moneyIncome, Alignment.centerLeft)),
+                    if (c.day.expense > 0) Positioned.fill(child: value(c.day.expense, c.expH, c.expInside, tokens.moneyExpense, Alignment.centerRight)),
+                    Center(child: Text('${c.num}', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: scheme.onSurface, shadows: const [Shadow(blurRadius: 2, color: Color(0x66000000))]))),
                     if (c.scheduled.isNotEmpty)
                       Positioned(
                         top: 3,
@@ -123,25 +120,23 @@ class CalendarGrid extends StatelessWidget {
           physics: const NeverScrollableScrollPhysics(),
           mainAxisSpacing: 4,
           crossAxisSpacing: 4,
-          childAspectRatio: compact ? 1.25 : 0.9,
+          childAspectRatio: 0.9,
           children: [
             for (var i = 0; i < blanks; i++) const SizedBox.shrink(),
             for (final c in cells) cell(c),
           ],
         ),
-        if (!compact) ...[
-          const SizedBox(height: 10),
-          Wrap(
-            alignment: WrapAlignment.end,
-            spacing: 14,
-            runSpacing: 4,
-            children: [
-              legendItem(tokens.moneyIncome, t.common.income),
-              legendItem(tokens.moneyExpense, t.common.expenses),
-              if (scheduled.isNotEmpty) ...[legendItem(warning, t.calendar.bill, dot: true), legendItem(scheme.primary, t.calendar.recurrence, dot: true)],
-            ],
-          ),
-        ],
+        const SizedBox(height: 10),
+        Wrap(
+          alignment: WrapAlignment.end,
+          spacing: 14,
+          runSpacing: 4,
+          children: [
+            legendItem(tokens.moneyIncome, t.common.income),
+            legendItem(tokens.moneyExpense, t.common.expenses),
+            if (scheduled.isNotEmpty) ...[legendItem(warning, t.calendar.bill, dot: true), legendItem(scheme.primary, t.calendar.recurrence, dot: true)],
+          ],
+        ),
       ],
     );
   }

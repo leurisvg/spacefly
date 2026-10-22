@@ -11,7 +11,6 @@ import 'screens/compare_screen.dart';
 import 'screens/monthly_screen.dart';
 import 'screens/more_tab.dart';
 import 'screens/dashboard_screen.dart';
-import 'screens/drill_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/server_screen.dart';
 import 'screens/settings_tab.dart';
@@ -33,7 +32,7 @@ String? guard(ServerConfig config, String location) {
   return location == '/login' ? '/' : null;
 }
 
-/// The navigator above the tab shell: full-screen routes (a transaction, a drill-down) push onto it.
+/// The navigator above the tab shell: full-screen routes (a transaction, a report) push onto it.
 final rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
 
 final routerProvider = Provider<GoRouter>((ref) {
@@ -50,8 +49,7 @@ final routerProvider = Provider<GoRouter>((ref) {
     routes: [
       GoRoute(path: '/server', builder: (_, __) => const ServerScreen()),
       GoRoute(path: '/login', builder: (_, __) => const LoginScreen()),
-      GoRoute(path: '/drill', builder: (_, __) => const DrillScreen()),
-      // Reports open over the tab bar, like the drill-down.
+      // Reports open over the tab bar.
       GoRoute(path: '/reports/monthly', builder: (_, __) => const MonthlyScreen()),
       GoRoute(path: '/reports/annual', builder: (_, __) => const AnnualScreen()),
       GoRoute(path: '/reports/calendar', builder: (_, __) => const CalendarScreen()),

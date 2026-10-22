@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
 import '../features/accounts/accounts_vm.dart' show BalanceLine;
 import '../features/reports/annual_vm.dart';
@@ -11,6 +10,7 @@ import '../theme/app_theme.dart';
 import '../ui/charts.dart';
 import '../ui/charts/heatmap.dart';
 import '../ui/common.dart';
+import '../ui/drill_sheet.dart';
 import '../ui/kpi_card.dart';
 import '../ui/report_page.dart';
 
@@ -28,7 +28,7 @@ class AnnualScreen extends ConsumerWidget {
     final r = vm.r;
     final loading = vm.initialLoading;
 
-    void drill() => context.push('/drill');
+    void drill() => showDrillSheet(context);
 
     Widget monthTile(String label, ({String month, double net})? m) => StatTile(
           label: label,
@@ -60,7 +60,6 @@ class AnnualScreen extends ConsumerWidget {
         Text(t.annual.description, style: TextStyle(color: scheme.onSurfaceVariant)),
         const SizedBox(height: 8),
         KpiGrid(
-          aspectRatio: 2,
           children: [
             KpiCard(label: t.annual.avgIncome, f: f, accent: tokens.moneyIncome, value: r?.averages.income, loading: loading),
             KpiCard(label: t.annual.avgExpense, f: f, accent: tokens.moneyExpense, value: r?.averages.expense, loading: loading),

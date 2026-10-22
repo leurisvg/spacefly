@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
 import '../features/reports/compare_vm.dart';
 import '../format/formatter.dart' show DateStyle;
@@ -11,6 +10,7 @@ import '../theme/app_theme.dart';
 import '../ui/charts.dart';
 import '../ui/charts/diverging_bars.dart';
 import '../ui/common.dart';
+import '../ui/drill_sheet.dart';
 import '../ui/form_widgets.dart';
 import '../ui/report_page.dart';
 
@@ -29,7 +29,7 @@ class CompareScreen extends ConsumerWidget {
     final r = vm.r;
     final rows = vm.rows;
 
-    void drill() => context.push('/drill');
+    void drill() => showDrillSheet(context);
 
     Future<void> pickB() async {
       final picked = await showDateRangePicker(

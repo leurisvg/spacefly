@@ -42,21 +42,28 @@ class ReportPage extends ConsumerWidget {
   }
 }
 
-/// Two columns of cards, for the KPIs of a report.
+/// Two columns of cards, for the KPIs of a report. Each row is as tall as its tallest card, so a card never has empty space under it.
 class KpiGrid extends StatelessWidget {
-  const KpiGrid({super.key, required this.children, this.aspectRatio = 1.55});
+  const KpiGrid({super.key, required this.children});
   final List<Widget> children;
-  final double aspectRatio;
 
   @override
-  Widget build(BuildContext context) => GridView.count(
-        crossAxisCount: 2,
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        mainAxisSpacing: 8,
-        crossAxisSpacing: 8,
-        childAspectRatio: aspectRatio,
-        children: children,
+  Widget build(BuildContext context) => Column(
+        children: [
+          for (var i = 0; i < children.length; i += 2) ...[
+            if (i > 0) const SizedBox(height: 8),
+            IntrinsicHeight(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Expanded(child: children[i]),
+                  const SizedBox(width: 8),
+                  Expanded(child: i + 1 < children.length ? children[i + 1] : const SizedBox.shrink()),
+                ],
+              ),
+            ),
+          ],
+        ],
       );
 }
 

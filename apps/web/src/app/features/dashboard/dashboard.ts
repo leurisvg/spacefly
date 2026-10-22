@@ -129,7 +129,7 @@ import { TransactionList } from '../../shared/components/transaction-list';
           <a hlmBtn variant="link" size="xs" routerLink="/reports/calendar" queryParamsHandling="preserve">{{ 'common.viewAll' | transloco }}</a>
         </div>
         @if (vm.data(); as data) {
-          <sf-calendar-grid [days]="data.calendar" [compact]="true" (dayClick)="vm.openDay($event)" />
+          <sf-calendar-grid [days]="data.calendar" (dayClick)="vm.openDay($event)" />
         }
       </section>
       <section class="rounded-xl border border-border bg-card p-4">

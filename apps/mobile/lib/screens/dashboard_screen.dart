@@ -13,8 +13,10 @@ import '../theme/app_theme.dart';
 import '../ui/calendar_grid.dart';
 import '../ui/charts.dart';
 import '../ui/common.dart';
+import '../ui/drill_sheet.dart';
 import '../ui/kpi_card.dart';
 import '../ui/period_bar.dart';
+import '../ui/report_page.dart' show KpiGrid;
 import '../ui/tx_tile.dart';
 import '../ui_logic/budget_status.dart';
 
@@ -31,7 +33,7 @@ class DashboardScreen extends ConsumerWidget {
     final tokens = context.tokens;
     final loading = vm.initialLoading;
 
-    void drill() => context.push('/drill');
+    void drill() => showDrillSheet(context);
     Widget viewAll(String route) => TextButton(onPressed: () => context.push(route), child: Text(t.common.viewAll));
 
     return Scaffold(
@@ -44,13 +46,7 @@ class DashboardScreen extends ConsumerWidget {
           padding: const EdgeInsets.fromLTRB(12, 8, 12, 24),
           children: [
             if (vm.report.hasError && data == null) EmptyState(icon: Icons.cloud_off_outlined, title: t.errors.load, onRetry: () => ref.invalidate(dashboardReportProvider)),
-            GridView.count(
-              crossAxisCount: 2,
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              mainAxisSpacing: 8,
-              crossAxisSpacing: 8,
-              childAspectRatio: 1.55,
+            KpiGrid(
               children: [
                 KpiCard(label: t.common.income, f: f, accent: tokens.moneyIncome, value: data?.kpis.income.value, previous: data?.kpis.income.previous, spark: data?.kpis.income.spark, loading: loading),
                 KpiCard(label: t.common.expenses, f: f, accent: tokens.moneyExpense, value: data?.kpis.expense.value, previous: data?.kpis.expense.previous, spark: data?.kpis.expense.spark, upIsGood: false, loading: loading),
@@ -59,10 +55,7 @@ class DashboardScreen extends ConsumerWidget {
               ],
             ),
             const SizedBox(height: 8),
-            SizedBox(
-              height: 112,
-              child: KpiCard(label: t.common.netWorth, f: f, accent: tokens.moneyRevenue, value: data?.kpis.netWorth.value, previous: data?.kpis.netWorth.previous, spark: data?.kpis.netWorth.spark, loading: loading),
-            ),
+            KpiCard(label: t.common.netWorth, f: f, accent: tokens.moneyRevenue, value: data?.kpis.netWorth.value, previous: data?.kpis.netWorth.previous, spark: data?.kpis.netWorth.spark, loading: loading),
             const SizedBox(height: 12),
             SectionCard(
               title: t.dashboard.incomeVsExpense,
@@ -194,7 +187,6 @@ class DashboardScreen extends ConsumerWidget {
                       days: data.calendar,
                       f: f,
                       today: vm.today,
-                      compact: true,
                       onDay: (date) {
                         if (vm.openDay(date)) drill();
                       },

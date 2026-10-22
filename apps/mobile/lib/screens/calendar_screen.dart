@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
 import '../api/models.g.dart' show Kind, TxKind;
 import '../features/accounts/accounts_vm.dart' show BalanceLine;
@@ -13,6 +12,7 @@ import '../ui/calendar_grid.dart';
 import '../ui/charts.dart';
 import '../ui/charts/heatmap.dart';
 import '../ui/common.dart';
+import '../ui/drill_sheet.dart';
 import '../ui/form_widgets.dart';
 import '../ui/kpi_card.dart';
 import '../ui/report_page.dart';
@@ -31,7 +31,7 @@ class CalendarScreen extends ConsumerWidget {
     final isMonth = vm.view == CalendarView.month;
     final data = vm.data;
 
-    void drill() => context.push('/drill');
+    void drill() => showDrillSheet(context);
 
     Future<void> pick(CalendarFilter filter, String title, List<FilterOption> options, String selected, String all) async {
       final v = await showOptionSheet(context, title: title, options: [for (final o in options) PickerOption(o.value, o.label)], selected: selected, none: all);
@@ -82,14 +82,13 @@ class CalendarScreen extends ConsumerWidget {
           ),
           const SizedBox(height: 12),
           KpiGrid(
-            aspectRatio: 1.9,
             children: [
               KpiCard(label: t.common.income, f: f, accent: tokens.moneyIncome, value: data?.totals.income, loading: vm.initialLoading),
               KpiCard(label: t.common.expenses, f: f, accent: tokens.moneyExpense, value: data?.totals.expense, loading: vm.initialLoading),
             ],
           ),
           const SizedBox(height: 8),
-          SizedBox(height: 84, child: KpiCard(label: t.calendar.endBalance, f: f, accent: tokens.moneyNet, value: vm.endBalance, loading: vm.initialLoading)),
+          KpiCard(label: t.calendar.endBalance, f: f, accent: tokens.moneyNet, value: vm.endBalance, loading: vm.initialLoading),
           const SizedBox(height: 12),
           SectionCard(
             title: t.monthly.dailyCashFlow,

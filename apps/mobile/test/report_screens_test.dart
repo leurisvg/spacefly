@@ -78,7 +78,7 @@ void main() {
       final q = lastDrillQuery(env);
       expect((q['start'], q['end']), ('2026-09-02', '2026-09-02'));
 
-      await tester.pageBack();
+      await closeSheet(tester);
       await tester.pumpAndSettle();
       await tester.tap(find.text('View all'));
       await tester.pumpAndSettle();
@@ -114,7 +114,7 @@ void main() {
       await tester.tap(find.byKey(const Key('category-1')));
       await tester.pumpAndSettle();
       expect(lastDrillQuery(env)['category'], '1');
-      await tester.pageBack();
+      await closeSheet(tester);
       await tester.pumpAndSettle();
 
       await tester.tap(find.byKey(const Key('budget-b1')));
@@ -249,7 +249,7 @@ void main() {
       await tester.pumpAndSettle();
       final q = lastDrillQuery(env);
       expect((q['type'], q['category']), ('withdrawal', '1'));
-      await tester.pageBack();
+      await closeSheet(tester);
       await tester.pumpAndSettle();
 
       await tester.tap(find.text('Income'));

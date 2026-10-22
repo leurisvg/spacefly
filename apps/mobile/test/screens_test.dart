@@ -63,12 +63,13 @@ void main() {
       await tester.tap(find.byKey(const Key('slice-0')));
       await tester.pumpAndSettle();
       expect(find.byKey(const Key('drill')), findsOneWidget);
-      expect(find.text('Food'), findsOneWidget);
+      expect(find.descendant(of: find.byKey(const Key('drill')), matching: find.text('Food')), findsOneWidget);
+      expect(find.byType(BottomSheet), findsOneWidget);
       final request = env.adapter!.requests.lastWhere((r) => r.path == '/api/transactions');
       expect((request.queryParameters['type'], request.queryParameters['category']), ('withdrawal', '1'));
       expect(find.text('Supermercado'), findsOneWidget);
 
-      await tester.pageBack();
+      await closeSheet(tester);
       await tester.pumpAndSettle();
       expect(find.byKey(const Key('dashboard')), findsOneWidget);
     });

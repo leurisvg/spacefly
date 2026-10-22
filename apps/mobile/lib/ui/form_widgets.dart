@@ -38,7 +38,7 @@ class TapField extends StatelessWidget {
   }
 }
 
-/// A text field with the options that match what is typed listed right under it (not in an overlay, so the keyboard never hides them).
+/// A text field with the options that match what is typed listed right under it (not in an overlay, so the keyboard never hides them), all of them in a list that scrolls on its own.
 /// Picking one fills the field; typing anything else is allowed. Port of the NativeScript `ns-suggest-field`.
 class SuggestField extends StatelessWidget {
   const SuggestField({
@@ -71,7 +71,7 @@ class SuggestField extends StatelessWidget {
         listenable: Listenable.merge([controller, if (focusNode != null) focusNode!]),
         builder: (context, _) {
           final focused = focusNode?.hasFocus ?? true;
-          final shown = focused ? suggestionsFor(options, controller.text) : const <Suggestion>[];
+          final shown = focused ? suggestionsFor(options, controller.text, max: options.length) : const <Suggestion>[];
           final scheme = Theme.of(context).colorScheme;
           return Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -87,20 +87,29 @@ class SuggestField extends StatelessWidget {
               if (shown.isNotEmpty)
                 Container(
                   margin: const EdgeInsets.only(top: 4),
+                  clipBehavior: Clip.antiAlias,
+                  constraints: const BoxConstraints(maxHeight: 264),
                   decoration: BoxDecoration(color: scheme.surfaceContainer, borderRadius: BorderRadius.circular(12), border: Border.all(color: scheme.outlineVariant)),
-                  child: Column(
-                    children: [
-                      for (final o in shown)
-                        InkWell(
-                          key: Key('suggestion-${o.value}'),
-                          onTap: () {
-                            controller.text = o.label;
-                            controller.selection = TextSelection.collapsed(offset: o.label.length);
-                            onChanged(o.label);
-                          },
-                          child: Padding(padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12), child: Align(alignment: Alignment.centerLeft, child: Text(o.label))),
-                        ),
-                    ],
+                  // The list scrolls on its own; its notifications stop here so the form's drag-to-dismiss does not drop the focus (and the list).
+                  child: NotificationListener<ScrollNotification>(
+                    onNotification: (_) => true,
+                    child: ListView(
+                      key: const Key('suggestions'),
+                      shrinkWrap: true,
+                      padding: EdgeInsets.zero,
+                      children: [
+                        for (final o in shown)
+                          InkWell(
+                            key: Key('suggestion-${o.value}'),
+                            onTap: () {
+                              controller.text = o.label;
+                              controller.selection = TextSelection.collapsed(offset: o.label.length);
+                              onChanged(o.label);
+                            },
+                            child: Padding(padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12), child: Align(alignment: Alignment.centerLeft, child: Text(o.label))),
+                          ),
+                      ],
+                    ),
                   ),
                 ),
             ],

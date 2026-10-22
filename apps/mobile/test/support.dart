@@ -40,6 +40,12 @@ ResponseBody htmlBody(String html, [int status = 200]) => ResponseBody.fromStrin
 /// Loads the month and weekday names of every locale; call from `setUpAll`.
 Future<void> initFormats() => initializeDateFormatting();
 
+/// Dismisses the open bottom sheet by tapping the barrier above it.
+Future<void> closeSheet(WidgetTester tester) async {
+  await tester.tapAt(const Offset(20, 20));
+  await tester.pumpAndSettle();
+}
+
 /// A signed-in config for tests that talk to the (fake) API.
 const signedInConfig = ServerConfig(apiUrl: 'https://spacefly.test', token: 't');
 

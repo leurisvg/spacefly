@@ -13,6 +13,7 @@ import '../theme/app_theme.dart';
 import '../ui/calendar_grid.dart';
 import '../ui/charts.dart';
 import '../ui/common.dart';
+import '../ui/drill_sheet.dart';
 import '../ui/kpi_card.dart';
 import '../ui/report_page.dart';
 import '../ui/tx_tile.dart';
@@ -43,7 +44,7 @@ class MonthlyScreen extends ConsumerWidget {
     final muted = text.bodySmall?.copyWith(color: scheme.onSurfaceVariant);
     final today = todayIso(ref.read(clockProvider)());
 
-    void drill() => context.push('/drill');
+    void drill() => showDrillSheet(context);
     Widget empty(String message) => Padding(padding: const EdgeInsets.symmetric(vertical: 16), child: Center(child: Text(message, textAlign: TextAlign.center, style: TextStyle(color: scheme.onSurfaceVariant))));
 
     Widget categories(MonthlyReport d) => Column(
@@ -238,7 +239,6 @@ class MonthlyScreen extends ConsumerWidget {
         Text(t.monthly.description, style: TextStyle(color: scheme.onSurfaceVariant)),
         const SizedBox(height: 8),
         KpiGrid(
-          aspectRatio: 2,
           children: [
             KpiCard(label: t.monthly.earned, f: f, accent: tokens.moneyIncome, value: d?.kpis.earned, loading: loading),
             KpiCard(label: t.monthly.spent, f: f, accent: tokens.moneyExpense, value: d?.kpis.spent, loading: loading),
