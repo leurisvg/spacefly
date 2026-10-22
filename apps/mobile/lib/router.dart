@@ -5,6 +5,11 @@ import 'package:go_router/go_router.dart';
 
 import 'api/models.g.dart' show TxRow;
 import 'screens/accounts_screen.dart';
+import 'screens/annual_screen.dart';
+import 'screens/calendar_screen.dart';
+import 'screens/compare_screen.dart';
+import 'screens/monthly_screen.dart';
+import 'screens/more_tab.dart';
 import 'screens/dashboard_screen.dart';
 import 'screens/drill_screen.dart';
 import 'screens/login_screen.dart';
@@ -46,6 +51,11 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/server', builder: (_, __) => const ServerScreen()),
       GoRoute(path: '/login', builder: (_, __) => const LoginScreen()),
       GoRoute(path: '/drill', builder: (_, __) => const DrillScreen()),
+      // Reports open over the tab bar, like the drill-down.
+      GoRoute(path: '/reports/monthly', builder: (_, __) => const MonthlyScreen()),
+      GoRoute(path: '/reports/annual', builder: (_, __) => const AnnualScreen()),
+      GoRoute(path: '/reports/calendar', builder: (_, __) => const CalendarScreen()),
+      GoRoute(path: '/reports/compare', builder: (_, __) => const CompareScreen()),
       StatefulShellRoute.indexedStack(
         builder: (context, state, shell) => Shell(shell: shell),
         branches: [
@@ -69,6 +79,7 @@ final routerProvider = Provider<GoRouter>((ref) {
             ),
           ]),
           StatefulShellBranch(routes: [GoRoute(path: '/accounts', builder: (_, __) => const AccountsScreen())]),
+          StatefulShellBranch(routes: [GoRoute(path: '/more', builder: (_, __) => const MoreTab())]),
           StatefulShellBranch(routes: [
             GoRoute(
               path: '/settings',

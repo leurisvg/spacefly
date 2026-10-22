@@ -7,6 +7,8 @@ import '../../api/resources.dart';
 import '../../format/formatter.dart';
 import '../../format/formatter_provider.dart';
 import '../../i18n/strings.g.dart';
+import '../../shared/dates.dart' show todayIso;
+import '../../state/filters_store.dart';
 import '../../state/preferences.dart';
 import '../../state/tx_detail.dart';
 import '../../ui_logic/names.dart';
@@ -44,13 +46,17 @@ class TextTable {
 /// The dashboard: KPIs, income vs expenses, top categories, net worth, budgets, upcoming and largest.
 /// Port of libs/client/src/features/dashboard/dashboard.vm.ts: the shaping is the same, the charts are drawn by fl_chart.
 class DashboardViewModel {
-  DashboardViewModel({required this.report, required this.f, required this.t, required this.colors, required this.detail});
+  DashboardViewModel({required this.report, required this.f, required this.t, required this.colors, required this.detail, this.calendarMonth = '', this.today = ''});
 
   final AsyncValue<DashboardReport> report;
   final Formatter f;
   final Translations t;
   final SeriesColors colors;
   final TxDetailNotifier detail;
+
+  /// The month the calendar card shows (`YYYY-MM`): the one the period ends in.
+  final String calendarMonth;
+  final String today;
 
   DashboardReport? get data => report.valueOrNull;
 
@@ -113,5 +119,7 @@ final dashboardViewModelProvider = Provider.autoDispose<DashboardViewModel>((ref
     t: t,
     colors: ref.watch(seriesColorsProvider),
     detail: ref.read(txDetailProvider.notifier),
+    calendarMonth: ref.watch(filtersProvider.select((f) => f.period.end.substring(0, 7))),
+    today: todayIso(ref.read(clockProvider)()),
   );
 });

@@ -74,4 +74,28 @@ void main() {
       expect(shiftPeriod(PeriodPreset.last6m, const Period('2026-03-16', '2026-09-15'), -1), const Period('2025-09-16', '2026-03-15'));
     });
   });
+
+  group('previous and year-ago periods', () {
+    const sep = Period('2026-09-01', '2026-09-30');
+
+    test('step back by the same shape', () {
+      expect(previousPeriod(sep), const Period('2026-08-01', '2026-08-31'));
+      expect(previousPeriod(const Period('2026-07-01', '2026-09-30')), const Period('2026-04-01', '2026-06-30'));
+      expect(previousPeriod(const Period('2026-09-10', '2026-09-19')), const Period('2026-08-31', '2026-09-09'));
+      expect(samePeriodLastYear(sep), const Period('2025-09-01', '2025-09-30'));
+      expect(samePeriodLastYear(const Period('2026-01-01', '2026-09-15')), const Period('2025-01-01', '2025-09-15'));
+    });
+
+    test('know whole months and the months a range touches', () {
+      expect(isFullMonth(sep), isTrue);
+      expect(isFullMonth(const Period('2026-09-01', '2026-10-31')), isFalse);
+      expect(monthsInRange('2025-11-15', '2026-02-01'), ['2025-11', '2025-12', '2026-01', '2026-02']);
+    });
+
+    test('count weekdays from Monday', () {
+      expect(weekdayMon0('2026-09-01'), 1); // Tuesday
+      expect(weekdayMon0('2026-06-01'), 0); // Monday
+      expect(weekdayMon0('2026-09-06'), 6); // Sunday
+    });
+  });
 }

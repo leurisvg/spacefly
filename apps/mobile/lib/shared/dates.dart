@@ -115,3 +115,40 @@ Period shiftPeriod(PeriodPreset preset, Period p, int steps) {
       return Period(addDays(p.start, steps * length), addDays(p.end, steps * length));
   }
 }
+
+/// Monday = 0 … Sunday = 6.
+int weekdayMon0(String date) => (parseIso(date).weekday - 1) % 7;
+
+/// Month keys (`YYYY-MM`) touched by the range, in order.
+List<String> monthsInRange(String start, String end) {
+  final out = <String>[];
+  var cur = startOfMonth(start);
+  while (cur.compareTo(end) <= 0) {
+    out.add(monthKey(cur));
+    cur = addMonths(cur, 1);
+  }
+  return out;
+}
+
+bool isFullMonth(Period p) => p.start == startOfMonth(p.start) && p.end == endOfMonth(p.start);
+
+/// Period of the same "shape" immediately before the given one.
+Period previousPeriod(Period p) {
+  if (isFullMonth(p)) {
+    final start = addMonths(p.start, -1);
+    return Period(start, endOfMonth(start));
+  }
+  final span = monthsInRange(p.start, p.end).length;
+  if (p.start == startOfMonth(p.start) && p.end == endOfMonth(p.end)) {
+    final start = addMonths(p.start, -span);
+    return Period(start, endOfMonth(addMonths(start, span - 1)));
+  }
+  final length = daysBetween(p.start, p.end);
+  return Period(addDays(p.start, -length), addDays(p.start, -1));
+}
+
+Period samePeriodLastYear(Period p) {
+  final start = addMonths(p.start, -12);
+  final end = p.end == endOfMonth(p.end) ? endOfMonth(addMonths(p.end, -12)) : addMonths(p.end, -12);
+  return Period(start, end);
+}

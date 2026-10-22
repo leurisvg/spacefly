@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../i18n/strings.g.dart';
 import 'app_tab.dart';
 
-/// The signed-in frame: the four tabs in a NavigationBar, each tab keeping its own navigation stack.
+/// The signed-in frame: the five tabs in a NavigationBar, each tab keeping its own navigation stack.
 class Shell extends StatelessWidget {
   const Shell({super.key, required this.shell});
   final StatefulNavigationShell shell;

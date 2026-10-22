@@ -152,20 +152,29 @@ class DonutChart extends StatelessWidget {
   }
 }
 
-/// One or more balance lines over a shared list of months; the first line can be filled underneath.
+/// One or more lines over a shared x axis; the first line can be filled underneath. The x axis is a list of months unless [labels]
+/// gives its own texts (days of a month…); [yFormat] writes the y axis and tooltip values (percentages), [tipTitle] adds a heading
+/// to the tooltip.
 class LinesChart extends StatelessWidget {
-  const LinesChart({super.key, required this.months, required this.lines, required this.f, this.area = false, this.height = 200});
+  const LinesChart({super.key, required this.months, required this.lines, required this.f, this.area = false, this.height = 200, this.labels, this.yFormat, this.tipTitle});
 
   final List<String> months;
   final List<BalanceLine> lines;
   final Formatter f;
   final bool area;
   final double height;
+  final List<String>? labels;
+  final String Function(double value)? yFormat;
+  final String Function(int index)? tipTitle;
 
   @override
   Widget build(BuildContext context) {
     final tokens = context.tokens;
-    final step = labelStep(months.length);
+    final count = labels?.length ?? months.length;
+    final step = labelStep(count);
+    final axis = yFormat ?? (double v) => f.compact(v);
+    final tip = yFormat ?? (double v) => f.money(v);
+    String xLabel(int i) => labels != null ? labels![i] : f.monthLabel(months[i], withYear: false);
     return SizedBox(
       height: height,
       child: LineChart(
@@ -174,17 +183,18 @@ class LinesChart extends StatelessWidget {
           borderData: FlBorderData(show: false),
           titlesData: _titles(
             context,
-            left: (v) => Text(f.compact(v)),
-            bottom: (v) => v.toInt() % step == 0 && v.toInt() < months.length ? Text(f.monthLabel(months[v.toInt()], withYear: false)) : const SizedBox.shrink(),
+            left: (v) => Text(axis(v)),
+            bottom: (v) => v.toInt() % step == 0 && v.toInt() < count ? Text(xLabel(v.toInt())) : const SizedBox.shrink(),
           ),
           lineTouchData: LineTouchData(
             touchTooltipData: LineTouchTooltipData(
               getTooltipColor: (_) => tokens.chartTooltip,
               getTooltipItems: (spots) => [
-                for (final s in spots)
+                for (final (n, s) in spots.indexed)
                   LineTooltipItem(
-                    '${lines[s.barIndex].name}  ${f.money(s.y)}',
-                    TextStyle(color: lines[s.barIndex].color, fontSize: 12, fontWeight: FontWeight.w500),
+                    n == 0 && tipTitle != null ? '${tipTitle!(s.spotIndex)}\n' : '',
+                    TextStyle(color: tokens.chartInk, fontWeight: FontWeight.w600, fontSize: 12),
+                    children: [TextSpan(text: '${lines[s.barIndex].name}  ${tip(s.y)}', style: TextStyle(color: lines[s.barIndex].color, fontSize: 12, fontWeight: FontWeight.w500))],
                   ),
               ],
             ),

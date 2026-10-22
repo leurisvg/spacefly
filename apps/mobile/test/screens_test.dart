@@ -83,10 +83,12 @@ void main() {
 
     testWidgets('the period bar moves the period and refetches', (tester) async {
       final env = await open(tester);
-      expect(find.text('September 2026'), findsOneWidget);
+      // The calendar card is titled with the month too: look at the period bar only.
+      Finder label(String text) => find.descendant(of: find.byKey(const Key('period-label')), matching: find.text(text));
+      expect(label('September 2026'), findsOneWidget);
       await tester.tap(find.byKey(const Key('period-next')));
       await tester.pumpAndSettle();
-      expect(find.text('October 2026'), findsOneWidget);
+      expect(label('October 2026'), findsOneWidget);
       final request = env.adapter!.requests.lastWhere((r) => r.path == '/api/reports/dashboard');
       expect((request.queryParameters['start'], request.queryParameters['end']), ('2026-10-01', '2026-10-31'));
 
@@ -94,7 +96,7 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.byKey(const Key('preset-lastMonth')));
       await tester.pumpAndSettle();
-      expect(find.text('August 2026'), findsOneWidget);
+      expect(label('August 2026'), findsOneWidget);
     });
 
     testWidgets('privacy mode shows every amount as 0', (tester) async {

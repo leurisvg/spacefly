@@ -4,19 +4,19 @@
 
 | Feature | Web route | Mobile route | View-model |
 |---|---|---|---|
-| Dashboard | `/` | `/` (tab: KPIs, income vs expenses, top categories, net worth, budgets, subscriptions, largest; the calendar and the links to the other reports are not ported yet) | `dashboard.vm.ts` |
+| Dashboard | `/` | `/` (tab: KPIs, income vs expenses, top categories, net worth, budgets, subscriptions, calendar, largest; "View all" links only where the screen exists: calendar) | `dashboard.vm.ts` |
 | Transactions list | `/transactions` | `/transactions` (tab: search, filters, sort, 50 at a time, a button for a new transaction; CSV export and deleting from the list are not there) | `explorer.vm.ts` |
 | Transaction detail | detail sheet over the list | `/transactions/:id` (with edit and delete) and `/drill` (the transactions behind a chart slice or a budget) | `tx-detail.vm.ts`, `tx-view.vm.ts` |
 | New / edit transaction | `/transactions/new`, `/transactions/:id/edit` | same paths (the new form takes the same `?source=…&amount=…` pre-fill) | `transaction-form.vm.ts`, `account-picker.vm.ts` |
 | Accounts | `/accounts` | `/accounts` (tab: balances, flow, balance history; no reordering or editing yet) | `accounts.vm.ts` |
 | Settings | `/settings` | `/settings` (tab: theme, language, display currency, privacy, server and sign out, refresh data, open Firefly) | `preferences.vm.ts` |
 | Login | `/login` | `/login`, plus `/server` for the server URL and Cloudflare Access credentials | `login.vm.ts` |
-| Drill into a chart slice | sheet / explorer filters | | `explorer.vm.ts` |
-| Monthly summary | `/reports/monthly` | | `monthly.vm.ts` |
-| Annual report | `/reports/annual` | | `annual.vm.ts` |
+| Drill into a chart slice | sheet / explorer filters | `/drill` | `explorer.vm.ts` |
+| Monthly summary | `/reports/monthly` | `/reports/monthly` (from the More tab: KPIs, categories with change, daily cash flow, budgets, top 5, account activity, savings, overview; the Sankey is a link to Flow, with that screen) | `monthly.vm.ts` |
+| Annual report | `/reports/annual` | `/reports/annual` (averages, best and worst month, income and expenses, savings rate, category × month matrix that scrolls sideways) | `annual.vm.ts` |
 | Money flow | `/reports/flow` | | `flow.vm.ts` |
-| Calendar | `/reports/calendar` | | `calendar.vm.ts` |
-| Compare | `/reports/compare` | | `compare.vm.ts` |
+| Calendar | `/reports/calendar` | `/reports/calendar` (month grid with account / category / tag filters, running balance, scheduled items; year heatmap drawn vertically) | `calendar.vm.ts` |
+| Compare | `/reports/compare` | `/reports/compare` (previous / last year / custom B with a native range picker, grouping, kind, diverging bars, trend, table) | `compare.vm.ts` |
 | Categories, tags, merchants, income sources | `/analysis/*` | | `ranking.vm.ts` |
 | Budgets | `/analysis/budgets` | | `budgets.vm.ts` |
 | Account detail, net worth, savings, counterparties | `/accounts/*` | | – |

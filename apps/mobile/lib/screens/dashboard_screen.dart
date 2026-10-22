@@ -5,10 +5,12 @@ import 'package:go_router/go_router.dart';
 import '../api/resources.dart';
 import '../features/accounts/accounts_vm.dart' show BalanceLine;
 import '../features/dashboard/dashboard_vm.dart';
+import '../format/formatter.dart' show DateStyle;
 import '../format/formatter_provider.dart';
 import '../i18n/strings.g.dart';
 import '../state/tx_detail.dart';
 import '../theme/app_theme.dart';
+import '../ui/calendar_grid.dart';
 import '../ui/charts.dart';
 import '../ui/common.dart';
 import '../ui/kpi_card.dart';
@@ -30,6 +32,7 @@ class DashboardScreen extends ConsumerWidget {
     final loading = vm.initialLoading;
 
     void drill() => context.push('/drill');
+    Widget viewAll(String route) => TextButton(onPressed: () => context.push(route), child: Text(t.common.viewAll));
 
     return Scaffold(
       appBar: AppBar(title: Text(t.nav.dashboard), actions: const [PrivacyButton()], bottom: const PeriodBar()),
@@ -179,6 +182,22 @@ class DashboardScreen extends ConsumerWidget {
                             ),
                           ),
                       ],
+                    ),
+            ),
+            const SizedBox(height: 12),
+            SectionCard(
+              title: f.date(vm.calendarMonth, DateStyle.month),
+              trailing: viewAll('/reports/calendar'),
+              child: data == null
+                  ? const SizedBox(height: 160)
+                  : CalendarGrid(
+                      days: data.calendar,
+                      f: f,
+                      today: vm.today,
+                      compact: true,
+                      onDay: (date) {
+                        if (vm.openDay(date)) drill();
+                      },
                     ),
             ),
             const SizedBox(height: 12),
