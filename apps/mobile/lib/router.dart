@@ -4,13 +4,17 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'api/models.g.dart' show TxRow;
+import 'features/analysis/ranking_vm.dart' show RankingRoute;
 import 'screens/accounts_screen.dart';
 import 'screens/annual_screen.dart';
+import 'screens/budgets_screen.dart';
 import 'screens/calendar_screen.dart';
 import 'screens/compare_screen.dart';
 import 'screens/monthly_screen.dart';
 import 'screens/more_tab.dart';
 import 'screens/dashboard_screen.dart';
+import 'screens/flow_screen.dart';
+import 'screens/ranking_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/server_screen.dart';
 import 'screens/settings_tab.dart';
@@ -54,6 +58,12 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/reports/annual', builder: (_, __) => const AnnualScreen()),
       GoRoute(path: '/reports/calendar', builder: (_, __) => const CalendarScreen()),
       GoRoute(path: '/reports/compare', builder: (_, __) => const CompareScreen()),
+      GoRoute(path: '/reports/flow', builder: (_, __) => const FlowScreen()),
+      GoRoute(path: '/analysis/categories', builder: (_, __) => const RankingScreen(route: RankingRoute.categories)),
+      GoRoute(path: '/analysis/tags', builder: (_, __) => const RankingScreen(route: RankingRoute.tags)),
+      GoRoute(path: '/analysis/merchants', builder: (_, __) => const RankingScreen(route: RankingRoute.merchants)),
+      GoRoute(path: '/analysis/income-sources', builder: (_, __) => const RankingScreen(route: RankingRoute.incomeSources)),
+      GoRoute(path: '/analysis/budgets', builder: (_, __) => const BudgetsScreen()),
       StatefulShellRoute.indexedStack(
         builder: (context, state, shell) => Shell(shell: shell),
         branches: [

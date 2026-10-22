@@ -30,11 +30,19 @@ export interface AnnualReport {
   averages: { income: number; expense: number; net: number };
 }
 
+/** One row of a ranking: the entity, its total and how it compares. */
+export interface RankingItem extends NamedValue {
+  count: number;
+  avg: number;
+  share: number;
+  previous: number;
+}
+
 /** Shared by categories, tags, counterparties. */
 export interface RankingReport {
   kind: 'expense' | 'income';
   total: number;
-  items: (NamedValue & { count: number; avg: number; share: number; previous: number })[];
+  items: RankingItem[];
   months: string[];
   /** Monthly series for the top items (by id). */
   trend: { id: string | null; name: string; points: MonthPoint[] }[];

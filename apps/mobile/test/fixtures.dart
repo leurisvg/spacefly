@@ -287,3 +287,85 @@ Map<String, Object?> compareJson() => {
         {'month': '2026-09', 'income': 100, 'expense': 60},
       ],
     };
+
+Map<String, Object?> sankeyJson() => {
+      'nodes': [
+        {'id': 'rev', 'label': 'Salary', 'kind': 'revenue', 'value': 100},
+        {'id': 'hub', 'label': '', 'labelKey': 'sankey.totalIncome', 'kind': 'hub', 'value': 100},
+        {'id': 'b1', 'label': 'Hogar', 'kind': 'budget', 'value': 60, 'filter': {'type': 'withdrawal', 'budget': 'b1'}},
+        {'id': 'cat1', 'label': 'Food', 'kind': 'category', 'value': 60, 'filter': {'type': 'withdrawal', 'category': '1'}},
+        {'id': 'savings', 'label': '', 'labelKey': 'sankey.savings', 'kind': 'savings', 'value': 40},
+      ],
+      'links': [
+        {'source': 'rev', 'target': 'hub', 'value': 100},
+        {'source': 'hub', 'target': 'b1', 'value': 60},
+        {'source': 'b1', 'target': 'cat1', 'value': 60},
+        {'source': 'hub', 'target': 'savings', 'value': 40},
+      ],
+      'totalIncome': 100,
+      'totalExpense': 60,
+      'savings': 40,
+      'savingsLabel': 'savings',
+    };
+
+Map<String, Object?> rankingJson() => {
+      'kind': 'expense',
+      'total': 150,
+      'months': ['2026-08', '2026-09'],
+      'items': [
+        {'id': '1', 'name': 'Food', 'value': 100, 'share': 2 / 3, 'count': 4, 'avg': 25, 'previous': 80},
+        {'id': null, 'name': '', 'value': 50, 'share': 1 / 3, 'count': 1, 'avg': 50, 'previous': 0},
+      ],
+      'trend': [
+        {
+          'id': '1',
+          'name': 'Food',
+          'points': [
+            {'month': '2026-08', 'value': 40},
+            {'month': '2026-09', 'value': 60},
+          ],
+        },
+      ],
+    };
+
+Map<String, Object?> budgetsJson() => {
+      'available': {'amount': 300, 'spentInBudgets': 190, 'spentOutsideBudgets': 5},
+      'budgets': [
+        {
+          'id': 'b1',
+          'name': 'Hogar',
+          'limit': 100,
+          'spent': 40,
+          'remaining': 60,
+          'pct': 0.4,
+          'autoBudget': {'type': null, 'period': null, 'amount': null},
+          'projected': null,
+          'categories': [
+            {'id': '9', 'name': 'Food', 'value': 30},
+            {'id': null, 'name': '', 'value': 10},
+          ],
+          'history': [
+            {'month': '2026-08', 'limit': 100, 'spent': 40},
+            {'month': '2026-09', 'limit': 100, 'spent': 120},
+          ],
+        },
+        {
+          'id': 'b2',
+          'name': 'Ocio',
+          'limit': 200,
+          'spent': 150,
+          'remaining': 50,
+          'pct': 0.75,
+          'autoBudget': {'type': 'reset', 'period': 'monthly', 'amount': 200},
+          'projected': 260,
+          'categories': [
+            {'id': '5', 'name': 'Cine', 'value': 150},
+          ],
+          'history': [
+            {'month': '2026-09', 'limit': 200, 'spent': 150},
+          ],
+        },
+      ],
+      'unbudgeted': 5,
+      'elapsedRatio': 0.5,
+    };

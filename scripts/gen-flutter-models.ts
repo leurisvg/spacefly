@@ -56,6 +56,21 @@ export function simplify(source: string): string {
     .replace(/Record<string, ([\w[\]]+)>/g, '{ [key: string]: $1 }');
 }
 
+/**
+ * quicktype reads an optional map (`filter?: Record<string, string>`) with `json["filter"]!`, which throws when the server leaves the
+ * field out. Makes `fromJson` and `toJson` take the absence as `null`.
+ */
+export function fixOptionalMaps(dart: string): string {
+  const names = [...dart.matchAll(/final Map<[^>]+>\? (\w+);/g)].map((m) => m[1]);
+  return [...new Set(names)].reduce(
+    (text, name) =>
+      text
+        .replaceAll(`${name}: Map.from(json["${name}"]!)`, `${name}: json["${name}"] == null ? null : Map.from(json["${name}"])`)
+        .replaceAll(`"${name}": Map.from(${name}!)`, `"${name}": ${name} == null ? null : Map.from(${name}!)`),
+    dart,
+  );
+}
+
 const work = mkdtempSync(join(tmpdir(), 'spacefly-dto-'));
 try {
   const src = join(work, 'src');
@@ -80,7 +95,7 @@ try {
     '',
   ].join('\n');
   mkdirSync(join(OUT, '..'), { recursive: true });
-  writeFileSync(OUT, header + readFileSync(generated, 'utf8'));
+  writeFileSync(OUT, header + fixOptionalMaps(readFileSync(generated, 'utf8')));
   console.log(`models: ${OUT.replace(`${ROOT}/`, '')}`);
 } finally {
   rmSync(work, { recursive: true, force: true });

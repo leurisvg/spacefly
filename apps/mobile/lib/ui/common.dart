@@ -149,18 +149,30 @@ class PrivacyButton extends ConsumerWidget {
 
 /// A thin progress bar colored by how close to its limit a budget is.
 class Meter extends StatelessWidget {
-  const Meter({super.key, required this.model});
+  const Meter({super.key, required this.model, this.marker});
 
   final MeterModel model;
 
+  /// Where the period should be by now (0–1): a tick over the bar, as the web's expected pace.
+  final double? marker;
+
   @override
-  Widget build(BuildContext context) => ClipRRect(
-        borderRadius: BorderRadius.circular(4),
-        child: LinearProgressIndicator(
-          value: model.fill / 100,
-          minHeight: 8,
-          backgroundColor: Theme.of(context).colorScheme.outlineVariant,
-          color: meterColor(context, model.status),
-        ),
-      );
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final bar = ClipRRect(
+      borderRadius: BorderRadius.circular(4),
+      child: LinearProgressIndicator(value: model.fill / 100, minHeight: 8, backgroundColor: scheme.outlineVariant, color: meterColor(context, model.status)),
+    );
+    final at = marker;
+    if (at == null) return bar;
+    return LayoutBuilder(
+      builder: (context, box) => Stack(
+        clipBehavior: Clip.none,
+        children: [
+          bar,
+          Positioned(left: (box.maxWidth * at.clamp(0.0, 1.0)) - 1, top: -2, bottom: -2, width: 2, child: ColoredBox(key: const Key('meter-marker'), color: scheme.onSurface)),
+        ],
+      ),
+    );
+  }
 }

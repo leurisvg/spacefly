@@ -206,6 +206,7 @@
     "title": "Flujo de dinero",
     "description": "De dónde viene tu dinero y a dónde va.",
     "hint": "Pasa el cursor para resaltar una ruta · clic en un nodo para ver sus transacciones · arrastra para reordenar",
+    "hintTouch": "Toca un nodo para ver sus transacciones · desliza de lado si el gráfico es ancho",
     "byBudget": "Por presupuesto",
     "byTags": "Por etiquetas",
     "showBudgets": "Presupuestos",

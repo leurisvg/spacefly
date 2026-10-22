@@ -206,6 +206,7 @@
     "title": "Money flow",
     "description": "Where your money comes from and where it goes.",
     "hint": "Hover to highlight a path · click a node to see its transactions · drag to rearrange",
+    "hintTouch": "Tap a node to see its transactions · swipe sideways when the chart is wide",
     "byBudget": "By budget",
     "byTags": "By tags",
     "showBudgets": "Budgets",

@@ -21,8 +21,16 @@ final moreSections = <MoreSection>[
   MoreSection((t) => t.nav.sections.reports, [
     MoreEntry('/reports/monthly', Icons.summarize_outlined, (t) => t.nav.monthly),
     MoreEntry('/reports/annual', Icons.bar_chart_outlined, (t) => t.nav.annual),
+    MoreEntry('/reports/flow', Icons.account_tree_outlined, (t) => t.nav.flow),
     MoreEntry('/reports/calendar', Icons.calendar_month_outlined, (t) => t.nav.calendar),
     MoreEntry('/reports/compare', Icons.compare_arrows, (t) => t.nav.compare),
+  ]),
+  MoreSection((t) => t.nav.sections.analysis, [
+    MoreEntry('/analysis/categories', Icons.category_outlined, (t) => t.nav.categories),
+    MoreEntry('/analysis/tags', Icons.sell_outlined, (t) => t.nav.tags),
+    MoreEntry('/analysis/budgets', Icons.track_changes, (t) => t.nav.budgets),
+    MoreEntry('/analysis/merchants', Icons.storefront_outlined, (t) => t.nav.merchants),
+    MoreEntry('/analysis/income-sources', Icons.work_outline, (t) => t.nav.incomeSources),
   ]),
 ];
 

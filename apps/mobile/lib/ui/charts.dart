@@ -106,6 +106,72 @@ class IncomeExpenseChart extends StatelessWidget {
   }
 }
 
+/// What was spent in a budget each month against its limit (a pale bar behind). Spending over the limit is drawn in the expense color.
+/// Port of `budgetHistoryOption` in libs/client/src/charts/builders.ts.
+class BudgetHistoryChart extends StatelessWidget {
+  const BudgetHistoryChart({super.key, required this.history, required this.f, required this.spentLabel, required this.limitLabel});
+
+  final List<({String month, double limit, double spent})> history;
+  final Formatter f;
+  final String spentLabel;
+  final String limitLabel;
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = context.tokens;
+    final step = labelStep(history.length);
+    final top = history.fold<double>(0, (m, x) => [m, x.limit, x.spent].reduce((a, b) => a > b ? a : b));
+    return SizedBox(
+      height: 220,
+      child: BarChart(
+        BarChartData(
+          maxY: top == 0 ? 1 : top * 1.08,
+          alignment: BarChartAlignment.spaceAround,
+          gridData: _grid(context),
+          borderData: FlBorderData(show: false),
+          titlesData: _titles(
+            context,
+            left: (v) => Text(f.compact(v)),
+            bottom: (v) => v.toInt() % step == 0 && v.toInt() < history.length ? Text(f.monthLabel(history[v.toInt()].month, withYear: false)) : const SizedBox.shrink(),
+          ),
+          barTouchData: BarTouchData(
+            touchTooltipData: BarTouchTooltipData(
+              getTooltipColor: (_) => tokens.chartTooltip,
+              getTooltipItem: (group, groupIndex, rod, rodIndex) {
+                final x = history[groupIndex];
+                return BarTooltipItem(
+                  '${f.date(x.month, DateStyle.month)}\n',
+                  TextStyle(color: tokens.chartInk, fontWeight: FontWeight.w600, fontSize: 12),
+                  children: [
+                    TextSpan(text: '$spentLabel  ${f.money(x.spent)}\n', style: TextStyle(color: rod.color, fontWeight: FontWeight.w400)),
+                    TextSpan(text: '$limitLabel  ${f.money(x.limit)}', style: TextStyle(color: tokens.chartInk2, fontWeight: FontWeight.w400)),
+                    if (x.limit > 0 && !f.hidden) TextSpan(text: '\n${f.pct(x.spent / x.limit, decimals: 0)}', style: TextStyle(color: tokens.chartInk2, fontWeight: FontWeight.w400)),
+                  ],
+                );
+              },
+            ),
+          ),
+          barGroups: [
+            for (final (i, x) in history.indexed)
+              BarChartGroupData(
+                x: i,
+                barRods: [
+                  BarChartRodData(
+                    toY: f.hidden ? 0 : x.spent,
+                    color: x.limit > 0 && x.spent > x.limit ? tokens.moneyExpense : tokens.moneyBudget,
+                    width: 12,
+                    borderRadius: const BorderRadius.vertical(top: Radius.circular(3)),
+                    backDrawRodData: BackgroundBarChartRodData(show: x.limit > 0 && !f.hidden, toY: x.limit, color: tokens.chartInk2.withValues(alpha: 0.25)),
+                  ),
+                ],
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 /// A ring of the top categories with their total in the middle; tapping a slice calls [onSlice].
 class DonutChart extends StatelessWidget {
   const DonutChart({super.key, required this.slices, required this.centerLabel, required this.centerCaption, required this.onSlice});

@@ -250,6 +250,12 @@ class MonthlyScreen extends ConsumerWidget {
         SectionCard(title: t.monthly.categories, child: d == null ? const SizedBox(height: 120) : categories(d)),
         const SizedBox(height: 12),
         SectionCard(
+          title: t.monthly.moneyFlow,
+          trailing: TextButton(key: const Key('open-flow'), onPressed: () => context.push('/reports/flow'), child: Text(t.monthly.openInteractive)),
+          child: Text(t.flow.description, style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant)),
+        ),
+        const SizedBox(height: 12),
+        SectionCard(
           title: t.monthly.dailyCashFlow,
           padding: const EdgeInsets.fromLTRB(10, 16, 10, 12),
           child: vm.calendar.valueOrNull == null

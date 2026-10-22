@@ -388,6 +388,7 @@ class _Translations$flow$es extends Translations$flow$en {
 	@override String get title => 'Flujo de dinero';
 	@override String get description => 'De dónde viene tu dinero y a dónde va.';
 	@override String get hint => 'Pasa el cursor para resaltar una ruta · clic en un nodo para ver sus transacciones · arrastra para reordenar';
+	@override String get hintTouch => 'Toca un nodo para ver sus transacciones · desliza de lado si el gráfico es ancho';
 	@override String get byBudget => 'Por presupuesto';
 	@override String get byTags => 'Por etiquetas';
 	@override String get showBudgets => 'Presupuestos';
@@ -1689,6 +1690,7 @@ extension on TranslationsEs {
 			'flow.title' => 'Flujo de dinero',
 			'flow.description' => 'De dónde viene tu dinero y a dónde va.',
 			'flow.hint' => 'Pasa el cursor para resaltar una ruta · clic en un nodo para ver sus transacciones · arrastra para reordenar',
+			'flow.hintTouch' => 'Toca un nodo para ver sus transacciones · desliza de lado si el gráfico es ancho',
 			'flow.byBudget' => 'Por presupuesto',
 			'flow.byTags' => 'Por etiquetas',
 			'flow.showBudgets' => 'Presupuestos',
@@ -2017,9 +2019,9 @@ extension on TranslationsEs {
 			'editor.kNew' => 'Nuevo',
 			'editor.newTitle' => 'Crear',
 			'editor.tx.description' => 'Se deduce solo si es un gasto, un ingreso o una transferencia según las cuentas que elijas.',
-			'editor.tx.what' => 'Qué pasó',
 			_ => null,
 		} ?? switch (path) {
+			'editor.tx.what' => 'Qué pasó',
 			'editor.tx.details' => 'Detalles',
 			'editor.tx.descriptionLabel' => 'Descripción',
 			'editor.tx.from' => 'Desde',

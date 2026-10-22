@@ -690,6 +690,9 @@ class Translations$flow$en {
 	/// en: 'Hover to highlight a path · click a node to see its transactions · drag to rearrange'
 	String get hint => 'Hover to highlight a path · click a node to see its transactions · drag to rearrange';
 
+	/// en: 'Tap a node to see its transactions · swipe sideways when the chart is wide'
+	String get hintTouch => 'Tap a node to see its transactions · swipe sideways when the chart is wide';
+
 	/// en: 'By budget'
 	String get byBudget => 'By budget';
 
@@ -3048,6 +3051,7 @@ extension on Translations {
 			'flow.title' => 'Money flow',
 			'flow.description' => 'Where your money comes from and where it goes.',
 			'flow.hint' => 'Hover to highlight a path · click a node to see its transactions · drag to rearrange',
+			'flow.hintTouch' => 'Tap a node to see its transactions · swipe sideways when the chart is wide',
 			'flow.byBudget' => 'By budget',
 			'flow.byTags' => 'By tags',
 			'flow.showBudgets' => 'Budgets',
@@ -3376,9 +3380,9 @@ extension on Translations {
 			'editor.kNew' => 'New',
 			'editor.newTitle' => 'Create',
 			'editor.tx.description' => 'Whether it\'s an expense, income or transfer follows from the accounts you pick.',
-			'editor.tx.what' => 'What happened',
 			_ => null,
 		} ?? switch (path) {
+			'editor.tx.what' => 'What happened',
 			'editor.tx.details' => 'Details',
 			'editor.tx.descriptionLabel' => 'Description',
 			'editor.tx.from' => 'From',

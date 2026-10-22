@@ -1875,7 +1875,7 @@ class Worst {
 
 ///Shared by categories, tags, counterparties.
 class RankingReport {
-    final List<Item> items;
+    final List<RankingItem> items;
     final CounterpartyKind kind;
     final List<String> months;
     final double total;
@@ -1896,7 +1896,7 @@ class RankingReport {
     String toRawJson() => json.encode(toJson());
 
     factory RankingReport.fromJson(Map<String, dynamic> json) => RankingReport(
-        items: List<Item>.from(json["items"].map((x) => Item.fromJson(x))),
+        items: List<RankingItem>.from(json["items"].map((x) => RankingItem.fromJson(x))),
         kind: counterpartyKindValues.map[json["kind"]]!,
         months: List<String>.from(json["months"].map((x) => x)),
         total: json["total"]?.toDouble(),
@@ -1912,35 +1912,49 @@ class RankingReport {
     };
 }
 
-class Item {
+
+///One row of a ranking: the entity, its total and how it compares.
+class RankingItem {
     final double avg;
     final double count;
+    final String? id;
+    final String name;
     final double previous;
     final double share;
+    final double value;
 
-    Item({
+    RankingItem({
         required this.avg,
         required this.count,
+        required this.id,
+        required this.name,
         required this.previous,
         required this.share,
+        required this.value,
     });
 
-    factory Item.fromRawJson(String str) => Item.fromJson(json.decode(str));
+    factory RankingItem.fromRawJson(String str) => RankingItem.fromJson(json.decode(str));
 
     String toRawJson() => json.encode(toJson());
 
-    factory Item.fromJson(Map<String, dynamic> json) => Item(
+    factory RankingItem.fromJson(Map<String, dynamic> json) => RankingItem(
         avg: json["avg"]?.toDouble(),
         count: json["count"]?.toDouble(),
+        id: json["id"],
+        name: json["name"],
         previous: json["previous"]?.toDouble(),
         share: json["share"]?.toDouble(),
+        value: json["value"]?.toDouble(),
     );
 
     Map<String, dynamic> toJson() => {
         "avg": avg,
         "count": count,
+        "id": id,
+        "name": name,
         "previous": previous,
         "share": share,
+        "value": value,
     };
 }
 
@@ -4017,7 +4031,7 @@ class SankeyNode {
     String toRawJson() => json.encode(toJson());
 
     factory SankeyNode.fromJson(Map<String, dynamic> json) => SankeyNode(
-        filter: Map.from(json["filter"]!).map((k, v) => MapEntry<String, String>(k, v)),
+        filter: json["filter"] == null ? null : Map.from(json["filter"]).map((k, v) => MapEntry<String, String>(k, v)),
         id: json["id"],
         kind: sankeyNodeKindValues.map[json["kind"]]!,
         label: json["label"],
@@ -4026,7 +4040,7 @@ class SankeyNode {
     );
 
     Map<String, dynamic> toJson() => {
-        "filter": Map.from(filter!).map((k, v) => MapEntry<String, dynamic>(k, v)),
+        "filter": filter == null ? null : Map.from(filter!).map((k, v) => MapEntry<String, dynamic>(k, v)),
         "id": id,
         "kind": sankeyNodeKindValues.reverse[kind],
         "label": label,

@@ -14,11 +14,11 @@
 | Drill into a chart slice | sheet / explorer filters | bottom sheet (`showDrillSheet`) | `explorer.vm.ts` |
 | Monthly summary | `/reports/monthly` | `/reports/monthly` (from the More tab: KPIs, categories with change, daily cash flow, budgets, top 5, account activity, savings, overview; the Sankey is a link to Flow, with that screen) | `monthly.vm.ts` |
 | Annual report | `/reports/annual` | `/reports/annual` (averages, best and worst month, income and expenses, savings rate, category × month matrix that scrolls sideways) | `annual.vm.ts` |
-| Money flow | `/reports/flow` | | `flow.vm.ts` |
+| Money flow | `/reports/flow` | `/reports/flow` (from the More tab and the monthly summary: vertical Sankey drawn natively that scrolls sideways when a layer is crowded, mode / budgets / income categories / small-flow threshold, legend, every link listed; tapping a node or a link opens its transactions) | `flow.vm.ts` |
 | Calendar | `/reports/calendar` | `/reports/calendar` (month grid with account / category / tag filters, running balance, scheduled items; year heatmap drawn vertically) | `calendar.vm.ts` |
 | Compare | `/reports/compare` | `/reports/compare` (previous / last year / custom B with a native range picker, grouping, kind, diverging bars, trend, table) | `compare.vm.ts` |
-| Categories, tags, merchants, income sources | `/analysis/*` | | `ranking.vm.ts` |
-| Budgets | `/analysis/budgets` | | `budgets.vm.ts` |
+| Categories, tags, merchants, income sources | `/analysis/*` | `/analysis/categories`, `/analysis/tags`, `/analysis/merchants`, `/analysis/income-sources` (side switch, bars / treemap / budget sunburst, 12-month trend, list with change; creating and editing entities waits for the editors) | `ranking.vm.ts` |
+| Budgets | `/analysis/budgets` | `/analysis/budgets` (totals, a card per budget with the expected-pace tick and projection, history and categories of the picked one; creating and editing waits for the editors) | `budgets.vm.ts` |
 | Account detail, net worth, savings, counterparties | `/accounts/*` | | – |
 | Subscriptions, recurring, goals, projection | `/planning/*` | | – |
 | Entity editors (category, tag, budget, subscription, account, goal) | side sheet | | `entity-form.vm.ts` and one `*-form.vm.ts` per entity |
