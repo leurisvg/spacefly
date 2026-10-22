@@ -58,11 +58,6 @@ export class FormatService {
     return currency === false ? `${sign}${n}` : `${sign}${this.symbol(currency || undefined)}${n}`;
   }
 
-  /** What `compact()` depends on, so a portable chart formatter can reproduce it without this service. */
-  compactParts(currency?: string | false): { locale: string; symbol: string | null; hidden: boolean } {
-    return { locale: this.locale(), symbol: currency === false ? null : this.symbol(currency || undefined), hidden: this.privacy.hidden() };
-  }
-
   /**
    * Ratio → "12.3 %" (es) / "12.3%" (en). Masked in privacy mode; pass `mask: false` for values that
    * are settings rather than data (e.g. a threshold slider).

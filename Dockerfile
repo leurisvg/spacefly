@@ -11,8 +11,6 @@ COPY apps/server/package.json apps/server/
 COPY libs/shared/package.json libs/shared/
 COPY libs/i18n/package.json libs/i18n/
 COPY libs/client/package.json libs/client/
-COPY apps/mobile/package.json apps/mobile/
-# apps/mobile (NativeScript) is not built here: install only the workspaces the web and the server need.
 RUN npm ci --no-audit --no-fund --include-workspace-root \
     -w @spacefly/web -w @spacefly/server -w @spacefly/shared -w @spacefly/i18n -w @spacefly/client
 COPY . .

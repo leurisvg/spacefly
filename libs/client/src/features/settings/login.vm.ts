@@ -18,7 +18,7 @@ export function loginViewModel(inputs: { returnTo: Signal<string | undefined>; e
     busy,
     errorKey: computed(() => loginErrorKey(inputs.error())),
 
-    /** Resolves `true` once signed in (mobile); on web the page navigates away and this resolves `false`. */
+    /** Resolves `true` once signed in without leaving the page; on web the page navigates away and this resolves `false`. */
     async login(): Promise<boolean> {
       busy.set(true);
       try {

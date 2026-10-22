@@ -1,5 +1,5 @@
-// The NativeScript Android V8 has no ICU: `\p{…}` throws at parse time and `normalize()` is a no-op there.
-// So accents are stripped with an explicit table instead of NFD plus a Unicode property.
+// Accents are stripped with an explicit table instead of NFD plus a Unicode property, so the result does not
+// depend on the JS engine's ICU data.
 const LETTERS: Record<string, string> = {
   a: 'àáâãäåāăą',
   c: 'çćč',

@@ -60,7 +60,7 @@ export function rankingViewModel(opts: RankingOptions) {
   const items = computed(() => r()?.items ?? []);
   const count = computed(() => items().reduce((s, i) => s + i.count, 0) || null);
   const avgTicket = computed(() => (count() ? (r()?.total ?? 0) / count()! : null));
-  /** A resolved palette color (not `var(--…)`: NativeScript cannot parse CSS variables in an inline style). */
+  /** A resolved palette color (not `var(--…)`: it is also used where CSS variables do not resolve). */
   const accent = computed(() => (kindNow() === 'income' ? money.income() : money.expense()));
 
   const colorKind = computed(() => `${by()}:${kindNow()}`);

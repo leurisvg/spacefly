@@ -1,4 +1,4 @@
-/** Semantic color of a figure; each app maps it to its own styling (Tailwind classes, NativeScript css). */
+/** Semantic color of a figure; each app maps it to its own styling (for example Tailwind classes). */
 export type Tone = 'positive' | 'negative' | 'neutral';
 
 export interface DeltaModel {

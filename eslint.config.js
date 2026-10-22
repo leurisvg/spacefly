@@ -4,7 +4,7 @@ const { defineConfig } = require('eslint/config');
 const tseslint = require('typescript-eslint');
 const angular = require('angular-eslint');
 
-/** Browser globals that do not exist (or behave differently) in NativeScript. */
+/** Browser globals that libs/client and libs/shared must not touch: go through a platform token. */
 const DOM_GLOBALS = [
   'window',
   'document',
@@ -27,8 +27,6 @@ module.exports = defineConfig([
       'apps/web/src/libs/ui/**',
       'dist/**',
       '**/node_modules/**',
-      'apps/mobile/platforms/**',
-      'apps/mobile/hooks/**',
     ],
   },
   {
@@ -60,7 +58,7 @@ module.exports = defineConfig([
     },
   },
   // ── Architecture boundaries (see CLAUDE.md) ───────────────────────────────────
-  // libs/client runs on the web and in NativeScript: no DOM, no web UI kits, no NativeScript, no app code.
+  // libs/client must stay free of the browser: no DOM, no web UI kits, no NativeScript, no app code.
   {
     files: ['libs/client/**/*.ts', 'libs/shared/**/*.ts'],
     ignores: ['**/*.spec.ts'],
@@ -91,10 +89,10 @@ module.exports = defineConfig([
             },
             {
               group: ['@nativescript/*', '@nativescript-community/*'],
-              message: 'NativeScript-only dependency: keep it in apps/mobile.',
+              message: 'Platform-specific dependency: libs/client stays free of native runtimes.',
             },
             {
-              group: ['**/apps/*', '@spacefly/web', '@spacefly/mobile', '@spacefly/server'],
+              group: ['**/apps/*', '@spacefly/web', '@spacefly/server'],
               message: 'Libraries never import apps.',
             },
           ],
@@ -105,10 +103,6 @@ module.exports = defineConfig([
         {
           selector: "Decorator[expression.callee.name='Component']",
           message: 'Components are platform-specific: libs/client exposes view-models instead.',
-        },
-        {
-          selector: "Literal[regex.pattern=/\\\\[pP]\\{/]",
-          message: 'The NativeScript Android V8 has no ICU: regex Unicode property escapes throw at parse time. Use an explicit character class.',
         },
       ],
     },
@@ -141,67 +135,6 @@ module.exports = defineConfig([
     },
   },
   {
-    files: ['apps/web/**/*.ts'],
-    rules: {
-      'no-restricted-imports': [
-        'error',
-        {
-          patterns: [
-            {
-              group: ['@nativescript/*', '@nativescript-community/*', '**/apps/mobile/*'],
-              message: 'apps/web must not import NativeScript or the mobile app.',
-            },
-          ],
-        },
-      ],
-    },
-  },
-  {
-    files: ['apps/mobile/**/*.ts'],
-    rules: {
-      'no-restricted-imports': [
-        'error',
-        {
-          patterns: [
-            {
-              group: [
-                '@spartan-ng/*',
-                '@ng-icons/*',
-                '@angular/cdk',
-                '@angular/cdk/*',
-                'ngx-*',
-                '@angular/platform-browser',
-                '@angular/platform-browser/*',
-                '**/apps/web/*',
-              ],
-              message: 'Web-only dependency: not available in NativeScript.',
-            },
-          ],
-        },
-      ],
-      'no-restricted-syntax': [
-        'error',
-        {
-          selector: "Literal[regex.pattern=/\\\\[pP]\\{/]",
-          message: 'The NativeScript Android V8 has no ICU: regex Unicode property escapes throw at parse time. Use an explicit character class.',
-        },
-      ],
-    },
-  },
-  // NativeScript templates are not HTML: `<Label>` is a text view, not a `<label>`, so the web a11y rules do not apply.
-  {
-    files: ['apps/mobile/**/*.ts'],
-    rules: {
-      '@angular-eslint/directive-selector': ['error', { type: 'attribute', prefix: 'ns', style: 'camelCase' }],
-      '@angular-eslint/component-selector': ['error', { type: 'element', prefix: 'ns', style: 'kebab-case' }],
-    },
-  },
-  {
-    // The native bridges (Java/Objective-C classes) are untyped by nature.
-    files: ['apps/mobile/**/*.android.ts', 'apps/mobile/**/*.ios.ts', 'apps/mobile/src/app/platform/pkce.ts'],
-    rules: { '@typescript-eslint/no-explicit-any': 'off' },
-  },
-  {
     files: ['**/*.html'],
     extends: [angular.configs.templateRecommended, angular.configs.templateAccessibility],
     rules: {
@@ -214,15 +147,6 @@ module.exports = defineConfig([
         'error',
         { controlComponents: ['hlm-switch', 'sf-select'] },
       ],
-    },
-  },
-  {
-    files: ['apps/mobile/**/*.html'],
-    rules: {
-      '@angular-eslint/template/label-has-associated-control': 'off',
-      '@angular-eslint/template/elements-content': 'off',
-      '@angular-eslint/template/interactive-supports-focus': 'off',
-      '@angular-eslint/template/click-events-have-key-events': 'off',
     },
   },
 ]);

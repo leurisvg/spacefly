@@ -1,10 +1,9 @@
 import { signal } from '@angular/core';
 
 /**
- * Design tokens used by charts, one set per theme, copied from apps/web/src/styles.css (web) and
- * apps/mobile/src/app.css (mobile). Charts can't read CSS custom properties on mobile (and ECharts needs
- * concrete colors anyway), so both apps draw from this file; `palette.spec.ts` fails if it drifts from the
- * stylesheets.
+ * Design tokens used by charts, one set per theme, copied from apps/web/src/styles.css. ECharts needs
+ * concrete colors rather than CSS custom properties, so the charts draw from this file;
+ * `palette.spec.ts` fails if it drifts from the stylesheet.
  */
 export const THEME_IDS = ['midnight', 'earth', 'dusk'] as const;
 export type ThemeId = (typeof THEME_IDS)[number];

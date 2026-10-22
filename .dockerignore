@@ -7,5 +7,3 @@ data
 .vscode
 .env
 coverage
-apps/mobile/platforms
-apps/mobile/hooks

@@ -3,7 +3,7 @@ import type { AccountDay, SankeyReport } from '@spacefly/shared';
 import type { FormatService } from '../format/format.service';
 import { esc, tooltipRow, tooltipTitle } from './chart-theme';
 import { palette } from './palette';
-import { byIndex, byKey, byName, constant, tagged } from './portable';
+import { byIndex, byKey, byName, constant } from './formatters';
 import { money } from './series-colors';
 
 /**
@@ -17,12 +17,11 @@ type Fmt = FormatService;
 const GRID = { left: 8, right: 16, top: 40, bottom: 8, containLabel: true };
 const legendTop = (names: string[]) => ({ top: 0, left: 0, data: names });
 
-/** `f.compact` as a portable formatter. `field: 'value'` reads `{ value }` (series labels) instead of the bare number (axes). `currency` picks the symbol (default: the display currency). */
-const compactFmt = (f: Fmt, field: 'self' | 'value' = 'self', blankZero = false, currency?: string) =>
-  tagged({ k: 'compact', ...f.compactParts(currency), field, blankZero }, (arg: number | { value: number }) => {
-    const v = field === 'self' ? (arg as number) : (arg as { value: number }).value;
-    return blankZero && !v ? '' : f.compact(v, currency);
-  });
+/** `f.compact` as a chart formatter. `field: 'value'` reads `{ value }` (series labels) instead of the bare number (axes). `currency` picks the symbol (default: the display currency). */
+const compactFmt = (f: Fmt, field: 'self' | 'value' = 'self', blankZero = false, currency?: string) => (arg: number | { value: number }) => {
+  const v = field === 'self' ? (arg as number) : (arg as { value: number }).value;
+  return blankZero && !v ? '' : f.compact(v, currency);
+};
 
 function moneyAxis(f: Fmt, currency?: string) {
   return {
@@ -92,18 +91,13 @@ export interface Slice {
 
 /** Donut for part-to-whole with few slices (others already folded). */
 export function donutOption(f: Fmt, slices: Slice[], centerLabel: string, total: number): EChartsCoreOption {
-  const donutTotal = slices.reduce((sum, s) => sum + s.value, 0);
   return {
     tooltip: {
       trigger: 'item',
-      // The live formatter uses ECharts' own `percent`; the portable table derives it from the values.
-      formatter: tagged(
-        { k: 'byKey', key: 'index', table: slices.map((s) => tooltipRow(s.color, `${s.name} · ${f.share(donutTotal ? (s.value / donutTotal) * 100 : 0, 1)}`, f.money(s.value))) },
-        (p: { dataIndex: number; percent: number }) => {
-          const s = slices[p.dataIndex];
-          return tooltipRow(s.color, `${s.name} · ${f.share(p.percent, 1)}`, f.money(s.value));
-        },
-      ),
+      formatter: (p: { dataIndex: number; percent: number }) => {
+        const s = slices[p.dataIndex];
+        return tooltipRow(s.color, `${s.name} · ${f.share(p.percent, 1)}`, f.money(s.value));
+      },
     },
     legend: { show: false },
     title: {

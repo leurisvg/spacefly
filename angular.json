@@ -130,20 +130,6 @@
           }
         }
       }
-    },
-    "mobile": {
-      "projectType": "application",
-      "root": "apps/mobile",
-      "sourceRoot": "apps/mobile/src",
-      "prefix": "sf",
-      "architect": {
-        "lint": {
-          "builder": "@angular-eslint/builder:lint",
-          "options": {
-            "lintFilePatterns": ["apps/mobile/src/**/*.ts"]
-          }
-        }
-      }
     }
   }
 }

@@ -3,7 +3,6 @@ import { buildTheme } from './chart-theme';
 import { activeTheme, FONT_VARS, palette, paletteOf, setPaletteTheme, THEME_IDS, THEME_SWATCH, THEMES, type ThemeId } from './palette';
 
 const WEB = readFileSync('apps/web/src/styles.css', 'utf8');
-const MOBILE = readFileSync('apps/mobile/src/app.css', 'utf8');
 
 /** Body of the first rule whose selector matches (rules in these stylesheets don't nest). */
 function block(css: string, selector: RegExp, where: string): string {
@@ -20,14 +19,11 @@ function declarations(body: string): Map<string, string> {
 }
 
 const webBlock = (id: ThemeId) => block(WEB, new RegExp(`\\[data-theme='${id}'\\][^{]*\\{`), 'styles.css');
-/** Mobile: each theme is a class the theme host puts on the root view (NativeScript does not match `:root` on its own). */
-const mobileBlock = (id: ThemeId) => block(MOBILE, new RegExp(`^\\.theme-${id}\\s*\\{`, 'm'), 'app.css');
 
 describe('palette parity', () => {
   for (const id of THEME_IDS) {
     describe(id, () => {
       const web = declarations(webBlock(id));
-      const mobile = declarations(mobileBlock(id));
 
       it('styles.css defines the same chart tokens as palette.ts', () => {
         for (const [name, value] of Object.entries(THEMES[id])) {
@@ -35,21 +31,9 @@ describe('palette parity', () => {
         }
       });
 
-      it('app.css defines the same chart tokens as palette.ts', () => {
-        for (const [name, value] of Object.entries(THEMES[id])) {
-          expect(mobile.get(name), `${name} in app.css`).toBe(value.toLowerCase());
-        }
-      });
-
       it('the picker swatch is the theme background and --primary', () => {
         expect(THEME_SWATCH[id].background).toBe(THEMES[id]['--background']);
         expect(THEME_SWATCH[id].accent).toBe(web.get('--primary'));
-      });
-
-      it('every token app.css declares for the theme matches the web value', () => {
-        for (const [name, value] of mobile) {
-          if (web.has(name)) expect(value, `${name} in app.css`).toBe(web.get(name));
-        }
       });
     });
   }
@@ -59,16 +43,9 @@ describe('palette parity', () => {
     for (const names of rest) expect(names).toEqual(first);
   });
 
-  it('every theme defines the same set of tokens on mobile', () => {
-    const [first, ...rest] = THEME_IDS.map((id) => [...declarations(mobileBlock(id)).keys()].sort());
-    for (const names of rest) expect(names).toEqual(first);
-  });
-
-  it('the fonts are declared once, in a shared :root rule, with the same value in both stylesheets', () => {
-    for (const css of [WEB, MOBILE]) {
-      const root = declarations(block(css, /^:root\s*\{/m, 'stylesheet'));
-      for (const [name, value] of Object.entries(FONT_VARS)) expect(root.get(name)).toBe(value.toLowerCase());
-    }
+  it('the fonts are declared once, in a shared :root rule, with the same value as palette.ts', () => {
+    const root = declarations(block(WEB, /^:root\s*\{/m, 'styles.css'));
+    for (const [name, value] of Object.entries(FONT_VARS)) expect(root.get(name)).toBe(value.toLowerCase());
   });
 });
 

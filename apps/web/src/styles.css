@@ -19,8 +19,8 @@
 /*
  * Dark themes (midnight, earth, dusk), picked in the topbar and stored as `data-theme` on <html> (see ThemeHost). Midnight is the
  * default and also answers to a bare :root / `.dark`, so nothing breaks before the attribute is set. Every theme
- * block defines every token; the chart/money/series tokens are mirrored in libs/client/src/charts/palette.ts and
- * apps/mobile/src/app.css, and palette.spec.ts fails when they drift apart.
+ * block defines every token; the chart/money/series tokens are mirrored in libs/client/src/charts/palette.ts, and
+ * palette.spec.ts fails when they drift apart.
  */
 :root {
   --radius: 0.7rem;
