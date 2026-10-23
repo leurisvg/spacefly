@@ -7,6 +7,7 @@ import 'platform/platform.dart';
 import 'router.dart';
 import 'state/preferences.dart';
 import 'theme/app_theme.dart';
+import 'ui/lifecycle_gate.dart';
 
 class SpaceflyApp extends ConsumerWidget {
   const SpaceflyApp({super.key});
@@ -23,6 +24,7 @@ class SpaceflyApp extends ConsumerWidget {
       supportedLocales: AppLocaleUtils.supportedLocales,
       localizationsDelegates: GlobalMaterialLocalizations.delegates,
       routerConfig: ref.watch(routerProvider),
+      builder: (context, child) => AppLifecycleGate(child: child ?? const SizedBox()),
     );
   }
 }

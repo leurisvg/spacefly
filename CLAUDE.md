@@ -1,6 +1,14 @@
 # SpaceFly: working rules
 
-SpaceFly is one repository with a web app, a Flutter mobile app, a server and three libraries. **The mobile app is being rebuilt in Flutter in phases** (the NativeScript app was removed): login, shell and settings exist; the rest is ported screen by screen. Flutter cannot use `libs/client`, so a change to view-model logic is made twice (TypeScript for the web, Dart for the mobile app); `docs/parity.md` tracks what exists on each side.
+SpaceFly is one repository with a web app, a Flutter mobile app, a server and three libraries. **The mobile app is a Flutter rewrite of the removed NativeScript app and has a screen for every web route** (iOS is configured but has never been built here). Flutter cannot use `libs/client`, so a change to view-model logic is made twice (TypeScript for the web, Dart for the mobile app); `docs/parity.md` tracks what exists on each side and where they differ.
+
+## Web and mobile go together
+
+Every request is done for both apps, unless it only makes sense in one:
+
+- **A feature** is built on the web **and** on mobile (checklist below). If it really doesn't apply to one of them, say why and write it in `docs/parity.md` as web-only or mobile-only.
+- **A bug fix** is made in both when the bug can exist in both (a view-model rule, a format, a screen that exists on each side: check the other side even if it was reported on one). If it only exists in one (a browser-only or Flutter-only problem, a screen only one app has), fix it only there.
+- Say in the answer which side(s) were changed and, when one was left alone, why. A change to shared behavior is not done until `docs/parity.md` and the tests of both sides agree.
 
 ## Architecture
 
@@ -85,6 +93,7 @@ test           one test file per unit and per screen; support.dart has the fake 
 - **Reading data in a test:** `fakeServer({'/api/reports/dashboard': report(dashboardJson())})` answers by path; keep autoDispose providers alive with `container.listen` before awaiting them.
 - Fonts are bundled (`assets/fonts`: Inter for text, JetBrains Mono for figures through `numStyle`; Flutter reads ttf, so they are the web's @fontsource files converted).
 - Colors come from `context.tokens` / the `ColorScheme`, never hard-coded. Text comes from `context.t`, never string literals.
+- Native shell: icons and the iOS launch image are drawn from the web logo by `apps/mobile/tool/make_icons.py`; a release APK is signed with `android/key.properties` when present (README); `lib/ui/lifecycle_gate.dart` refetches after 5 minutes away and covers the app on iOS while inactive. iOS has never been built here.
 - Configuration is `--dart-define=API_URL=…` (only pre-fills the server screen). Android allows cleartext only to `localhost` / `10.0.2.2` (`network_security_config.xml`); use HTTPS for anything else.
 - The SDK is in `~/flutter` (Flutter 3.27, Dart 3.6): pub resolves package versions compatible with it, so do not bump packages past what that Dart accepts without upgrading Flutter.
 - Android builds need `JAVA_HOME` (Android Studio's JBR 21) and `ANDROID_HOME` from `~/.zshrc`. Gradle 8.12, AGP 8.9.1 and compileSdk 36 are set in `android/` because the newest plugins require them.

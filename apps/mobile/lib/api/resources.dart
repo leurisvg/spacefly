@@ -1,6 +1,8 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../i18n/strings.g.dart';
+import '../platform/platform.dart';
 import '../state/filters_store.dart';
 import 'api_client.dart';
 
@@ -32,9 +34,16 @@ class PausedRequest implements Exception {
   const PausedRequest();
 }
 
-/// Invalidates the server's cache and refetches every visible report (pull to refresh).
+/// Invalidates the server's cache and refetches every visible report (pull to refresh), telling the user how it went. Failing (no
+/// connection) still refetches, so the reports try again and keep what they show if they can't.
 Future<void> refreshAll(WidgetRef ref) async {
-  await ref.read(dioProvider).post<void>('/api/refresh');
+  final toast = ref.read(toastProvider);
+  try {
+    await ref.read(dioProvider).post<void>('/api/refresh');
+    toast.success(t.topbar.refreshed);
+  } catch (_) {
+    toast.error(t.errors.generic);
+  }
   ref.read(filtersProvider.notifier).refresh();
 }
 
