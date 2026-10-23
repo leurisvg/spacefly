@@ -65,6 +65,25 @@ class FiltersNotifier extends Notifier<FiltersState> {
   }
 
   void refresh() => state = state.copyWith(refreshTick: state.refreshTick + 1);
+
+  FiltersState? _beforeScope;
+
+  /// Whether a screen has put its own period in place of the user's (see [scopePreset]).
+  bool get scoped => _beforeScope != null;
+
+  /// A screen that opens on a period of its own (an account on its last 30 days): the user's period is kept aside and comes back with
+  /// [release]. Changing the period meanwhile changes the screen's, not the one kept. Port of `scopePreset` in the web's filters store.
+  void scopePreset(PeriodPreset preset, {String? anchor}) {
+    _beforeScope ??= state;
+    state = state.copyWith(preset: preset, period: presetPeriod(preset, anchor ?? _today));
+  }
+
+  void release() {
+    final saved = _beforeScope;
+    if (saved == null) return;
+    _beforeScope = null;
+    state = state.copyWith(preset: saved.preset, period: saved.period);
+  }
 }
 
 /// The display currency: the user's choice, else the server's primary currency.

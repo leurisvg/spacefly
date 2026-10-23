@@ -32,6 +32,29 @@ final moreSections = <MoreSection>[
     MoreEntry('/analysis/merchants', Icons.storefront_outlined, (t) => t.nav.merchants),
     MoreEntry('/analysis/income-sources', Icons.work_outline, (t) => t.nav.incomeSources),
   ]),
+  MoreSection((t) => t.nav.sections.accounts, [
+    MoreEntry('/accounts/expense', Icons.shopping_cart_outlined, (t) => t.nav.expenseAccounts),
+    MoreEntry('/accounts/revenue', Icons.volunteer_activism_outlined, (t) => t.nav.revenueAccounts),
+    MoreEntry('/accounts/net-worth', Icons.account_balance_outlined, (t) => t.nav.netWorth),
+    MoreEntry('/accounts/savings', Icons.savings_outlined, (t) => t.nav.savings),
+  ]),
+  MoreSection((t) => t.nav.sections.planning, [
+    MoreEntry('/planning/bills', Icons.autorenew, (t) => t.nav.bills),
+    MoreEntry('/planning/recurring', Icons.event_repeat_outlined, (t) => t.nav.recurring),
+    MoreEntry('/planning/goals', Icons.flag_outlined, (t) => t.nav.goals),
+    MoreEntry('/planning/projection', Icons.timeline, (t) => t.nav.projection),
+  ]),
+  MoreSection((t) => t.nav.sections.create, [
+    MoreEntry('/edit/category', Icons.category_outlined, (t) => t.editor.entity.category.kNew),
+    MoreEntry('/edit/tag', Icons.sell_outlined, (t) => t.editor.entity.tag.kNew),
+    MoreEntry('/edit/budget', Icons.track_changes, (t) => t.editor.entity.budget.kNew),
+    MoreEntry('/edit/bill', Icons.autorenew, (t) => t.editor.entity.bill.kNew),
+    MoreEntry('/edit/account', Icons.account_balance_wallet_outlined, (t) => t.editor.entity.account.kNew),
+    MoreEntry('/edit/piggy', Icons.savings_outlined, (t) => t.editor.entity.piggy.kNew),
+  ]),
+  MoreSection((t) => t.nav.sections.system, [
+    MoreEntry('/about', Icons.info_outline, (t) => t.nav.about),
+  ]),
 ];
 
 class MoreTab extends StatelessWidget {

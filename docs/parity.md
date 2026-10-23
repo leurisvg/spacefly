@@ -8,7 +8,7 @@
 | Transactions list | `/transactions` | `/transactions` (tab: search, filters, sort, 50 at a time, a button for a new transaction; CSV export and deleting from the list are not there) | `explorer.vm.ts` |
 | Transaction detail | detail sheet over the list | `/transactions/:id` (with edit and delete) and a bottom sheet (the transactions behind a chart slice, a calendar day or a budget) | `tx-detail.vm.ts`, `tx-view.vm.ts` |
 | New / edit transaction | `/transactions/new`, `/transactions/:id/edit` | same paths (the new form takes the same `?source=…&amount=…` pre-fill) | `transaction-form.vm.ts`, `account-picker.vm.ts` |
-| Accounts | `/accounts` | `/accounts` (tab: balances, flow, balance history; no reordering or editing yet) | `accounts.vm.ts` |
+| Accounts | `/accounts` | `/accounts` (tab: balances, flow, balance history, a button to create an account, an edit button per account and a reorder mode with arrows and drag handles that saves itself, plus "reset order") | `accounts.vm.ts` |
 | Settings | `/settings` | `/settings` (tab: theme, language, display currency, privacy, server and sign out, refresh data, open Firefly) | `preferences.vm.ts` |
 | Login | `/login` | `/login`, plus `/server` for the server URL and Cloudflare Access credentials | `login.vm.ts` |
 | Drill into a chart slice | sheet / explorer filters | bottom sheet (`showDrillSheet`) | `explorer.vm.ts` |
@@ -19,10 +19,10 @@
 | Compare | `/reports/compare` | `/reports/compare` (previous / last year / custom B with a native range picker, grouping, kind, diverging bars, trend, table) | `compare.vm.ts` |
 | Categories, tags, merchants, income sources | `/analysis/*` | `/analysis/categories`, `/analysis/tags`, `/analysis/merchants`, `/analysis/income-sources` (side switch, bars / treemap / budget sunburst, 12-month trend, list with change; creating and editing entities waits for the editors) | `ranking.vm.ts` |
 | Budgets | `/analysis/budgets` | `/analysis/budgets` (totals, a card per budget with the expected-pace tick and projection, history and categories of the picked one; creating and editing waits for the editors) | `budgets.vm.ts` |
-| Account detail, net worth, savings, counterparties | `/accounts/*` | | – |
+| Account detail, net worth, savings, counterparties | `/accounts/:id`, `/accounts/net-worth`, `/accounts/savings`, `/accounts/{expense,revenue}` and `/accounts/{expense,revenue}/:id` | same paths, full screens over the tabs (opened from a card of the Accounts tab and from the More tab). The account detail opens on the last 30 days and hands the user's period back; a foreign account is drawn in its own currency with what it is worth next to it; the net worth stacks the positive balances | `account-detail.vm.ts`, `net-worth.vm.ts`, `savings.vm.ts`, `counterparties.vm.ts`, `counterparty-detail.vm.ts` |
 | Subscriptions, recurring, goals, projection | `/planning/*` | | – |
-| Entity editors (category, tag, budget, subscription, account, goal) | side sheet | | `entity-form.vm.ts` and one `*-form.vm.ts` per entity |
+| Entity editors (category, tag, budget, subscription, account, goal) | side sheet | `/edit/:kind` and `/edit/:kind/:id` (a full screen; "Create" section of the More tab, a plus and an edit button in Categories, Tags, Merchants, Income sources, Budgets and Accounts; deleting an account asks to type its name) | `entity-form.vm.ts` and one `*-form.vm.ts` per entity |
 | Server settings (excluded accounts, balance window, Sankey threshold, rates in use) | section of `/settings` | `/settings/server` | `settings.vm.ts` |
 | Exchange rates (add, replace, delete) | section of `/settings` | `/settings/exchange-rates` | `exchange-rates.vm.ts` |
-| Reordering accounts, CSV export | web | | – |
+| CSV export | web | | – |
 | About | `/about` | | – |

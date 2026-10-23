@@ -10,7 +10,7 @@ import '../ui_logic/calendar_cells.dart';
 /// inside the bar when it fits or just above it, the day number in the middle and dots for scheduled bills and recurrences.
 /// Port of apps/web/src/app/shared/components/calendar-grid.ts. Tapping a day calls [onDay] with its date.
 class CalendarGrid extends StatelessWidget {
-  const CalendarGrid({super.key, required this.days, required this.f, required this.today, required this.onDay, this.scheduled = const [], this.scale});
+  const CalendarGrid({super.key, required this.days, required this.f, required this.today, required this.onDay, this.scheduled = const [], this.scale, this.currency});
 
   final List<CalendarDay> days;
   final List<ScheduledItem> scheduled;
@@ -21,12 +21,15 @@ class CalendarGrid extends StatelessWidget {
   /// Value that fills a cell; defaults to the largest day shown.
   final double? scale;
 
+  /// Currency of the day amounts when it isn't the display currency.
+  final String? currency;
+
   @override
   Widget build(BuildContext context) {
     final t = context.t;
     final tokens = context.tokens;
     final scheme = Theme.of(context).colorScheme;
-    final cells = buildCalendarCells(f, days, scheduled, scale: scale, today: today);
+    final cells = buildCalendarCells(f, days, scheduled, scale: scale, today: today, currency: currency);
     final blanks = calendarBlanks(days);
     final warning = tokens.moneyDeficit;
 

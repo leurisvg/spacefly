@@ -12,14 +12,16 @@ T unwrapReport<T>(Object? body, T Function(Json) parse) {
   return parse((body['data'] as Map).cast<String, dynamic>());
 }
 
-/// A provider for a `/api/…` endpoint parameterised by the global filters (period, currency, refresh tick) plus optional extra
-/// params. Return `null` from [extra] to pause the request. While a new request is in flight the previous value stays available
+/// A provider for a `/api/…` endpoint parameterised by the global filters (period, currency, refresh tick; only currency and refresh tick
+/// with `global: false`) plus optional extra params. Return `null` from [extra] to pause the request. While a new request is in flight the previous value stays available
 /// (`valueOrNull`), so screens don't flash.
-AutoDisposeFutureProvider<T> reportProvider<T>(String path, T Function(Json) parse, {Map<String, Object>? Function(Ref ref)? extra}) {
+AutoDisposeFutureProvider<T> reportProvider<T>(String path, T Function(Json) parse, {Map<String, Object>? Function(Ref ref)? extra, bool global = true}) {
   return FutureProvider.autoDispose<T>((ref) async {
     final more = extra == null ? const <String, Object>{} : extra(ref);
     if (more == null) throw const PausedRequest();
-    final params = {...ref.watch(filterQueryProvider), ...more};
+    // `global: false`: the report does not depend on the period (what is scheduled, what is saved), only on the currency.
+    final base = global ? ref.watch(filterQueryProvider) : {'currency': ref.watch(currencyProvider), '_r': ref.watch(filtersProvider.select((f) => f.refreshTick))};
+    final params = {...base, ...more};
     final response = await ref.watch(dioProvider).get<Object?>('/api/$path', queryParameters: params);
     return unwrapReport(response.data, parse);
   });

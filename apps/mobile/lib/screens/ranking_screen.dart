@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../api/models.g.dart' show RankingItem;
 import '../features/analysis/ranking_vm.dart';
+import '../features/editor/entity_form_vm.dart' show EntityKind;
 import '../format/formatter.dart' show Formatter;
 import '../format/formatter_provider.dart';
 import '../i18n/strings.g.dart';
@@ -84,6 +86,7 @@ class RankingScreen extends ConsumerWidget {
                   const SizedBox(width: 10),
                   Expanded(child: Text(vm.itemName(it), maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w500))),
                   Text(f.money(it.value), style: numStyle(context, weight: FontWeight.w600)),
+                  if (vm.editRoute(it) != null) IconButton(key: Key('rank-edit-$i'), visualDensity: VisualDensity.compact, tooltip: '${t.editor.tx.edit}: ${vm.itemName(it)}', icon: const Icon(Icons.edit_outlined, size: 18), onPressed: () => context.push(vm.editRoute(it)!)),
                 ],
               ),
               const SizedBox(height: 2),
@@ -110,6 +113,7 @@ class RankingScreen extends ConsumerWidget {
     return ReportPage(
       title: title,
       listKey: Key('ranking-${route.name}'),
+      actions: [if (vm.createRoute != null) IconButton(key: const Key('ranking-new'), tooltip: _newLabel(t, vm), icon: const Icon(Icons.add), onPressed: () => context.push(vm.createRoute!)), const PrivacyButton()],
       failed: vm.res.hasError && r == null,
       onRetry: () => ref.invalidate(rankingReportProvider(o)),
       children: [
@@ -189,6 +193,12 @@ class RankingScreen extends ConsumerWidget {
     );
   }
 }
+
+String _newLabel(Translations t, RankingViewModel vm) => switch (vm.entityKind) {
+      EntityKind.category => t.editor.entity.category.kNew,
+      EntityKind.tag => t.editor.entity.tag.kNew,
+      _ => t.editor.entity.account.kNew,
+    };
 
 /// The two-ring chart with what a tapped slice is written in its hole, and the budgets listed under it.
 class _SunburstView extends StatefulWidget {

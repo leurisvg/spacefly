@@ -158,71 +158,72 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
                 ),
               KeyedSubtree(
                 key: _key('description'),
-                child: SuggestField(
-                  controller: _description,
-                  focusNode: _descriptionFocus,
-                  label: t.editor.tx.descriptionLabel,
+                child: FormRow(
                   icon: Icons.receipt_long_outlined,
-                  required: true,
-                  errorText: err('description'),
-                  options: [for (final d in view.descriptionOptions) Suggestion(d, d)],
-                  onChanged: (v) {
-                    _form.setDescription(v);
-                    _form.onDescriptionTyped(v);
-                  },
+                  child: SuggestField(
+                    controller: _description,
+                    focusNode: _descriptionFocus,
+                    label: t.editor.tx.descriptionLabel,
+                    required: true,
+                    errorText: err('description'),
+                    options: [for (final d in view.descriptionOptions) Suggestion(d, d)],
+                    onChanged: (v) {
+                      _form.setDescription(v);
+                      _form.onDescriptionTyped(v);
+                    },
+                  ),
                 ),
               ),
               const SizedBox(height: 16),
-              KeyedSubtree(
-                key: _key('amount'),
-                child: TextField(
-                  key: const Key('amount'),
-                  controller: _amount,
-                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                  decoration: InputDecoration(labelText: '${t.editor.tx.amount} *', prefixText: '${view.amountCurrency}  ', errorText: err('amount')),
-                  onChanged: _form.setAmount,
+              FormRow(
+                text: view.amountCurrency,
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      flex: 5,
+                      child: KeyedSubtree(
+                        key: _key('amount'),
+                        child: TextField(
+                          key: const Key('amount'),
+                          controller: _amount,
+                          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                          style: const TextStyle(fontSize: 15),
+                          decoration: InputDecoration(labelText: '${t.editor.tx.amount} *', hintText: '0.00', errorText: err('amount'), errorMaxLines: 2, contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 18)),
+                          onChanged: _form.setAmount,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      flex: 5,
+                      child: KeyedSubtree(key: _key('date'), child: TapField(key: const Key('date'), dense: true, label: t.editor.tx.date, required: true, value: m.date, errorText: err('date'), onTap: () => _pickDate(view))),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      flex: 3,
+                      // An empty time lets the server decide: a long press clears it (a short one opens the picker).
+                      child: KeyedSubtree(key: _key('time'), child: TapField(key: const Key('time'), dense: true, label: t.forms.hour, value: m.time, placeholder: '—', errorText: err('time'), onTap: () => _pickTime(view), onLongPress: () => _form.setTime(''))),
+                    ),
+                  ],
                 ),
               ),
               if (view.crossCurrency) ...[
                 const SizedBox(height: 16),
-                KeyedSubtree(
-                  key: _key('foreignAmount'),
-                  child: TextField(
-                    key: const Key('received-amount'),
-                    controller: _foreignAmount,
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                    decoration: InputDecoration(labelText: '${t.editor.tx.received(currency: view.receivedCurrency)} *', prefixText: '${view.receivedCurrency}  ', errorText: err('foreignAmount')),
-                    onChanged: _form.setForeignAmount,
+                FormRow(
+                  text: view.receivedCurrency,
+                  child: KeyedSubtree(
+                    key: _key('foreignAmount'),
+                    child: TextField(
+                      key: const Key('received-amount'),
+                      controller: _foreignAmount,
+                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                      decoration: InputDecoration(labelText: '${t.editor.tx.received(currency: view.receivedCurrency)} *', errorText: err('foreignAmount')),
+                      onChanged: _form.setForeignAmount,
+                    ),
                   ),
                 ),
               ],
-              const SizedBox(height: 16),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    flex: 3,
-                    child: KeyedSubtree(key: _key('date'), child: TapField(key: const Key('date'), label: t.editor.tx.date, required: true, icon: Icons.event_outlined, value: m.date, errorText: err('date'), onTap: () => _pickDate(view), trailing: const SizedBox.shrink())),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    flex: 2,
-                    child: KeyedSubtree(
-                      key: _key('time'),
-                      child: TapField(
-                        key: const Key('time'),
-                        label: t.forms.hour,
-                        icon: Icons.schedule,
-                        value: m.time,
-                        placeholder: '—',
-                        errorText: err('time'),
-                        onTap: () => _pickTime(view),
-                        trailing: m.time.isEmpty ? const SizedBox.shrink() : IconButton(tooltip: t.forms.clear, icon: const Icon(Icons.close, size: 18), onPressed: () => _form.setTime('')),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
               const SizedBox(height: 16),
               Stack(
                 alignment: Alignment.centerRight,
@@ -231,16 +232,18 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
                     children: [
                       KeyedSubtree(
                         key: _key('source'),
-                        child: TapField(
-                          key: const Key('source'),
-                          label: t.editor.tx.from,
-                          required: true,
-                          icon: Icons.north_east,
-                          value: view.accountLabel(m.source),
-                          placeholder: t.editor.tx.accountPlaceholder,
-                          errorText: err('source'),
-                          onTap: () => _pickAccount(AccountSide.source, view),
-                          trailing: const SizedBox(width: 48),
+                        child: FormRow(
+                          icon: Icons.logout,
+                          child: TapField(
+                            key: const Key('source'),
+                            label: t.editor.tx.from,
+                            required: true,
+                            value: view.accountLabel(m.source),
+                            placeholder: t.editor.tx.accountPlaceholder,
+                            errorText: err('source'),
+                            onTap: () => _pickAccount(AccountSide.source, view),
+                            trailing: const SizedBox(width: 48),
+                          ),
                         ),
                       ),
                       if (view.picker(AccountSide.source).selectedBalance case final b?)
@@ -248,16 +251,18 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
                       const SizedBox(height: 16),
                       KeyedSubtree(
                         key: _key('destination'),
-                        child: TapField(
-                          key: const Key('destination'),
-                          label: t.editor.tx.to,
-                          required: true,
-                          icon: Icons.south_west,
-                          value: view.accountLabel(m.destination),
-                          placeholder: t.editor.tx.accountPlaceholder,
-                          errorText: err('destination'),
-                          onTap: () => _pickAccount(AccountSide.destination, view),
-                          trailing: const SizedBox(width: 48),
+                        child: FormRow(
+                          icon: Icons.login,
+                          child: TapField(
+                            key: const Key('destination'),
+                            label: t.editor.tx.to,
+                            required: true,
+                            value: view.accountLabel(m.destination),
+                            placeholder: t.editor.tx.accountPlaceholder,
+                            errorText: err('destination'),
+                            onTap: () => _pickAccount(AccountSide.destination, view),
+                            trailing: const SizedBox(width: 48),
+                          ),
                         ),
                       ),
                     ],
@@ -268,88 +273,107 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
-              KeyedSubtree(
-                key: _key('category'),
-                child: SuggestField(
-                  controller: _category,
-                  focusNode: _categoryFocus,
-                  label: t.common.category,
-                  hint: t.editor.tx.categoryPlaceholder,
-                  icon: Icons.label_outline,
-                  errorText: err('category'),
-                  options: [for (final o in view.categoryOptions) Suggestion(o.value, o.label)],
-                  onChanged: _form.setCategory,
-                ),
-              ),
-              if (view.showBudgetBill) ...[
-                const SizedBox(height: 16),
-                TapField(
-                  key: const Key('budget'),
-                  label: t.common.budget,
-                  icon: Icons.savings_outlined,
-                  value: view.budgetOptions.where((o) => o.value == m.budgetId).firstOrNull?.label ?? t.common.noBudget,
-                  errorText: err('budgetId'),
-                  onTap: () => _pick(t.common.budget, view.budgetOptions, m.budgetId, _form.setBudgetId, none: t.common.noBudget),
-                ),
-                const SizedBox(height: 16),
-                TapField(
-                  key: const Key('bill'),
-                  label: t.editor.tx.bill,
-                  icon: Icons.repeat,
-                  value: view.billOptions.where((o) => o.value == m.billId).firstOrNull?.label ?? t.editor.tx.noBill,
-                  errorText: err('billId'),
-                  onTap: () => _pick(t.editor.tx.bill, view.billOptions, m.billId, _form.setBillId, none: t.editor.tx.noBill),
-                ),
-              ],
-              if (view.showOtherCurrency) ...[
-                SwitchListTile(
-                  key: const Key('other-currency'),
-                  contentPadding: EdgeInsets.zero,
-                  secondary: const Icon(Icons.currency_exchange),
-                  title: Text(t.editor.tx.otherCurrency),
-                  value: m.otherCurrency,
-                  onChanged: _form.setOtherCurrency,
-                ),
-                if (m.otherCurrency) ...[
-                  TapField(
-                    key: const Key('foreign-currency'),
-                    label: t.editor.tx.foreignCurrency,
-                    required: true,
-                    value: m.foreignCurrency,
-                    errorText: err('foreignCurrency'),
-                    onTap: () => _pick(t.editor.tx.foreignCurrency, view.otherCurrencyOptions, m.foreignCurrency, _form.setForeignCurrency),
-                  ),
-                  const SizedBox(height: 16),
+              const SizedBox(height: 20),
+              FormCard(
+                children: [
                   KeyedSubtree(
-                    key: _key('foreignAmount'),
+                    key: _key('category'),
+                    child: FormRow(
+                      icon: Icons.assignment_outlined,
+                      child: SuggestField(
+                        controller: _category,
+                        focusNode: _categoryFocus,
+                        label: t.common.category,
+                        hint: t.editor.tx.categoryPlaceholder,
+                        errorText: err('category'),
+                        options: [for (final o in view.categoryOptions) Suggestion(o.value, o.label)],
+                        onChanged: _form.setCategory,
+                      ),
+                    ),
+                  ),
+                  if (view.showBudgetBill) ...[
+                    FormRow(
+                      icon: Icons.savings_outlined,
+                      child: TapField(
+                        key: const Key('budget'),
+                        label: t.common.budget,
+                        value: view.budgetOptions.where((o) => o.value == m.budgetId).firstOrNull?.label ?? t.common.noBudget,
+                        errorText: err('budgetId'),
+                        onTap: () => _pick(t.common.budget, view.budgetOptions, m.budgetId, _form.setBudgetId, none: t.common.noBudget),
+                      ),
+                    ),
+                    FormRow(
+                      icon: Icons.repeat,
+                      child: TapField(
+                        key: const Key('bill'),
+                        label: t.editor.tx.bill,
+                        value: view.billOptions.where((o) => o.value == m.billId).firstOrNull?.label ?? t.editor.tx.noBill,
+                        errorText: err('billId'),
+                        onTap: () => _pick(t.editor.tx.bill, view.billOptions, m.billId, _form.setBillId, none: t.editor.tx.noBill),
+                      ),
+                    ),
+                  ],
+                  if (view.showOtherCurrency) ...[
+                    FormRow(
+                      icon: Icons.currency_exchange,
+                      child: SwitchListTile(
+                        key: const Key('other-currency'),
+                        contentPadding: const EdgeInsets.only(left: 4),
+                        title: Text(t.editor.tx.otherCurrency),
+                        value: m.otherCurrency,
+                        onChanged: _form.setOtherCurrency,
+                      ),
+                    ),
+                    if (m.otherCurrency) ...[
+                      FormRow(
+                        text: m.foreignCurrency,
+                        child: TapField(
+                          key: const Key('foreign-currency'),
+                          label: t.editor.tx.foreignCurrency,
+                          required: true,
+                          value: m.foreignCurrency,
+                          errorText: err('foreignCurrency'),
+                          onTap: () => _pick(t.editor.tx.foreignCurrency, view.otherCurrencyOptions, m.foreignCurrency, _form.setForeignCurrency),
+                        ),
+                      ),
+                      FormRow(
+                        text: m.foreignCurrency,
+                        child: KeyedSubtree(
+                          key: _key('foreignAmount'),
+                          child: TextField(
+                            key: const Key('foreign-amount'),
+                            controller: _foreignAmount,
+                            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                            decoration: InputDecoration(labelText: '${t.editor.tx.foreignAmount} *', errorText: err('foreignAmount')),
+                            onChanged: _form.setForeignAmount,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
+                  FormRow(
+                    icon: Icons.sell_outlined,
                     child: TextField(
-                      key: const Key('foreign-amount'),
-                      controller: _foreignAmount,
-                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                      decoration: InputDecoration(labelText: '${t.editor.tx.foreignAmount} *', prefixText: m.foreignCurrency.isEmpty ? null : '${m.foreignCurrency}  ', errorText: err('foreignAmount')),
-                      onChanged: _form.setForeignAmount,
+                      key: const Key('tags'),
+                      controller: _tags,
+                      autocorrect: false,
+                      decoration: InputDecoration(labelText: t.common.tag, hintText: 'a, b', errorText: err('tags')),
+                      onChanged: (v) => _form.setTags(_parseTags(v)),
+                    ),
+                  ),
+                  FormRow(
+                    icon: Icons.notes,
+                    child: TextField(
+                      key: const Key('notes'),
+                      controller: _notes,
+                      minLines: 3,
+                      maxLines: 6,
+                      textCapitalization: TextCapitalization.sentences,
+                      decoration: InputDecoration(labelText: t.editor.tx.notes, alignLabelWithHint: true, errorText: err('notes')),
+                      onChanged: _form.setNotes,
                     ),
                   ),
                 ],
-              ],
-              const SizedBox(height: 16),
-              TextField(
-                key: const Key('tags'),
-                controller: _tags,
-                autocorrect: false,
-                decoration: InputDecoration(labelText: t.common.tag, hintText: 'a, b', prefixIcon: const Icon(Icons.sell_outlined, size: 20), errorText: err('tags')),
-                onChanged: (v) => _form.setTags(_parseTags(v)),
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                key: const Key('notes'),
-                controller: _notes,
-                minLines: 3,
-                maxLines: 6,
-                textCapitalization: TextCapitalization.sentences,
-                decoration: InputDecoration(labelText: t.editor.tx.notes, alignLabelWithHint: true, errorText: err('notes')),
-                onChanged: _form.setNotes,
               ),
               if (view.generalErrors.isNotEmpty) Padding(padding: const EdgeInsets.only(top: 12), child: Text(view.generalErrors.join(' '), style: TextStyle(color: scheme.error))),
               const SizedBox(height: 8),

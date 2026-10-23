@@ -93,6 +93,23 @@ class FakeConfirm implements Confirm {
   }
 }
 
+class RecordedShare {
+  const RecordedShare(this.fileName, this.text);
+  final String fileName;
+  final String text;
+}
+
+class RecordingFileShare implements FileShare {
+  final List<RecordedShare> shared = [];
+  bool fail = false;
+
+  @override
+  Future<void> shareText({required String fileName, required String text, String mimeType = 'text/csv'}) async {
+    if (fail) throw StateError('no share sheet');
+    shared.add(RecordedShare(fileName, text));
+  }
+}
+
 class FakeBack implements BackNavigation {
   final List<String> fallbacks = [];
 
@@ -116,11 +133,13 @@ class TestEnv {
   final toast = RecordingToast();
   final confirm = FakeConfirm();
   final back = FakeBack();
+  final share = RecordingFileShare();
 
   List<Override> get overrides => [
         toastProvider.overrideWithValue(toast),
         confirmProvider.overrideWithValue(confirm),
         backNavigationProvider.overrideWithValue(back),
+        fileShareProvider.overrideWithValue(share),
         keyValueStoreProvider.overrideWithValue(prefs),
         credentialStoreProvider.overrideWithValue(secure),
         initialServerConfigProvider.overrideWithValue(initialConfig),

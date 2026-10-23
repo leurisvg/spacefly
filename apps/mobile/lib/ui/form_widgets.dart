@@ -5,7 +5,19 @@ import '../ui_logic/suggest.dart';
 
 /// An outlined field that opens a picker when tapped: dates, times, accounts, budgets. Shows [value], or [placeholder] while empty.
 class TapField extends StatelessWidget {
-  const TapField({super.key, required this.label, required this.onTap, this.value = '', this.placeholder, this.icon, this.errorText, this.required = false, this.trailing});
+  const TapField({
+    super.key,
+    required this.label,
+    required this.onTap,
+    this.onLongPress,
+    this.value = '',
+    this.placeholder,
+    this.icon,
+    this.errorText,
+    this.required = false,
+    this.trailing,
+    this.dense = false,
+  });
 
   final String label;
   final String value;
@@ -14,14 +26,19 @@ class TapField extends StatelessWidget {
   final String? errorText;
   final bool required;
   final VoidCallback onTap;
+  final VoidCallback? onLongPress;
   final Widget? trailing;
+
+  /// Narrow boxes (the amount, date and time row): smaller text and side padding, no arrow.
+  final bool dense;
 
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
+      onLongPress: onLongPress,
+      borderRadius: BorderRadius.circular(8),
       child: InputDecorator(
         isEmpty: value.isEmpty,
         isFocused: false,
@@ -29,10 +46,11 @@ class TapField extends StatelessWidget {
           labelText: required ? '$label *' : label,
           errorText: errorText,
           prefixIcon: icon == null ? null : Icon(icon, size: 20),
-          suffixIcon: trailing ?? const Icon(Icons.arrow_drop_down),
+          suffixIcon: trailing ?? (dense ? null : const Icon(Icons.arrow_drop_down)),
+          contentPadding: dense ? const EdgeInsets.symmetric(horizontal: 10, vertical: 18) : null,
           floatingLabelBehavior: value.isEmpty && placeholder == null ? FloatingLabelBehavior.auto : FloatingLabelBehavior.always,
         ),
-        child: Text(value.isEmpty ? (placeholder ?? '') : value, maxLines: 1, overflow: TextOverflow.ellipsis, style: value.isEmpty ? TextStyle(color: scheme.onSurfaceVariant) : null),
+        child: Text(value.isEmpty ? (placeholder ?? '') : value, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: dense ? 15 : null, color: value.isEmpty ? scheme.onSurfaceVariant : null)),
       ),
     );
   }
@@ -81,15 +99,36 @@ class SuggestField extends StatelessWidget {
                 focusNode: focusNode,
                 textInputAction: textInputAction,
                 textCapitalization: TextCapitalization.sentences,
-                decoration: InputDecoration(labelText: required ? '$label *' : label, hintText: hint, errorText: errorText, prefixIcon: icon == null ? null : Icon(icon, size: 20)),
+                decoration: InputDecoration(
+                  labelText: required ? '$label *' : label,
+                  hintText: hint,
+                  errorText: errorText,
+                  prefixIcon: icon == null ? null : Icon(icon, size: 20),
+                  suffixIcon: focused && controller.text.isNotEmpty
+                      ? IconButton(
+                          key: const Key('clear-text'),
+                          tooltip: context.t.forms.clear,
+                          icon: const Icon(Icons.close),
+                          onPressed: () {
+                            controller.clear();
+                            onChanged('');
+                          },
+                        )
+                      : null,
+                ),
                 onChanged: onChanged,
               ),
               if (shown.isNotEmpty)
                 Container(
-                  margin: const EdgeInsets.only(top: 4),
+                  margin: const EdgeInsets.only(top: 2),
                   clipBehavior: Clip.antiAlias,
                   constraints: const BoxConstraints(maxHeight: 264),
-                  decoration: BoxDecoration(color: scheme.surfaceContainer, borderRadius: BorderRadius.circular(12), border: Border.all(color: scheme.outlineVariant)),
+                  decoration: BoxDecoration(
+                    color: scheme.surfaceContainerHigh,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: scheme.outlineVariant),
+                    boxShadow: const [BoxShadow(color: Color(0x40000000), blurRadius: 8, offset: Offset(0, 3))],
+                  ),
                   // The list scrolls on its own; its notifications stop here so the form's drag-to-dismiss does not drop the focus (and the list).
                   child: NotificationListener<ScrollNotification>(
                     onNotification: (_) => true,
@@ -106,7 +145,7 @@ class SuggestField extends StatelessWidget {
                               controller.selection = TextSelection.collapsed(offset: o.label.length);
                               onChanged(o.label);
                             },
-                            child: Padding(padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12), child: Align(alignment: Alignment.centerLeft, child: Text(o.label))),
+                            child: Padding(padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16), child: Align(alignment: Alignment.centerLeft, child: Text(o.label, style: const TextStyle(fontSize: 16)))),
                           ),
                       ],
                     ),
@@ -115,6 +154,49 @@ class SuggestField extends StatelessWidget {
             ],
           );
         },
+      );
+}
+
+/// One row of a form: an icon (or a short text, like a currency code) in a left column, then the field. Keeps the icon level with the
+/// field's box even when an error message makes the field taller.
+class FormRow extends StatelessWidget {
+  const FormRow({super.key, required this.child, this.icon, this.text});
+
+  final Widget child;
+  final IconData? icon;
+  final String? text;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(
+          width: 40,
+          height: 56,
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: icon != null ? Icon(icon, size: 22, color: scheme.onSurface) : Text(text ?? '', maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant)),
+          ),
+        ),
+        Expanded(child: child),
+      ],
+    );
+  }
+}
+
+/// The raised panel that groups the secondary fields of a form (category, tags, notes…).
+class FormCard extends StatelessWidget {
+  const FormCard({super.key, required this.children});
+
+  final List<Widget> children;
+
+  @override
+  Widget build(BuildContext context) => Container(
+        padding: const EdgeInsets.fromLTRB(12, 16, 12, 16),
+        decoration: BoxDecoration(color: Theme.of(context).colorScheme.surfaceContainer, borderRadius: BorderRadius.circular(16)),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [for (var i = 0; i < children.length; i++) ...[if (i > 0) const SizedBox(height: 16), children[i]]]),
       );
 }
 

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../features/analysis/budgets_vm.dart';
 import '../format/formatter_provider.dart';
@@ -43,6 +44,7 @@ class BudgetsScreen extends ConsumerWidget {
     return ReportPage(
       title: t.nav.budgets,
       listKey: const Key('budgets'),
+      actions: [IconButton(key: const Key('budget-new'), tooltip: t.editor.entity.budget.kNew, icon: const Icon(Icons.add), onPressed: () => context.push('/edit/budget')), const PrivacyButton()],
       failed: vm.res.hasError && r == null,
       onRetry: () => ref.invalidate(budgetsReportProvider),
       children: [
@@ -75,6 +77,7 @@ class BudgetsScreen extends ConsumerWidget {
                         children: [
                           Expanded(child: Text(b.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w600))),
                           if (b.autoBudget.type != null) Padding(padding: const EdgeInsets.only(right: 4), child: Chip(label: Text(_autoLabel(t, b.autoBudget.type!)), visualDensity: VisualDensity.compact, labelStyle: const TextStyle(fontSize: 10))),
+                          IconButton(key: Key('budget-edit-${b.id}'), tooltip: '${t.editor.tx.edit}: ${b.name}', icon: const Icon(Icons.edit_outlined, size: 20), onPressed: () => context.push('/edit/budget/${b.id}')),
                           IconButton(key: Key('budget-open-${b.id}'), tooltip: t.nav.sections.transactions, icon: const Icon(Icons.receipt_long_outlined, size: 20), onPressed: () {
                             vm.openBudget(b);
                             drill();

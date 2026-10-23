@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { HlmToggleGroupImports } from '@spartan-ng/helm/toggle-group';
+import { HISTORY_MONTHS } from '@spacefly/client/features/accounts/history-months';
 
 /** History length selector (6 / 12 / 24 / 36 months) for balance charts. */
 @Component({
@@ -18,5 +19,5 @@ import { HlmToggleGroupImports } from '@spartan-ng/helm/toggle-group';
 export class MonthsPicker {
   readonly value = input.required<string>();
   readonly changed = output<number>();
-  protected readonly options = [6, 12, 24, 36];
+  protected readonly options = HISTORY_MONTHS;
 }

@@ -3,7 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../api/resources.dart';
+import '../api/models.g.dart' show TxRow;
 import '../features/transactions/explorer_vm.dart';
+import '../features/transactions/transaction_actions.dart';
+import '../platform/platform.dart';
 import '../format/formatter_provider.dart';
 import '../i18n/strings.g.dart';
 import '../theme/app_theme.dart';
@@ -43,6 +46,34 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
     ref.read(explorerProvider.notifier).clearSearch();
   }
 
+  /// A single-part record is deleted by swiping it away. The question and the delete are the actions'; the row goes when the list is
+  /// fetched again, so the swipe itself never removes it.
+  Widget _swipeToDelete(TxRow tx, Widget child) {
+    if (!isEditable(tx)) return child;
+    final scheme = Theme.of(context).colorScheme;
+    return Dismissible(
+      key: ValueKey('tx-${tx.id}'),
+      direction: DismissDirection.endToStart,
+      background: Container(alignment: Alignment.centerRight, padding: const EdgeInsets.only(right: 20), color: scheme.errorContainer, child: Icon(Icons.delete_outline, color: scheme.onErrorContainer)),
+      confirmDismiss: (_) async {
+        await ref.read(transactionActionsProvider).remove(groupId: tx.groupId, name: tx.description, splitCount: tx.splitCount.toInt(), thenGoBack: false);
+        return false;
+      },
+      child: child,
+    );
+  }
+
+  /// Hands the CSV of the list to the share sheet.
+  Future<void> _export(ExplorerView view) async {
+    final csv = view.csv;
+    if (csv == null) return;
+    try {
+      await ref.read(fileShareProvider).shareText(fileName: csv.fileName, text: csv.text);
+    } catch (_) {
+      if (mounted) ref.read(toastProvider).error(context.t.errors.generic);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final t = context.t;
@@ -58,6 +89,12 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
       appBar: AppBar(
         title: Text(t.nav.sections.transactions),
         actions: [
+          IconButton(
+            key: const Key('export-csv'),
+            tooltip: view.hidden ? t.explorer.exportHidden : t.explorer.export,
+            icon: const Icon(Icons.file_download_outlined),
+            onPressed: view.csv == null ? null : () => _export(view),
+          ),
           IconButton(
             key: const Key('filters'),
             icon: Badge(isLabelVisible: state.activeFilters > 0, label: Text('${state.activeFilters}'), child: const Icon(Icons.tune)),
@@ -147,7 +184,10 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
               EmptyState(title: t.common.noResults)
             else ...[
               for (final tx in rows) ...[
-                TxTile(tx: tx, f: f, onTap: () => context.push('/transactions/${tx.groupId}', extra: tx)),
+                _swipeToDelete(
+                  tx,
+                  TxTile(tx: tx, f: f, onTap: () => context.push('/transactions/${tx.groupId}', extra: tx)),
+                ),
                 const Divider(),
               ],
               if (view.searching)

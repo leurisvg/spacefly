@@ -1,12 +1,14 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../api/api_client.dart';
-import '../../api/models.g.dart';
+import '../../api/models.g.dart' hide Period;
 import '../../api/resources.dart';
 import '../../i18n/strings.g.dart';
 import '../../state/filters_store.dart';
 import '../../state/meta_store.dart';
+import '../../shared/dates.dart' show Period;
 import '../../state/preferences.dart';
+import '../../state/privacy_store.dart';
 
 enum SortKey { date, description, amount, category }
 
@@ -16,6 +18,35 @@ const explorerPageSize = 50;
 double signedAmount(TxRow t) => t.type == 'withdrawal' ? -t.amount : t.amount;
 
 int _cmp(String a, String b) => a.toLowerCase().compareTo(b.toLowerCase());
+
+String _csvCell(Object? v) {
+  final s = '${v ?? ''}';
+  return RegExp(r'[",\n;]').hasMatch(s) ? '"${s.replaceAll('"', '""')}"' : s;
+}
+
+/// CSV (with BOM, for spreadsheets) of [rows]: amounts in the display currency plus the original.
+/// Port of `buildTransactionsCsv` in libs/client/src/features/transactions/explorer.vm.ts.
+String buildTransactionsCsv(List<TxRow> rows, String currency) {
+  final header = ['date', 'type', 'description', 'category', 'budget', 'tags', 'source', 'destination', 'amount_$currency', 'original_amount', 'original_currency', 'rate'];
+  final lines = [
+    for (final t in rows)
+      [
+        t.date,
+        t.type,
+        t.description,
+        t.category?.name ?? '',
+        t.budget?.name ?? '',
+        t.tags.join('|'),
+        t.source.name,
+        t.destination.name,
+        signedAmount(t).toStringAsFixed(2),
+        t.originalAmount.toStringAsFixed(2),
+        t.originalCurrency,
+        t.rate.toStringAsFixed(6),
+      ].map(_csvCell).join(','),
+  ];
+  return '\uFEFF${[header.join(','), ...lines].join('\n')}';
+}
 
 /// Sorted copy of [rows]. Ties on date fall back to the id so the order is stable.
 List<TxRow> sortTransactions(List<TxRow> rows, SortKey key, int dir) {
@@ -155,13 +186,18 @@ class FilterOption {
 }
 
 class ExplorerView {
-  ExplorerView({required this.state, required this.list, required this.search, required this.lookups, required this.t});
+  ExplorerView({required this.state, required this.list, required this.search, required this.lookups, required this.t, this.hidden = false, this.currency = '', this.period});
 
   final ExplorerState state;
   final AsyncValue<TxListResponse?> list;
   final AsyncValue<SearchResponse?> search;
   final Lookups? lookups;
   final Translations t;
+
+  /// Privacy mode is on: amounts are masked, so they must not leave the app.
+  final bool hidden;
+  final String currency;
+  final Period? period;
 
   bool get searching => state.searching;
 
@@ -183,6 +219,14 @@ class ExplorerView {
 
   bool get hasMore => searching ? state.page < totalPages : sorted.length > state.page * explorerPageSize;
 
+  /// The CSV of what the list holds and the name of its file; `null` when there is nothing to export or amounts are hidden.
+  ({String text, String fileName})? get csv {
+    final rows = sorted;
+    final p = period;
+    if (hidden || rows.isEmpty || p == null) return null;
+    return (text: buildTransactionsCsv(rows, currency), fileName: 'spacefly-${p.start}_${p.end}.csv');
+  }
+
   List<FilterOption> get categoryOptions => [FilterOption('none', t.common.uncategorized), for (final c in lookups?.categories ?? const <LookupItem>[]) FilterOption(c.id, c.name)];
   List<FilterOption> get budgetOptions => [FilterOption('none', t.common.noBudget), for (final b in lookups?.budgets ?? const <LookupItem>[]) FilterOption(b.id, b.name)];
   List<FilterOption> get accountOptions => [for (final a in lookups?.accounts ?? const <LookupItem>[]) FilterOption(a.id, a.name)];
@@ -197,5 +241,8 @@ final explorerViewProvider = Provider.autoDispose<ExplorerView>((ref) {
     search: ref.watch(explorerSearchProvider),
     lookups: ref.watch(lookupsProvider).valueOrNull,
     t: t,
+    hidden: ref.watch(privacyProvider),
+    currency: ref.watch(currencyProvider),
+    period: ref.watch(filtersProvider.select((f) => f.period)),
   );
 });

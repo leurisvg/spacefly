@@ -369,3 +369,184 @@ Map<String, Object?> budgetsJson() => {
       'unbudgeted': 5,
       'elapsedRatio': 0.5,
     };
+
+Map<String, Object?> netWorthJson() => {
+      'months': ['2026-08', '2026-09'],
+      'total': [900, 1000],
+      'byAccount': [
+        {'id': 'a1', 'name': 'Banco', 'balances': [1000, 1100]},
+        {'id': 'a3', 'name': 'Préstamo', 'balances': [-100, -100]},
+        {'id': 'a2', 'name': 'Ahorros', 'balances': [-50, 20]},
+      ],
+      'current': 1000,
+      'change': {'abs': 100, 'pct': 0.11},
+    };
+
+Map<String, Object?> savingsJson() => {
+      'months': ['2026-08', '2026-09'],
+      'accounts': [
+        {'id': 'a1', 'name': 'Ahorros BHD', 'currency': 'DOP', 'balances': [100, 150]},
+        {'id': 'a2', 'name': 'Fondo USD', 'currency': 'USD', 'balances': [10, 30]},
+      ],
+    };
+
+Map<String, Object?> counterpartiesJson({String kind = 'expense'}) => {
+      'kind': kind,
+      'items': [
+        {'id': '20', 'name': 'Supermercado Nacional', 'active': true, 'value': 100, 'previous': 80, 'count': 4, 'avg': 25, 'share': 0.5, 'lastDate': '2026-09-10'},
+        {'id': '21', 'name': 'Colmado', 'active': true, 'value': 0, 'previous': 30, 'count': 0, 'avg': 0, 'share': 0, 'lastDate': null},
+        {'id': '22', 'name': 'Sin uso', 'active': false, 'value': 0, 'previous': 0, 'count': 0, 'avg': 0, 'share': 0, 'lastDate': null},
+      ],
+      'total': 100,
+      'previousTotal': 110,
+      'count': 4,
+      'months': ['2026-08', '2026-09'],
+      'monthly': [60, 100],
+    };
+
+Map<String, Object?> counterpartyDetailJson({String kind = 'expense'}) => {
+      'kind': kind,
+      'account': {'id': '20', 'name': 'Supermercado Nacional', 'type': kind == 'income' ? 'revenue' : 'expense', 'active': true, 'iban': 'DO00', 'notes': null},
+      'totals': {'value': 100, 'previous': 80, 'count': 2, 'avg': 50, 'share': 0.5},
+      'days': [
+        {'date': '2026-09-02', 'value': 40, 'count': 1},
+        {'date': '2026-09-10', 'value': 60, 'count': 1},
+      ],
+      'months': [
+        {'month': '2026-08', 'value': 60, 'count': 3},
+        {'month': '2026-09', 'value': 100, 'count': 2},
+      ],
+      'byWeekday': [0, 40, 0, 0, 0, 0, 60],
+      'topCategories': [
+        {'id': 'c1', 'name': 'Comida', 'value': 100, 'count': 2},
+      ],
+      'topAccounts': [
+        {'id': 'a1', 'name': 'Banco', 'value': 100, 'count': 2},
+      ],
+      'rows': [
+        txJson(id: '1', groupId: '11', date: '2026-09-10', amount: 60, description: 'Compra grande'),
+        txJson(id: '2', groupId: '12', date: '2026-09-02', amount: 40, description: 'Compra chica'),
+      ],
+    };
+
+Map<String, Object?> accountTxJson({String id = '1', String groupId = '11', String type = 'withdrawal', num flow = -50, num balance = 950, String description = 'Supermercado', String date = '2026-09-10', num rate = 1}) => {
+      ...txJson(id: id, groupId: groupId, type: type, description: description, date: date, amount: flow.abs()),
+      'rate': rate,
+      'flow': flow,
+      'flowOriginal': rate == 1 ? flow : flow / 60,
+      'balance': balance,
+      'balanceOriginal': rate == 1 ? balance : balance / 60,
+    };
+
+/// An asset account over the period. With `foreign` it keeps its money in dollars (the display currency is pesos).
+Map<String, Object?> accountDetailJson({bool foreign = false}) {
+  num own(num v) => foreign ? v / 60 : v;
+  return {
+    'account': {'id': '1', 'name': foreign ? 'Cuenta USD' : 'Banco Popular', 'role': 'savingAsset', 'type': 'asset', 'currency': foreign ? 'USD' : 'DOP', 'iban': 'DO11', 'includeNetWorth': true, 'excluded': false},
+    'balanceOriginal': own(1000),
+    'opening': 800,
+    'openingOriginal': own(800),
+    'closing': 1000,
+    'change': {'abs': 200, 'pct': 0.25},
+    'changeOriginal': own(200),
+    'totals': {'income': 300, 'expense': 100, 'transferIn': 0, 'transferOut': 0, 'count': 3},
+    'totalsOriginal': {'income': own(300), 'expense': own(100), 'transferIn': 0, 'transferOut': 0},
+    'days': [
+      {'date': '2026-09-01', 'income': 300, 'expense': 0, 'transferIn': 0, 'transferOut': 0, 'count': 1, 'balance': 1100, 'balanceOriginal': own(1100), 'incomeOriginal': own(300), 'expenseOriginal': 0, 'transferInOriginal': 0, 'transferOutOriginal': 0},
+      {'date': '2026-09-10', 'income': 0, 'expense': 100, 'transferIn': 0, 'transferOut': 0, 'count': 2, 'balance': 1000, 'balanceOriginal': own(1000), 'incomeOriginal': 0, 'expenseOriginal': own(100), 'transferInOriginal': 0, 'transferOutOriginal': 0},
+      {'date': '2026-09-15', 'income': 0, 'expense': 0, 'transferIn': 0, 'transferOut': 0, 'count': 0, 'balance': null, 'balanceOriginal': null, 'incomeOriginal': 0, 'expenseOriginal': 0, 'transferInOriginal': 0, 'transferOutOriginal': 0},
+    ],
+    'months': [
+      {'month': '2026-08', 'income': 200, 'expense': 150, 'balance': 800, 'incomeOriginal': own(200), 'expenseOriginal': own(150), 'balanceOriginal': own(800)},
+      {'month': '2026-09', 'income': 300, 'expense': 100, 'balance': 1000, 'incomeOriginal': own(300), 'expenseOriginal': own(100), 'balanceOriginal': own(1000)},
+    ],
+    'byWeekday': [0, 100, 0, 0, 0, 0, 0],
+    'byWeekdayOriginal': [0, own(100), 0, 0, 0, 0, 0],
+    'topCategories': [
+      {'id': 'c1', 'name': 'Comida', 'value': 100, 'count': 2, 'valueOriginal': own(100)},
+    ],
+    'topMerchants': [
+      {'id': '20', 'name': 'Supermercado Nacional', 'value': 100, 'count': 2, 'valueOriginal': own(100)},
+    ],
+    'topIncomeSources': [
+      {'id': '10', 'name': 'Empresa SRL', 'value': 300, 'count': 1, 'valueOriginal': own(300)},
+    ],
+    'rows': [
+      accountTxJson(id: '3', groupId: '13', type: 'deposit', flow: 300, balance: 1100, description: 'Sueldo', date: '2026-09-01', rate: foreign ? 60 : 1),
+      accountTxJson(id: '1', groupId: '11', flow: -60, balance: 1000, description: 'Compra grande', rate: foreign ? 60 : 1),
+      accountTxJson(id: '2', groupId: '12', flow: -40, balance: 1040, description: 'Compra chica', date: '2026-09-09', rate: foreign ? 60 : 1),
+      {...accountTxJson(id: '4', groupId: '14', type: 'transfer', flow: -10, balance: 990, description: 'A ahorros'), 'splitCount': 1},
+    ],
+  };
+}
+
+Map<String, Object?> billJson(String id, {String? name, bool active = true, num yearly = 120, String status = 'pending', bool outOfRange = false, String? nextDate = '2026-10-01', int skip = 0, String freq = 'monthly'}) => {
+      'id': id,
+      'name': name ?? 'Bill $id',
+      'active': active,
+      'currency': 'DOP',
+      'amountMin': 8,
+      'amountMax': 12,
+      'amountAvg': 10,
+      'repeatFreq': freq,
+      'skip': skip,
+      'monthlyEquivalent': yearly / 12,
+      'yearlyEquivalent': yearly,
+      'nextDate': nextDate,
+      'expectedInPeriod': <String>[],
+      'paidInPeriod': status == 'paid'
+          ? [
+              {'date': '2026-09-03', 'amount': 10, 'journalId': 'j$id'},
+            ]
+          : <Object>[],
+      'status': status,
+      'outOfRange': outOfRange,
+    };
+
+Map<String, Object?> billsJson() => {
+      'bills': [
+        billJson('1', name: 'Netflix', yearly: 120, status: 'paid'),
+        billJson('2', name: 'Seguro', yearly: 600, status: 'pending', outOfRange: true, skip: 1, freq: 'quarterly'),
+        billJson('3', name: 'Gimnasio', active: false, yearly: 240, status: 'not-expected', nextDate: null),
+      ],
+      'monthlyTotal': 60,
+      'yearlyTotal': 720,
+      'paidCount': 1,
+      'pendingCount': 1,
+      'pendingAmount': 50,
+    };
+
+Map<String, Object?> recurrencesJson() => {
+      'recurrences': [
+        {'id': 'r1', 'title': 'Sueldo', 'type': 'deposit', 'active': true, 'amount': 900, 'currency': 'DOP', 'repetition': 'monthly on day 15', 'source': 'Empresa SRL', 'destination': 'Banco', 'category': 'Salario', 'nextOccurrences': ['2026-09-15', '2026-10-15'], 'repeatUntil': '2027-01-01'},
+        {'id': 'r2', 'title': 'Alquiler', 'type': 'withdrawal', 'active': true, 'amount': 300, 'currency': 'DOP', 'repetition': 'monthly on day 1', 'source': 'Banco', 'destination': 'Casero', 'category': null, 'nextOccurrences': <String>[], 'repeatUntil': null},
+        {'id': 'r3', 'title': 'A ahorros', 'type': 'transfer', 'active': false, 'amount': 50, 'currency': 'DOP', 'repetition': 'weekly', 'source': 'Banco', 'destination': 'Ahorros', 'category': null, 'nextOccurrences': ['2026-09-20'], 'repeatUntil': null},
+      ],
+    };
+
+Map<String, Object?> piggyBanksJson() => {
+      'piggyBanks': [
+        {'id': 'p1', 'name': 'Viaje', 'currency': 'DOP', 'target': 1000, 'current': 400, 'leftToSave': 600, 'pct': 0.4, 'startDate': '2026-01-01', 'targetDate': '2027-01-01', 'monthlyPace': 100, 'estimatedDate': '2027-03-01', 'onTrack': false, 'accounts': ['Banco', 'Ahorros'], 'group': 'Vacaciones'},
+        {'id': 'p2', 'name': 'Fondo', 'currency': 'DOP', 'target': null, 'current': 50, 'leftToSave': null, 'pct': null, 'startDate': null, 'targetDate': null, 'monthlyPace': 0, 'estimatedDate': null, 'onTrack': null, 'accounts': ['Banco'], 'group': null},
+      ],
+      'totalSaved': 450,
+      'totalTarget': 1000,
+    };
+
+Map<String, Object?> projectionJson() => {
+      'startBalance': 1000,
+      'days': [
+        {'date': '2026-09-15', 'balance': 1000, 'inflow': 0, 'outflow': 0},
+        {'date': '2026-09-16', 'balance': 950, 'inflow': 0, 'outflow': 50},
+        {'date': '2026-09-17', 'balance': 1850, 'inflow': 900, 'outflow': 0},
+      ],
+      'events': [
+        {'date': '2026-09-16', 'name': 'Luz', 'kind': 'bill', 'amount': -50},
+        {'date': '2026-09-17', 'name': 'Sueldo', 'kind': 'recurrence', 'amount': 900},
+      ],
+      'horizons': [
+        {'days': 30, 'balance': 1850},
+        {'days': 90, 'balance': 2000},
+      ],
+      'lowest': {'date': '2026-09-16', 'balance': 950},
+    };

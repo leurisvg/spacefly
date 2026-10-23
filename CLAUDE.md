@@ -70,7 +70,7 @@ lib/storage    KeyValueStore (prefs), CredentialStore (secure storage), ServerCo
 lib/shared     ports of libs/shared helpers: dates (periods, presets), period_presets
 lib/format     Formatter (port of FormatService, es-DO number separators) and its provider
 lib/state      stores: preferences, filters (period, currency), privacy, meta/lookups, tx_detail request
-lib/features   view-model ports, one folder per feature (`xxx_vm.dart`): dashboard, transactions (explorer, tx_detail, tx_view, actions), accounts, reports (calendar, monthly, annual, compare, flow), analysis (ranking, budgets), editor (transaction form, account picker), settings (server settings, exchange rates, refresh)
+lib/features   view-model ports, one folder per feature (`xxx_vm.dart`): dashboard, transactions (explorer, tx_detail, tx_view, actions), accounts (list, detail, net worth, savings, expense and revenue accounts), reports (calendar, monthly, annual, compare, flow), analysis (ranking, budgets), editor (transaction form, account picker, the generic entity form with its six specs), settings (server settings, exchange rates, refresh)
 lib/ui_logic   pure presentation logic: delta/tone, budget meter, series colors, entity names, calendar cells
 lib/ui         shared widgets: charts (fl_chart), `ui/charts/` (heatmap grid, diverging bars, ranking bars, Sankey, treemap, sunburst: drawn with a `CustomPainter` or widgets, their geometry is a pure function with a test), calendar grid, report page frame, KPI card, transaction tile, period bar, form fields and pickers, common pieces
 lib/theme      tokens.g.dart (generated), app_theme.dart (Material 3 ThemeData + SpaceflyColors extension)

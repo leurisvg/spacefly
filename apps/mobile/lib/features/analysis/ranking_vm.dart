@@ -9,6 +9,7 @@ import '../../format/formatter.dart';
 import '../../format/formatter_provider.dart';
 import '../../i18n/strings.g.dart';
 import '../../state/filters_store.dart';
+import '../../state/meta_store.dart';
 import '../../state/preferences.dart';
 import '../../state/tx_detail.dart';
 import '../../theme/tokens.g.dart';
@@ -16,6 +17,7 @@ import '../../ui/charts/sunburst.dart';
 import '../../ui_logic/names.dart';
 import '../../ui_logic/series_colors.dart';
 import '../accounts/accounts_vm.dart' show BalanceLine;
+import '../editor/entity_form_vm.dart' show EntityKind;
 import '../dashboard/dashboard_vm.dart' show Slice, TextTable;
 import 'budgets_vm.dart';
 
@@ -90,6 +92,7 @@ class RankingViewModel {
     required this.view,
     required this.res,
     required this.budgets,
+    required this.lookups,
     required this.f,
     required this.t,
     required this.colors,
@@ -105,6 +108,9 @@ class RankingViewModel {
 
   /// Only asked for while the sunburst shows.
   final AsyncValue<BudgetsReport>? budgets;
+
+  /// Categories, tags and accounts, to find the id of a tag by its name.
+  final Lookups? lookups;
   final Formatter f;
   final Translations t;
   final SeriesColors colors;
@@ -189,6 +195,37 @@ class RankingViewModel {
           rows: [for (final it in items) [itemName(it), f.money(it.value), f.pct(it.share), it.count.toInt().toString(), f.money(it.avg)]],
         );
 
+  /// Categories, tags and merchants / income sources (expense and revenue accounts) can be created and edited from here.
+  EntityKind? get entityKind => switch (by) {
+        GroupBy.CATEGORY => EntityKind.category,
+        GroupBy.TAG => EntityKind.tag,
+        GroupBy.COUNTERPARTY => EntityKind.account,
+        _ => null,
+      };
+
+  /// The kind of account a new merchant or income source is.
+  String get newAccountType => kind == RankingKind.income ? 'revenue' : 'expense';
+
+  /// The route that creates one.
+  String? get createRoute => switch (entityKind) {
+        null => null,
+        EntityKind.account => '/edit/account?type=$newAccountType',
+        final k => '/edit/${k.name}',
+      };
+
+  /// The id the editor needs for a row. Tag rows are identified by their name, so the id comes from the lookups.
+  String? entityId(RankingItem it) {
+    if (it.id == null) return null;
+    if (by == GroupBy.TAG) return lookups?.tags.where((x) => x.name == it.id).firstOrNull?.id;
+    return entityKind == null ? null : it.id;
+  }
+
+  /// The route that edits a row, if it can be.
+  String? editRoute(RankingItem it) {
+    final id = entityId(it), k = entityKind;
+    return id == null || k == null ? null : '/edit/${k.name}/${Uri.encodeComponent(id)}';
+  }
+
   void setKind(RankingKind next) => write(kind: next);
 
   void setView(RankingView next) => write(view: next);
@@ -224,6 +261,7 @@ final rankingViewModelProvider = Provider.autoDispose.family<RankingViewModel, R
     view: view,
     res: ref.watch(rankingReportProvider(o)),
     budgets: view == RankingView.sunburst ? ref.watch(budgetsReportProvider) : null,
+    lookups: ref.watch(lookupsProvider).valueOrNull,
     f: ref.watch(formatterProvider),
     t: t,
     colors: ref.watch(seriesColorsProvider),

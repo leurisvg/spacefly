@@ -22,6 +22,8 @@ class KpiCard extends StatelessWidget {
     this.format = KpiFormat.money,
     this.upIsGood = true,
     this.loading = false,
+    this.currency,
+    this.note,
   });
 
   final String label;
@@ -34,7 +36,13 @@ class KpiCard extends StatelessWidget {
   final bool upIsGood;
   final bool loading;
 
-  String _show(double v) => format == KpiFormat.pct ? f.pct(v / 100) : f.money(v);
+  /// The currency of [value] and [previous] when it is not the display currency (an account kept in dollars).
+  final String? currency;
+
+  /// A line under the figure: "≈ RD$600.00" for what an own-currency figure is worth in the display currency.
+  final String? note;
+
+  String _show(double v) => format == KpiFormat.pct ? f.pct(v / 100) : f.money(v, currency: currency);
 
   @override
   Widget build(BuildContext context) {
@@ -78,10 +86,11 @@ class KpiCard extends StatelessWidget {
                     ],
                   ),
                 ),
+                if (note != null && !loading) Padding(padding: const EdgeInsets.only(top: 2), child: Text(note!, maxLines: 1, overflow: TextOverflow.ellipsis, style: text.bodySmall?.copyWith(color: scheme.onSurfaceVariant))),
                 const SizedBox(height: 6),
                 if (previous != null && !loading)
                   Text(
-                    '${context.t.kpi.vsPrevious} ${format == KpiFormat.pct ? f.pct(previous! / 100) : f.compact(previous)}',
+                    '${context.t.kpi.vsPrevious} ${format == KpiFormat.pct ? f.pct(previous! / 100) : f.compact(previous, currency: currency)}',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: text.bodySmall?.copyWith(color: scheme.onSurfaceVariant),

@@ -1,10 +1,8 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { TranslocoPipe } from '@jsverse/transloco';
-import type { RecurrencesReport } from '@spacefly/shared';
 import { HlmBadge } from '@spartan-ng/helm/badge';
-import { reportResource } from '@spacefly/client/api/report-resource';
+import { recurrencesViewModel } from '@spacefly/client/features/planning/recurring.vm';
 import { FORMAT_PIPES } from '@spacefly/client/format/pipes';
-import { I18n } from '@spacefly/client/i18n/i18n';
 import { EmptyState } from '../../shared/components/empty-state';
 import { Money } from '../../shared/components/money';
 import { PageHeader } from '../../shared/components/page-header';
@@ -16,9 +14,9 @@ import { Section } from '../../shared/components/section';
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'flex flex-col gap-4 sm:gap-5' },
   template: `
-    <sf-page-header [title]="i18n.t('nav.recurring')" [description]="i18n.t('recurring.description')" />
-    <sf-section [title]="i18n.t('recurring.list')" [loading]="res.initialLoading()">
-      @if (res.data(); as data) {
+    <sf-page-header [title]="vm.i18n.t('nav.recurring')" [description]="vm.i18n.t('recurring.description')" />
+    <sf-section [title]="vm.i18n.t('recurring.list')" [loading]="vm.res.initialLoading()">
+      @if (vm.res.data(); as data) {
         @if (data.recurrences.length) {
           <div class="grid gap-3 md:grid-cols-2 2xl:grid-cols-3">
             @for (r of data.recurrences; track r.id) {
@@ -57,13 +55,12 @@ import { Section } from '../../shared/components/section';
             }
           </div>
         } @else {
-          <sf-empty [title]="i18n.t('recurring.none')" />
+          <sf-empty [title]="vm.i18n.t('recurring.none')" />
         }
       }
     </sf-section>
   `,
 })
 export class Recurring {
-  protected readonly i18n = inject(I18n);
-  protected readonly res = reportResource<RecurrencesReport>('reports/recurrences', () => ({}), { global: false });
+  protected readonly vm = recurrencesViewModel();
 }

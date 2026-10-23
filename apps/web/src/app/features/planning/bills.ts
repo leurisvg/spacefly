@@ -1,26 +1,18 @@
-import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideCircleCheck, lucideClock, lucideMinus, lucidePencil, lucidePlus, lucideTriangleAlert } from '@ng-icons/lucide';
 import { TranslocoPipe } from '@jsverse/transloco';
-import { addDays, addMonths, todayIso, type BillRow, type BillsReport } from '@spacefly/shared';
+import type { BillRow } from '@spacefly/shared';
 import { HlmBadge } from '@spartan-ng/helm/badge';
 import { HlmButton } from '@spartan-ng/helm/button';
-import { reportResource } from '@spacefly/client/api/report-resource';
-import { FormatService } from '@spacefly/client/format/format.service';
+import { billsViewModel, billStatusTone } from '@spacefly/client/features/planning/bills.vm';
 import { FORMAT_PIPES } from '@spacefly/client/format/pipes';
-import { I18n } from '@spacefly/client/i18n/i18n';
-import { rankingBarsOption } from '@spacefly/client/charts/builders';
 import { Chart } from '../../shared/charts/chart';
 import { ChartCard } from '../../shared/charts/chart-card';
-import type { ChartTable } from '@spacefly/client/charts/chart-table';
-import { money } from '@spacefly/client/charts/series-colors';
 import { EmptyState } from '../../shared/components/empty-state';
 import { KpiCard } from '../../shared/components/kpi-card';
 import { Money } from '../../shared/components/money';
 import { PageHeader } from '../../shared/components/page-header';
-import { TxDetailService } from '@spacefly/client/state/tx-detail.service';
-import { FiltersStore } from '@spacefly/client/state/filters.store';
-import { EntityEditor } from '@spacefly/client/state/entity-editor.service';
 
 @Component({
   selector: 'sf-bills',
@@ -29,19 +21,19 @@ import { EntityEditor } from '@spacefly/client/state/entity-editor.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'flex flex-col gap-4 sm:gap-5' },
   template: `
-    <sf-page-header [title]="i18n.t('nav.bills')" [description]="i18n.t('bills.description')">
-      <button hlmBtn size="sm" variant="outline" type="button" (click)="editor.open('bill')">
+    <sf-page-header [title]="vm.i18n.t('nav.bills')" [description]="vm.i18n.t('bills.description')">
+      <button hlmBtn size="sm" variant="outline" type="button" (click)="vm.create()">
         <ng-icon name="lucidePlus" aria-hidden="true" />{{ 'editor.entity.bill.new' | transloco }}
       </button>
     </sf-page-header>
     <section class="grid grid-cols-2 gap-3 lg:grid-cols-4">
-      <sf-kpi [label]="i18n.t('bills.monthly')" [value]="r()?.monthlyTotal ?? null" accent="var(--money-expense)" [loading]="res.initialLoading()" />
-      <sf-kpi [label]="i18n.t('bills.yearly')" [value]="r()?.yearlyTotal ?? null" accent="var(--money-expense)" [loading]="res.initialLoading()" />
-      <sf-kpi [label]="i18n.t('bills.paid')" format="compact" [value]="r()?.paidCount ?? null" accent="var(--status-good)" [loading]="res.initialLoading()" />
-      <sf-kpi [label]="i18n.t('bills.pendingAmount', { n: r()?.pendingCount ?? 0 })" [value]="r()?.pendingAmount ?? null" accent="var(--status-warning)" [loading]="res.initialLoading()" />
+      <sf-kpi [label]="vm.i18n.t('bills.monthly')" [value]="vm.r()?.monthlyTotal ?? null" accent="var(--money-expense)" [loading]="vm.res.initialLoading()" />
+      <sf-kpi [label]="vm.i18n.t('bills.yearly')" [value]="vm.r()?.yearlyTotal ?? null" accent="var(--money-expense)" [loading]="vm.res.initialLoading()" />
+      <sf-kpi [label]="vm.i18n.t('bills.paid')" format="compact" [value]="vm.r()?.paidCount ?? null" accent="var(--status-good)" [loading]="vm.res.initialLoading()" />
+      <sf-kpi [label]="vm.i18n.t('bills.pendingAmount', { n: vm.r()?.pendingCount ?? 0 })" [value]="vm.r()?.pendingAmount ?? null" accent="var(--status-warning)" [loading]="vm.res.initialLoading()" />
     </section>
 
-    @if (r(); as data) {
+    @if (vm.r(); as data) {
       @if (data.bills.length) {
         <section class="overflow-x-auto rounded-xl border border-border bg-card p-4">
           <table class="w-full min-w-[46rem] text-sm">
@@ -58,10 +50,10 @@ import { EntityEditor } from '@spacefly/client/state/entity-editor.service';
             </thead>
             <tbody>
               @for (b of data.bills; track b.id) {
-                <tr class="cursor-pointer border-b border-border/60 hover:bg-muted/40" [class.opacity-50]="!b.active" (click)="detail.open(b.name, { bill: b.id })">
+                <tr class="cursor-pointer border-b border-border/60 hover:bg-muted/40" [class.opacity-50]="!b.active" (click)="vm.open(b)">
                   <td class="py-2">
                     <div class="font-medium">{{ b.name }}</div>
-                    <div class="text-xs text-muted-foreground">{{ 'bills.freq.' + b.repeatFreq | transloco }}{{ b.skip ? ' · ' + i18n.t('bills.skip', { n: b.skip }) : '' }}</div>
+                    <div class="text-xs text-muted-foreground">{{ 'bills.freq.' + b.repeatFreq | transloco }}{{ b.skip ? ' · ' + vm.i18n.t('bills.skip', { n: b.skip }) : '' }}</div>
                   </td>
                   <td class="py-2">
                     <span class="inline-flex items-center gap-1 text-xs" [style.color]="statusColor(b)">
@@ -93,55 +85,30 @@ import { EntityEditor } from '@spacefly/client/state/entity-editor.service';
             </tbody>
           </table>
         </section>
-        <sf-chart-card [title]="i18n.t('bills.costRanking')" [subtitle]="i18n.t('bills.costRankingHint')" [table]="table()" fileName="subscriptions">
-          <sf-chart [options]="rankingOpts()" [height]="rankingHeight()" (chartClick)="openBar($event.dataIndex)" />
+        <sf-chart-card [title]="vm.i18n.t('bills.costRanking')" [subtitle]="vm.i18n.t('bills.costRankingHint')" [table]="vm.table()" fileName="subscriptions">
+          <sf-chart [options]="vm.rankingOpts()" [height]="vm.rankingHeight()" (chartClick)="vm.openBar($event.dataIndex)" />
         </sf-chart-card>
       } @else {
-        <sf-empty [title]="i18n.t('bills.none')" />
+        <sf-empty [title]="vm.i18n.t('bills.none')" />
       }
     }
   `,
 })
 export class Bills {
-  protected readonly i18n = inject(I18n);
-  protected readonly detail = inject(TxDetailService);
-  protected readonly editor = inject(EntityEditor);
-  private readonly f = inject(FormatService);
-  private readonly filters = inject(FiltersStore);
-  protected readonly res = reportResource<BillsReport>('reports/bills');
-  protected readonly r = this.res.data;
-
-  private readonly active = computed(() => (this.r()?.bills ?? []).filter((b) => b.active && b.yearlyEquivalent > 0).sort((a, b) => b.yearlyEquivalent - a.yearlyEquivalent));
-  protected readonly rankingOpts = computed(() => rankingBarsOption(this.f, this.active().map((b) => ({ name: b.name, value: b.yearlyEquivalent })), money.expense()));
-  protected readonly rankingHeight = computed(() => `${Math.max(8, Math.min(this.active().length, 12) * 2 + 2)}rem`);
-  protected readonly table = computed<ChartTable>(() => ({
-    columns: [this.i18n.t('bills.name'), this.i18n.t('bills.monthlyEq'), this.i18n.t('bills.yearly')],
-    rows: this.active().map((b) => [b.name, this.f.money(b.monthlyEquivalent), this.f.money(b.yearlyEquivalent)]),
-    numeric: [1, 2],
-  }));
-
-  protected openBar(index: number): void {
-    // The bars are drawn bottom-up and the builder keeps only the top 12, so the clicked index counts from the end of that slice.
-    const bill = this.active().slice(0, 12).reverse()[index];
-    if (!bill) return;
-    // The bar is a yearly estimate, so open on the last 12 months and let the sheet switch to the global period.
-    const end = todayIso();
-    const year = { label: this.i18n.t('bills.last12Months'), start: addDays(addMonths(end, -12), 1), end };
-    const { start, end: periodEnd } = this.filters.period();
-    const period = { label: this.i18n.t('bills.selectedPeriod'), start, end: periodEnd };
-    this.detail.open(bill.name, { bill: bill.id, start: year.start, end: year.end }, undefined, [year, period]);
-  }
+  protected readonly vm = billsViewModel();
 
   protected edit(event: Event, id: string): void {
     event.stopPropagation();
-    this.editor.open('bill', id);
+    this.vm.edit(id);
   }
 
   protected statusIcon(b: BillRow): string {
-    return b.status === 'paid' ? 'lucideCircleCheck' : b.status === 'pending' ? 'lucideClock' : 'lucideMinus';
+    const tone = billStatusTone(b.status);
+    return tone === 'good' ? 'lucideCircleCheck' : tone === 'warning' ? 'lucideClock' : 'lucideMinus';
   }
 
   protected statusColor(b: BillRow): string {
-    return b.status === 'paid' ? 'var(--status-good)' : b.status === 'pending' ? 'var(--status-warning)' : 'var(--muted-foreground)';
+    const tone = billStatusTone(b.status);
+    return tone === 'good' ? 'var(--status-good)' : tone === 'warning' ? 'var(--status-warning)' : 'var(--muted-foreground)';
   }
 }

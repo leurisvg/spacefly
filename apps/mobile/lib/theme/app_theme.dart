@@ -64,7 +64,7 @@ ThemeData buildTheme(ThemeId id) {
     onInverseSurface: t.background,
   );
 
-  OutlineInputBorder border(Color color, [double width = 1]) => OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: color, width: width));
+  OutlineInputBorder border(Color color, [double width = 1]) => OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: color, width: width));
 
   return ThemeData(
     useMaterial3: true,
@@ -79,6 +79,10 @@ ThemeData buildTheme(ThemeId id) {
     ),
     cardTheme: CardTheme(color: t.chartSurface, elevation: 0, margin: EdgeInsets.zero, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: BorderSide(color: t.chartGrid))),
     inputDecorationTheme: InputDecorationTheme(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 18),
+      floatingLabelStyle: WidgetStateTextStyle.resolveWith(
+        (states) => TextStyle(color: states.contains(WidgetState.error) ? t.moneyExpense : (states.contains(WidgetState.focused) ? t.accent : t.chartInk2)),
+      ),
       border: border(t.chartAxis),
       enabledBorder: border(t.chartAxis),
       focusedBorder: border(t.accent, 2),

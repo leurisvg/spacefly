@@ -86,9 +86,12 @@ class SectionCard extends StatelessWidget {
 
 /// An icon, a message and, for failures, a retry button.
 class EmptyState extends StatelessWidget {
-  const EmptyState({super.key, required this.title, this.icon = Icons.inbox_outlined, this.onRetry});
+  const EmptyState({super.key, required this.title, this.subtitle, this.icon = Icons.inbox_outlined, this.onRetry});
 
   final String title;
+
+  /// What to do or what happened, under the title.
+  final String? subtitle;
   final IconData icon;
   final VoidCallback? onRetry;
 
@@ -104,6 +107,7 @@ class EmptyState extends StatelessWidget {
             Icon(icon, size: 40, color: scheme.outline),
             const SizedBox(height: 12),
             Text(title, textAlign: TextAlign.center, style: TextStyle(color: scheme.onSurfaceVariant)),
+            if (subtitle != null) Padding(padding: const EdgeInsets.only(top: 4), child: Text(subtitle!, textAlign: TextAlign.center, style: TextStyle(fontSize: 12, color: scheme.outline))),
             if (onRetry != null) ...[
               const SizedBox(height: 12),
               OutlinedButton.icon(onPressed: onRetry, icon: const Icon(Icons.refresh), label: Text(context.t.topbar.refresh)),
