@@ -18,7 +18,8 @@ import '../../ui_logic/names.dart';
 import '../../ui_logic/series_colors.dart';
 import '../accounts/accounts_vm.dart' show BalanceLine;
 import '../editor/entity_form_vm.dart' show EntityKind;
-import '../dashboard/dashboard_vm.dart' show Slice, TextTable;
+import '../dashboard/dashboard_vm.dart' show Slice;
+import '../../ui_logic/text_table.dart';
 import 'budgets_vm.dart';
 
 enum RankingView { bars, treemap, sunburst }
@@ -70,8 +71,8 @@ RankingView resolveView(String? param, GroupBy by, RankingKind kind) {
 /// The drill filter key of each grouping.
 String _filterKey(GroupBy by) => groupByValues.reverse[by]!;
 
-final rankingKindParamProvider = StateProvider.autoDispose.family<String?, RankingOptions>((ref, o) => null);
-final rankingViewParamProvider = StateProvider.autoDispose.family<String?, RankingOptions>((ref, o) => null);
+final rankingKindParamProvider = StateProvider.family<String?, RankingOptions>((ref, o) => null);
+final rankingViewParamProvider = StateProvider.family<String?, RankingOptions>((ref, o) => null);
 
 final rankingKindProvider = Provider.autoDispose.family<RankingKind, RankingOptions>((ref, o) => resolveKind(o.fixedKind, o.kind, ref.watch(rankingKindParamProvider(o))));
 
@@ -84,7 +85,7 @@ final rankingReportProvider = FutureProvider.autoDispose.family<RankingReport, R
 });
 
 /// Categories · Tags · Merchants (expense accounts) · Income sources (revenue accounts): ranking, distribution and trend.
-/// Port of libs/client/src/features/analysis/ranking.vm.ts (the entity editor comes with the editors).
+/// Port of libs/client/src/features/analysis/ranking.vm.ts.
 class RankingViewModel {
   RankingViewModel({
     required this.options,

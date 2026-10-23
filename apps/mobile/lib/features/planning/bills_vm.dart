@@ -9,7 +9,7 @@ import '../../shared/dates.dart';
 import '../../state/filters_store.dart';
 import '../../state/preferences.dart';
 import '../../state/tx_detail.dart';
-import '../dashboard/dashboard_vm.dart' show TextTable;
+import '../../ui_logic/text_table.dart';
 
 /// How many subscriptions the cost ranking draws.
 const billsRanked = 12;

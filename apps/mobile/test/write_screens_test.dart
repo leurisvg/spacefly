@@ -282,9 +282,62 @@ void main() {
       expect(find.byKey(const Key('edit')), findsNothing);
       expect(env.toast.messages, isEmpty);
     });
+
+    testWidgets('the form of a transaction that turns out not editable offers Firefly, back and delete', (tester) async {
+      final s = server(handlers: {'PUT /api/transactions/5': (_) => jsonBody({'reason': 'splits'}, 409)});
+      final env = await open(tester, s.adapter);
+      await openEdit(tester, env);
+      await save(tester);
+      expect(find.text("This transaction can't be edited here"), findsOneWidget);
+      expect(find.byKey(const Key('edit-firefly')), findsOneWidget);
+      expect(find.byKey(const Key('not-editable-back')), findsOneWidget);
+
+      env.confirm.answer = false;
+      await tester.tap(find.byKey(const Key('not-editable-delete')));
+      await tester.pumpAndSettle();
+      expect(env.confirm.asked.single.message, contains('several parts'));
+      expect(s.writes.where((w) => w.method == 'DELETE'), isEmpty);
+
+      env.confirm.answer = true;
+      await tester.tap(find.byKey(const Key('not-editable-delete')));
+      await tester.pumpAndSettle();
+      expect(s.writes.where((w) => w.method == 'DELETE').single.path, '/api/transactions/5');
+      expect(env.back.fallbacks, ['/transactions']);
+    });
   });
 
   group('the transaction page', () {
+    testWidgets('a transaction that is not editable offers Firefly, back and delete', (tester) async {
+      final s = server(handlers: {'GET /api/transactions/5': (_) => jsonBody({'reason': 'splits'}, 409)});
+      final env = await open(tester, s.adapter);
+      await tapTab(tester, 'Transactions');
+      await tester.tap(find.text('Cena'));
+      await tester.pumpAndSettle();
+      expect(find.text('Edit in Firefly'), findsOneWidget);
+      expect(find.text('Back'), findsOneWidget);
+      expect(find.text('Delete'), findsOneWidget);
+
+      await tester.tap(find.byKey(const Key('not-editable-delete')));
+      await tester.pumpAndSettle();
+      expect(env.confirm.asked.single.message, contains('Cena'));
+      expect(env.confirm.asked.single.message, contains('several parts'));
+      expect(s.writes.single.method, 'DELETE');
+      expect(s.writes.single.path, '/api/transactions/5');
+      expect(env.back.fallbacks, ['/transactions']);
+    });
+
+    testWidgets('a type that is not edited here is deleted with the plain question', (tester) async {
+      final s = server(handlers: {'GET /api/transactions/5': (_) => jsonBody({'reason': 'type'}, 409)});
+      final env = await open(tester, s.adapter);
+      await tapTab(tester, 'Transactions');
+      await tester.tap(find.text('Cena'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('not-editable-delete')));
+      await tester.pumpAndSettle();
+      expect(env.confirm.asked.single.message, isNot(contains('several parts')));
+      expect(s.writes.single.path, '/api/transactions/5');
+    });
+
     testWidgets('deletes from its app bar', (tester) async {
       final s = server();
       final env = await open(tester, s.adapter);

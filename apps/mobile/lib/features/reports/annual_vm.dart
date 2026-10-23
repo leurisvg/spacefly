@@ -11,7 +11,7 @@ import '../../state/preferences.dart';
 import '../../state/tx_detail.dart';
 import '../../ui/charts/heatmap.dart';
 import '../../ui_logic/names.dart';
-import '../dashboard/dashboard_vm.dart' show TextTable;
+import '../../ui_logic/text_table.dart';
 
 /// How many categories the month × category matrix shows.
 const annualMatrixLimit = 15;

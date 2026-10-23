@@ -14,6 +14,7 @@ class TapField extends StatelessWidget {
     this.placeholder,
     this.icon,
     this.errorText,
+    this.helperText,
     this.required = false,
     this.trailing,
     this.dense = false,
@@ -24,6 +25,9 @@ class TapField extends StatelessWidget {
   final String? placeholder;
   final IconData? icon;
   final String? errorText;
+
+  /// A neutral note under the box, shown while there is no error.
+  final String? helperText;
   final bool required;
   final VoidCallback onTap;
   final VoidCallback? onLongPress;
@@ -45,6 +49,8 @@ class TapField extends StatelessWidget {
         decoration: InputDecoration(
           labelText: required ? '$label *' : label,
           errorText: errorText,
+          helperText: helperText,
+          helperMaxLines: 2,
           prefixIcon: icon == null ? null : Icon(icon, size: 20),
           suffixIcon: trailing ?? (dense ? null : const Icon(Icons.arrow_drop_down)),
           contentPadding: dense ? const EdgeInsets.symmetric(horizontal: 10, vertical: 18) : null,

@@ -261,6 +261,7 @@ class _Translations$chart$es extends Translations$chart$en {
 	@override String get showTable => 'Ver como tabla';
 	@override String get showChart => 'Ver gráfico';
 	@override String get download => 'Descargar PNG';
+	@override String get shareCsv => 'Compartir como CSV';
 }
 
 // Path: tx
@@ -641,6 +642,7 @@ class _Translations$explorer$es extends Translations$explorer$en {
 	@override String get export => 'Exportar CSV';
 	@override String get exportHidden => 'La exportación está desactivada mientras los montos están ocultos';
 	@override String page({required Object page, required Object pages}) => 'Página ${page} de ${pages}';
+	@override String get loadMore => 'Mostrar más';
 }
 
 // Path: settings
@@ -1614,6 +1616,7 @@ extension on TranslationsEs {
 			'chart.showTable' => 'Ver como tabla',
 			'chart.showChart' => 'Ver gráfico',
 			'chart.download' => 'Descargar PNG',
+			'chart.shareCsv' => 'Compartir como CSV',
 			'tx.none' => 'No hay transacciones',
 			'tx.count' => 'Transacciones',
 			'tx.breakdown' => 'Categorías que lo componen',
@@ -1911,6 +1914,7 @@ extension on TranslationsEs {
 			'explorer.export' => 'Exportar CSV',
 			'explorer.exportHidden' => 'La exportación está desactivada mientras los montos están ocultos',
 			'explorer.page' => ({required Object page, required Object pages}) => 'Página ${page} de ${pages}',
+			'explorer.loadMore' => 'Mostrar más',
 			'settings.mobile.signedIn' => 'Sesión iniciada',
 			'settings.mobile.server' => 'Servidor',
 			'settings.mobile.serverUrl' => 'URL del servidor',
@@ -2017,10 +2021,10 @@ extension on TranslationsEs {
 			'editor.retry' => 'Reintentar',
 			'editor.networkError' => 'No se pudo contactar con el servidor. Revisa tu conexión: es posible que el cambio no se haya guardado.',
 			'editor.kNew' => 'Nuevo',
-			'editor.newTitle' => 'Crear',
-			'editor.tx.description' => 'Se deduce solo si es un gasto, un ingreso o una transferencia según las cuentas que elijas.',
 			_ => null,
 		} ?? switch (path) {
+			'editor.newTitle' => 'Crear',
+			'editor.tx.description' => 'Se deduce solo si es un gasto, un ingreso o una transferencia según las cuentas que elijas.',
 			'editor.tx.what' => 'Qué pasó',
 			'editor.tx.details' => 'Detalles',
 			'editor.tx.descriptionLabel' => 'Descripción',

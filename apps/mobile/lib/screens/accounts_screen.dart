@@ -9,6 +9,7 @@ import '../format/formatter_provider.dart';
 import '../i18n/strings.g.dart';
 import '../theme/app_theme.dart';
 import '../ui/charts.dart';
+import '../ui/chart_card.dart';
 import '../ui/common.dart';
 import '../ui/labels.dart';
 import '../ui/months_picker.dart';
@@ -172,8 +173,10 @@ class AccountsScreen extends ConsumerWidget {
                   const SizedBox(height: 8),
                 ],
               const SizedBox(height: 4),
-              SectionCard(
+              ChartCard(
                 title: t.accounts.balanceHistory,
+                fileName: 'account-balances',
+                table: vm.table,
                 trailing: MonthsPicker(value: vm.months, onChanged: (m) => ref.read(accountsMonthsProvider.notifier).state = m),
                 child: vm.lines.isEmpty
                     ? EmptyState(title: t.common.noData)

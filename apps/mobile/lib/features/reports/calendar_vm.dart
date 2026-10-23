@@ -11,7 +11,7 @@ import '../../state/meta_store.dart';
 import '../../state/preferences.dart';
 import '../../state/tx_detail.dart';
 import '../../ui/charts/heatmap.dart';
-import '../dashboard/dashboard_vm.dart' show TextTable;
+import '../../ui_logic/text_table.dart';
 
 enum CalendarView { month, year }
 
@@ -20,10 +20,10 @@ enum CalendarFilter { account, category, tag }
 /// The calendar is month-based: a period that isn't a whole month shows the month its end date falls in.
 Period calendarMonth(Period period) => isFullMonth(period) ? period : Period(startOfMonth(period.end), endOfMonth(period.end));
 
-final calendarViewProvider = StateProvider.autoDispose<CalendarView>((ref) => CalendarView.month);
-final calendarAccountProvider = StateProvider.autoDispose<String>((ref) => '');
-final calendarCategoryProvider = StateProvider.autoDispose<String>((ref) => '');
-final calendarTagProvider = StateProvider.autoDispose<String>((ref) => '');
+final calendarViewProvider = StateProvider<CalendarView>((ref) => CalendarView.month);
+final calendarAccountProvider = StateProvider<String>((ref) => '');
+final calendarCategoryProvider = StateProvider<String>((ref) => '');
+final calendarTagProvider = StateProvider<String>((ref) => '');
 
 final _periodProvider = Provider<Period>((ref) => ref.watch(filtersProvider.select((f) => f.period)));
 

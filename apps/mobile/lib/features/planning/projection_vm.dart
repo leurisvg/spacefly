@@ -6,7 +6,7 @@ import '../../format/formatter.dart';
 import '../../format/formatter_provider.dart';
 import '../../i18n/strings.g.dart';
 import '../../state/preferences.dart';
-import '../dashboard/dashboard_vm.dart' show TextTable;
+import '../../ui_logic/text_table.dart';
 
 /// How far ahead the projection can look (days).
 const projectionDays = ['30', '60', '90', '180'];
@@ -17,7 +17,7 @@ String resolveProjectionDays(String? param) => projectionDays.contains(param) ? 
 /// What happens on a day of the projection.
 List<ProjectionEvent> eventsOn(List<ProjectionEvent> events, String date) => [for (final e in events) if (e.date == date) e];
 
-final projectionDaysProvider = StateProvider.autoDispose<String>((ref) => '90');
+final projectionDaysProvider = StateProvider<String>((ref) => '90');
 
 final projectionReportProvider = reportProvider<ProjectionReport>('reports/projection', ProjectionReport.fromJson, global: false, extra: (ref) => {'days': resolveProjectionDays(ref.watch(projectionDaysProvider))});
 

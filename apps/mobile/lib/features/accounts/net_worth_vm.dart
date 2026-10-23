@@ -7,13 +7,13 @@ import '../../format/formatter_provider.dart';
 import '../../i18n/strings.g.dart';
 import '../../state/preferences.dart';
 import '../../ui_logic/series_colors.dart';
-import '../dashboard/dashboard_vm.dart' show TextTable;
+import '../../ui_logic/text_table.dart';
 import 'accounts_vm.dart' show BalanceLine;
 
 /// How many months the net worth screen asks for until the user picks another length.
 const netWorthMonths = '24';
 
-final netWorthMonthsProvider = StateProvider.autoDispose<String>((ref) => netWorthMonths);
+final netWorthMonthsProvider = StateProvider<String>((ref) => netWorthMonths);
 
 final netWorthReportProvider = reportProvider<NetWorthReport>('reports/net-worth', NetWorthReport.fromJson, extra: (ref) => {'months': ref.watch(netWorthMonthsProvider)});
 

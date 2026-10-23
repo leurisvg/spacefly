@@ -9,6 +9,7 @@ import '../shared/dates.dart' show parseIso, toIso;
 import '../theme/app_theme.dart';
 import '../ui/charts.dart';
 import '../ui/charts/diverging_bars.dart';
+import '../ui/chart_card.dart';
 import '../ui/common.dart';
 import '../ui/drill_sheet.dart';
 import '../ui/form_widgets.dart';
@@ -126,8 +127,10 @@ class CompareScreen extends ConsumerWidget {
             ],
           ),
         const SizedBox(height: 12),
-        SectionCard(
+        ChartCard(
           title: t.compare.deltaTitle,
+          fileName: 'compare-delta',
+          table: vm.table,
           subtitle: vm.kind == 'expense' ? t.compare.deltaHintExpense : t.compare.deltaHintIncome,
           child: rows.isEmpty
               ? SizedBox(height: vm.initialLoading ? 200 : 60, child: vm.initialLoading ? null : EmptyState(title: t.common.noData))

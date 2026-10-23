@@ -8,6 +8,7 @@ import '../format/formatter_provider.dart';
 import '../i18n/strings.g.dart';
 import '../theme/app_theme.dart';
 import '../ui/charts/ranking_bars.dart';
+import '../ui/chart_card.dart';
 import '../ui/common.dart';
 import '../ui/drill_sheet.dart';
 import '../ui/kpi_card.dart';
@@ -135,8 +136,10 @@ class BillsScreen extends ConsumerWidget {
           ],
         if (r != null && r.bills.isNotEmpty) ...[
           const SizedBox(height: 4),
-          SectionCard(
+          ChartCard(
             title: t.bills.costRanking,
+            fileName: 'subscriptions',
+            table: vm.table,
             subtitle: t.bills.costRankingHint,
             child: vm.ranked.isEmpty
                 ? EmptyState(title: t.common.noData)

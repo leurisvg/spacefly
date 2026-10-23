@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'api/models.g.dart' show CounterpartyKind, TxRow;
 import 'features/analysis/ranking_vm.dart' show RankingRoute;
 import 'features/editor/entity_form_vm.dart' show EntityKind;
+import 'features/route_params.dart';
 import 'screens/about_screen.dart';
 import 'screens/account_detail_screen.dart';
 import 'screens/accounts_screen.dart';
@@ -38,14 +39,28 @@ import 'screens/transaction_form_screen.dart';
 import 'screens/tx_detail_screen.dart';
 import 'storage/server_config.dart';
 
-/// Where a location must be sent given the server configuration, or `null` to stay. Pure so it can be tested.
+/// Where [returnTo] (a location the login screen was reached from) leads after signing in: the path it names, or home when it is
+/// missing, not a path of this app or one of the screens that sign in / configure the server.
+String safeReturnTo(String? returnTo) {
+  if (returnTo == null || !returnTo.startsWith('/') || returnTo.startsWith('//')) return '/';
+  final path = Uri.tryParse(returnTo)?.path;
+  return path == null || path == '/login' || path == '/server' ? '/' : returnTo;
+}
+
+/// Where a location (path and query) must be sent given the server configuration, or `null` to stay. Pure so it can be tested.
 ///  - no server URL yet → the server screen;
-///  - a server but no token → the login screen (the server screen stays reachable to change it);
-///  - signed in → the login screen has nothing to show.
+///  - a server but no token → the login screen (the server screen stays reachable to change it), which remembers where the user was
+///    in `?returnTo=`;
+///  - signed in → the login screen leads to that place, or home.
 String? guard(ServerConfig config, String location) {
-  if (!config.configured) return location == '/server' ? null : '/server';
-  if (!config.signedIn) return location == '/login' || location == '/server' ? null : '/login';
-  return location == '/login' ? '/' : null;
+  final uri = Uri.parse(location);
+  final path = uri.path;
+  if (!config.configured) return path == '/server' ? null : '/server';
+  if (!config.signedIn) {
+    if (path == '/login' || path == '/server') return null;
+    return location == '/' ? '/login' : '/login?returnTo=${Uri.encodeQueryComponent(location)}';
+  }
+  return path == '/login' ? safeReturnTo(uri.queryParameters['returnTo']) : null;
 }
 
 /// The kind named by an `/edit/:kind` location, or `null` for one that does not exist.
@@ -69,11 +84,22 @@ final routerProvider = Provider<GoRouter>((ref) {
   ref.listen(serverConfigProvider, (_, __) => refresh.value++);
   ref.onDispose(refresh.dispose);
 
+  String? appliedLocation;
+
   final router = GoRouter(
     navigatorKey: rootNavigatorKey,
     initialLocation: '/',
     refreshListenable: refresh,
-    redirect: (context, state) => guard(ref.read(serverConfigProvider), state.matchedLocation),
+    redirect: (context, state) {
+      final to = guard(ref.read(serverConfigProvider), state.uri.toString());
+      if (to != null) return to;
+      // A link's query (`/reports/flow?mode=tags`) goes into the screen's state, once per location: a router refresh must not undo
+      // what the user changed since.
+      final location = state.uri.toString();
+      if (location != appliedLocation) applyRouteParams(ref.read, state.uri);
+      appliedLocation = location;
+      return null;
+    },
     routes: [
       GoRoute(path: '/server', builder: (_, __) => const ServerScreen()),
       GoRoute(path: '/login', builder: (_, __) => const LoginScreen()),

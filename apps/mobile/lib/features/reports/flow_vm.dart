@@ -7,7 +7,7 @@ import '../../format/formatter_provider.dart';
 import '../../i18n/strings.g.dart';
 import '../../state/preferences.dart';
 import '../../state/tx_detail.dart';
-import '../dashboard/dashboard_vm.dart' show TextTable;
+import '../../ui_logic/text_table.dart';
 
 enum FlowMode { budget, tags }
 
@@ -64,12 +64,12 @@ String kindLabel(Translations t, SankeyNodeKind k) => switch (k) {
       SankeyNodeKind.OTHER => t.sankey.kinds.other,
     };
 
-final flowModeProvider = StateProvider.autoDispose<FlowMode>((ref) => FlowMode.budget);
-final flowBudgetsProvider = StateProvider.autoDispose<bool>((ref) => true);
-final flowIncomeCategoriesProvider = StateProvider.autoDispose<bool>((ref) => true);
+final flowModeProvider = StateProvider<FlowMode>((ref) => FlowMode.budget);
+final flowBudgetsProvider = StateProvider<bool>((ref) => true);
+final flowIncomeCategoriesProvider = StateProvider<bool>((ref) => true);
 
 /// `null` until the user picks one: the server's own default then applies.
-final flowThresholdProvider = StateProvider.autoDispose<double?>((ref) => null);
+final flowThresholdProvider = StateProvider<double?>((ref) => null);
 
 final flowReportProvider = reportProvider<SankeyReport>('reports/sankey', SankeyReport.fromJson, extra: (ref) {
   final threshold = ref.watch(flowThresholdProvider);
@@ -125,6 +125,7 @@ class FlowViewModel {
     final byId = {for (final n in report.nodes) n.id: n};
     return TextTable(
       columns: [t.flow.from, t.flow.to, t.common.amount, t.flow.shareOfIncome],
+      numeric: const [2, 3],
       rows: [
         for (final l in report.links)
           [label(byId[l.source]!), label(byId[l.target]!), f.money(l.value), f.pct(report.totalIncome != 0 ? l.value / report.totalIncome : null)],

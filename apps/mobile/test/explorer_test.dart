@@ -80,11 +80,12 @@ void main() {
     final listRows = [txJson(id: '2', date: '2026-09-02'), txJson(id: '1', date: '2026-09-01')];
     late FakeAdapter adapter;
 
-    (ProviderContainer, Future<void> Function()) setup({List<Map<String, Object?>>? rows, Object? searchBody}) {
+    (ProviderContainer, Future<void> Function()) setup({List<Map<String, Object?>>? rows, Object? searchBody, Map<String, Object?>? meta}) {
       adapter = fakeServer({
         '/api/transactions': report({'rows': rows ?? listRows, 'totals': {'income': 0, 'expense': 0, 'transfer': 0}}),
         '/api/search': report(searchBody ?? {'rows': [], 'page': 1, 'totalPages': 1, 'total': 0}),
         '/api/lookups': lookupsJson(),
+        '/api/meta': meta ?? metaJson(),
       });
       final c = TestEnv(config: signedInConfig, adapter: adapter).container();
       c.listen(explorerViewProvider, (_, __) {});
@@ -92,6 +93,7 @@ void main() {
         await c.read(explorerListProvider.future);
         await c.read(explorerSearchProvider.future);
         await c.read(lookupsProvider.future);
+        await c.read(metaProvider.future);
       }
 
       return (c, settle);
@@ -176,6 +178,23 @@ void main() {
       expect(view.budgetOptions.map((o) => o.value), ['none', 'b1']);
       expect(view.accountOptions.map((o) => o.label), ['Banco']);
       expect(view.tagOptions.map((o) => o.value), ['viaje']);
+    });
+
+    test('links a row to its pages in Firefly, when its public URL is known', () async {
+      final (c, settle) = setup(rows: [txJson(id: '1', groupId: '77')]);
+      await settle();
+      final view = c.read(explorerViewProvider);
+      final row = view.shownRows.single;
+      expect(view.fireflyLink(row), 'https://ff.test/transactions/show/77');
+      expect(view.fireflyEditLink(row), 'https://ff.test/transactions/edit/77');
+    });
+
+    test('has no Firefly links without a public URL', () async {
+      final (c, settle) = setup(rows: [txJson(id: '1', groupId: '77')], meta: {...metaJson(), 'fireflyPublicUrl': ''});
+      await settle();
+      final view = c.read(explorerViewProvider);
+      expect(view.fireflyLink(view.shownRows.single), isNull);
+      expect(view.fireflyEditLink(view.shownRows.single), isNull);
     });
 
     test('clearFilters keeps the search and the sort', () async {

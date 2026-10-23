@@ -6,6 +6,7 @@ import '../format/formatter_provider.dart';
 import '../i18n/strings.g.dart';
 import '../theme/app_theme.dart';
 import '../ui/charts/sankey.dart';
+import '../ui/chart_card.dart';
 import '../ui/common.dart';
 import '../ui/drill_sheet.dart';
 import '../ui/kpi_card.dart';
@@ -63,8 +64,10 @@ class FlowScreen extends ConsumerWidget {
         const SizedBox(height: 8),
         KpiCard(label: vm.savingsLabel, f: f, accent: tokens.moneySavings, value: r?.savings, loading: vm.initialLoading),
         const SizedBox(height: 12),
-        SectionCard(
+        ChartCard(
           title: t.flow.title,
+          fileName: 'money-flow',
+          table: vm.table,
           subtitle: t.flow.hintTouch,
           padding: const EdgeInsets.fromLTRB(8, 16, 8, 12),
           child: r == null

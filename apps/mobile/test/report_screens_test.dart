@@ -80,7 +80,7 @@ void main() {
 
       await closeSheet(tester);
       await tester.pumpAndSettle();
-      await tester.tap(find.text('View all'));
+      await tester.tap(find.text('View all').last);
       await tester.pumpAndSettle();
       expect(find.byKey(const Key('calendar')), findsOneWidget);
     });

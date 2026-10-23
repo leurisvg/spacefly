@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../api/models.g.dart' show CounterpartyKind;
+import '../api/models.g.dart' show CounterpartyKind, RankedItem;
 import '../features/accounts/counterparty_detail_vm.dart';
 import '../format/formatter.dart' show DateStyle;
 import '../format/formatter_provider.dart';
@@ -13,6 +13,7 @@ import '../theme/app_theme.dart';
 import '../ui/calendar_grid.dart';
 import '../ui/charts.dart';
 import '../ui/charts/ranking_bars.dart';
+import '../ui/chart_card.dart';
 import '../ui/common.dart';
 import '../ui/drill_sheet.dart';
 import '../ui/kpi_card.dart';
@@ -42,8 +43,10 @@ class CounterpartyDetailScreen extends ConsumerWidget {
 
     Widget stat(String label, Widget value) => Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(label.toUpperCase(), style: muted), const SizedBox(height: 2), value]);
 
-    Widget ranks(String title, List items, Color color) => SectionCard(
+    Widget ranks(String title, String fileName, List<RankedItem> items, Color color) => ChartCard(
           title: title,
+          fileName: fileName,
+          table: vm.rankTable(items),
           child: RankingBars(
             rows: [for (final x in items) RankBar(name: vm.rankName(x), value: x.value, label: f.compact(x.value))],
             color: color,
@@ -105,8 +108,10 @@ class CounterpartyDetailScreen extends ConsumerWidget {
             ),
           ],
           const SizedBox(height: 12),
-          SectionCard(
+          ChartCard(
             title: vm.income ? t.accounts.counterparty.calendar.income : t.accounts.counterparty.calendar.expense,
+            fileName: 'counterparty-calendar',
+            table: vm.dayTable,
             subtitle: t.calendar.clickDay,
             padding: const EdgeInsets.fromLTRB(10, 16, 10, 12),
             child: r == null
@@ -133,20 +138,24 @@ class CounterpartyDetailScreen extends ConsumerWidget {
                   ),
           ),
           const SizedBox(height: 12),
-          SectionCard(
+          ChartCard(
             title: t.accounts.counterparty.monthly,
+            fileName: 'counterparty-monthly',
+            table: vm.monthlyTable,
             child: r == null
                 ? const SizedBox(height: 200)
                 : CategoryBarsChart(
                     labels: [for (final m in r.months) f.monthLabel(m.month, withYear: false)], values: [for (final m in r.months) m.value], color: accent, f: f, seriesName: vm.seriesName),
           ),
           const SizedBox(height: 12),
-          SectionCard(
+          ChartCard(
             title: vm.income ? t.accounts.counterparty.weekday.income : t.accounts.counterparty.weekday.expense,
+            fileName: 'counterparty-weekday',
+            table: vm.weekdayTable,
             child: r == null ? const SizedBox(height: 200) : CategoryBarsChart(labels: vm.weekdayLabels, values: r.byWeekday, color: accent, f: f, seriesName: vm.seriesName),
           ),
-          if (r != null && r.topCategories.isNotEmpty) ...[const SizedBox(height: 12), ranks(t.accounts.counterparty.byCategory, r.topCategories, accent)],
-          if (r != null && r.topAccounts.isNotEmpty) ...[const SizedBox(height: 12), ranks(vm.income ? t.accounts.counterparty.receivedIn : t.accounts.counterparty.paidFrom, r.topAccounts, accent)],
+          if (r != null && r.topCategories.isNotEmpty) ...[const SizedBox(height: 12), ranks(t.accounts.counterparty.byCategory, 'counterparty-categories', r.topCategories, accent)],
+          if (r != null && r.topAccounts.isNotEmpty) ...[const SizedBox(height: 12), ranks(vm.income ? t.accounts.counterparty.receivedIn : t.accounts.counterparty.paidFrom, 'counterparty-accounts', r.topAccounts, accent)],
           const SizedBox(height: 12),
           SectionCard(
             title: t.accounts.detail.records,

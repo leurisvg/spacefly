@@ -118,7 +118,7 @@
   },
   "currency": { "label": "Moneda de visualización" },
   "kpi": { "vsPrevious": "Anterior:" },
-  "chart": { "showTable": "Ver como tabla", "showChart": "Ver gráfico", "download": "Descargar PNG" },
+  "chart": { "showTable": "Ver como tabla", "showChart": "Ver gráfico", "download": "Descargar PNG", "shareCsv": "Compartir como CSV" },
   "tx": {
     "none": "No hay transacciones",
     "count": "Transacciones",
@@ -456,7 +456,8 @@
     "descriptionCol": "Descripción",
     "export": "Exportar CSV",
     "exportHidden": "La exportación está desactivada mientras los montos están ocultos",
-    "page": "Página {{page}} de {{pages}}"
+    "page": "Página {{page}} de {{pages}}",
+    "loadMore": "Mostrar más"
   },
   "settings": {
     "mobile": {

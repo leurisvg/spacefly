@@ -9,6 +9,7 @@ import '../i18n/strings.g.dart';
 import '../theme/app_theme.dart';
 import '../ui/charts.dart';
 import '../ui/charts/heatmap.dart';
+import '../ui/chart_card.dart';
 import '../ui/common.dart';
 import '../ui/drill_sheet.dart';
 import '../ui/kpi_card.dart';
@@ -68,8 +69,10 @@ class AnnualScreen extends ConsumerWidget {
           ],
         ),
         const SizedBox(height: 12),
-        SectionCard(
+        ChartCard(
           title: t.annual.byMonth,
+          fileName: 'annual-by-month',
+          table: vm.monthTable,
           child: vm.rows.isEmpty
               ? SizedBox(height: loading ? 220 : 60, child: loading ? null : EmptyState(title: t.common.noData))
               : IncomeExpenseChart(
@@ -96,8 +99,10 @@ class AnnualScreen extends ConsumerWidget {
                 ),
         ),
         const SizedBox(height: 12),
-        SectionCard(
+        ChartCard(
           title: t.annual.matrix,
+          fileName: 'annual-categories',
+          table: vm.matrixTable,
           subtitle: t.annual.matrixHint,
           child: categories.isEmpty
               ? SizedBox(height: loading ? 240 : 60, child: loading ? null : EmptyState(title: t.common.noData))

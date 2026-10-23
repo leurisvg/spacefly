@@ -13,7 +13,7 @@ import '../../ui_logic/series_colors.dart';
 /// How many months the savings screen asks for until the user picks another length.
 const savingsMonths = '12';
 
-final savingsMonthsProvider = StateProvider.autoDispose<String>((ref) => savingsMonths);
+final savingsMonthsProvider = StateProvider<String>((ref) => savingsMonths);
 
 final savingsReportProvider = reportProvider<SavingsSeries>('reports/savings', SavingsSeries.fromJson, extra: (ref) => {'months': ref.watch(savingsMonthsProvider)});
 

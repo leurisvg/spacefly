@@ -64,6 +64,22 @@ class FiltersNotifier extends Notifier<FiltersState> {
     await ref.read(keyValueStoreProvider).setString(currencyKey, code);
   }
 
+  /// The shared filters a link carries: `p` (preset), `start` / `end` and `cur`, as the web reads them from the URL. What is not valid
+  /// is ignored. A currency from a link is used for the session only; it does not replace the one the user saved.
+  void applyParams(Map<String, String> params) {
+    final cur = params['cur'];
+    final preset = PeriodPreset.values.where((v) => v.name == params['p']).firstOrNull;
+    final start = params['start'], end = params['end'];
+    var next = state;
+    if (cur != null && RegExp(r'^[A-Z]{3}$').hasMatch(cur)) next = next.copyWith(preferredCurrency: cur);
+    if (isIsoDate(start) && isIsoDate(end) && start!.compareTo(end!) <= 0) {
+      next = next.copyWith(preset: preset ?? PeriodPreset.custom, period: Period(start, end));
+    } else if (preset != null && preset != PeriodPreset.custom) {
+      next = next.copyWith(preset: preset, period: presetPeriod(preset, _today));
+    }
+    state = next;
+  }
+
   void refresh() => state = state.copyWith(refreshTick: state.refreshTick + 1);
 
   FiltersState? _beforeScope;

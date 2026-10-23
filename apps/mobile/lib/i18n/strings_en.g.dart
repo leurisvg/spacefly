@@ -438,6 +438,9 @@ class Translations$chart$en {
 
 	/// en: 'Download PNG'
 	String get download => 'Download PNG';
+
+	/// en: 'Share as CSV'
+	String get shareCsv => 'Share as CSV';
 }
 
 // Path: tx
@@ -1218,6 +1221,9 @@ class Translations$explorer$en {
 
 	/// en: 'Page {{page}} of {{pages}}'
 	String page({required Object page, required Object pages}) => 'Page ${page} of ${pages}';
+
+	/// en: 'Show more'
+	String get loadMore => 'Show more';
 }
 
 // Path: settings
@@ -2975,6 +2981,7 @@ extension on Translations {
 			'chart.showTable' => 'Show as table',
 			'chart.showChart' => 'Show chart',
 			'chart.download' => 'Download PNG',
+			'chart.shareCsv' => 'Share as CSV',
 			'tx.none' => 'No transactions',
 			'tx.count' => 'Transactions',
 			'tx.breakdown' => 'Categories in this group',
@@ -3272,6 +3279,7 @@ extension on Translations {
 			'explorer.export' => 'Export CSV',
 			'explorer.exportHidden' => 'Export is disabled while amounts are hidden',
 			'explorer.page' => ({required Object page, required Object pages}) => 'Page ${page} of ${pages}',
+			'explorer.loadMore' => 'Show more',
 			'settings.mobile.signedIn' => 'Signed in',
 			'settings.mobile.server' => 'Server',
 			'settings.mobile.serverUrl' => 'Server URL',
@@ -3378,10 +3386,10 @@ extension on Translations {
 			'editor.retry' => 'Retry',
 			'editor.networkError' => 'Couldn\'t reach the server. Check your connection: the change may not have been saved.',
 			'editor.kNew' => 'New',
-			'editor.newTitle' => 'Create',
-			'editor.tx.description' => 'Whether it\'s an expense, income or transfer follows from the accounts you pick.',
 			_ => null,
 		} ?? switch (path) {
+			'editor.newTitle' => 'Create',
+			'editor.tx.description' => 'Whether it\'s an expense, income or transfer follows from the accounts you pick.',
 			'editor.tx.what' => 'What happened',
 			'editor.tx.details' => 'Details',
 			'editor.tx.descriptionLabel' => 'Description',

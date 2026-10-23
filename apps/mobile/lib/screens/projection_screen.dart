@@ -9,6 +9,7 @@ import '../format/formatter_provider.dart';
 import '../i18n/strings.g.dart';
 import '../theme/app_theme.dart';
 import '../ui/charts.dart';
+import '../ui/chart_card.dart';
 import '../ui/common.dart';
 import '../ui/kpi_card.dart';
 import '../ui/report_page.dart';
@@ -47,8 +48,10 @@ class ProjectionScreen extends ConsumerWidget {
           ],
         ),
         const SizedBox(height: 12),
-        SectionCard(
+        ChartCard(
           title: t.projection.chart,
+          fileName: 'cash-flow-projection',
+          table: vm.table,
           subtitle: vm.lowestLabel.isEmpty ? null : vm.lowestLabel,
           child: r == null
               ? const SizedBox(height: 240)

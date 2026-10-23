@@ -8,6 +8,7 @@ import '../../format/formatter.dart';
 import '../../format/formatter_provider.dart';
 import '../../i18n/strings.g.dart';
 import '../../shared/dates.dart' show todayIso;
+import '../../ui_logic/text_table.dart';
 import '../../state/filters_store.dart';
 import '../../state/preferences.dart';
 import '../../state/tx_detail.dart';
@@ -35,13 +36,6 @@ List<Slice> categorySlices(List<TopCategory> top, Translations t, SeriesColors c
       for (final c in top)
         Slice(id: c.id, name: entityName(t, c.name, c.id), value: c.value, color: c.id == othersId ? colors.other() : colors.color('category', c.id)),
     ];
-
-/// A table of rows of text, for the screen-reader/"show as table" form of a chart.
-class TextTable {
-  const TextTable({required this.columns, required this.rows});
-  final List<String> columns;
-  final List<List<String>> rows;
-}
 
 /// The dashboard: KPIs, income vs expenses, top categories, net worth, budgets, upcoming and largest.
 /// Port of libs/client/src/features/dashboard/dashboard.vm.ts: the shaping is the same, the charts are drawn by fl_chart.
@@ -80,6 +74,11 @@ class DashboardViewModel {
       : TextTable(columns: [t.common.category, t.common.amount], rows: [for (final s in slices) [s.name, f.money(s.value)]]);
 
   List<NetWorth> get netWorth => data?.netWorth ?? const [];
+
+  TextTable? get nwTable {
+    final nw = data?.netWorth;
+    return nw == null ? null : TextTable(columns: [t.common.month, t.common.netWorth], rows: [for (final n in nw) [f.date(n.month, DateStyle.month), f.money(n.value)]]);
+  }
 
   /// The `open*` actions set the drill-down request and say whether there is one to show.
   bool openMonth(int index) {

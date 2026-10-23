@@ -8,7 +8,7 @@ import '../../i18n/strings.g.dart';
 import '../../state/preferences.dart';
 import '../../state/tx_detail.dart';
 import '../../ui_logic/names.dart';
-import '../dashboard/dashboard_vm.dart' show TextTable;
+import '../../ui_logic/text_table.dart';
 
 /// The budget the screen shows: the one picked, else the first.
 BudgetDetail? selectBudget(List<BudgetDetail> budgets, String? id) => budgets.where((b) => b.id == id).firstOrNull ?? budgets.firstOrNull;
@@ -19,7 +19,7 @@ const budgetCategoryLimit = 12;
 final budgetsReportProvider = reportProvider<BudgetsReport>('reports/budgets', BudgetsReport.fromJson);
 
 /// The budget picked on the screen (`?budget=` on the web); `null` means the first.
-final selectedBudgetProvider = StateProvider.autoDispose<String?>((ref) => null);
+final selectedBudgetProvider = StateProvider<String?>((ref) => null);
 
 /// Budgets: limits and spending of the period, plus history and category breakdown of the selected budget.
 /// Port of libs/client/src/features/analysis/budgets.vm.ts.

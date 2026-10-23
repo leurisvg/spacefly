@@ -8,7 +8,7 @@ import '../../format/formatter_provider.dart';
 import '../../i18n/strings.g.dart';
 import '../../state/filters_store.dart';
 import '../../state/preferences.dart';
-import '../dashboard/dashboard_vm.dart' show TextTable;
+import '../../ui_logic/text_table.dart';
 
 /// How many accounts the ranking draws.
 const counterpartyTop = 12;

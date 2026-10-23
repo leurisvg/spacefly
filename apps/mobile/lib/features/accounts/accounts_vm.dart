@@ -12,7 +12,7 @@ import '../../platform/platform.dart';
 import '../../state/filters_store.dart';
 import '../../state/preferences.dart';
 import '../../ui_logic/series_colors.dart';
-import '../dashboard/dashboard_vm.dart' show TextTable;
+import '../../ui_logic/text_table.dart';
 
 /// How many months of balance history the screen asks for.
 final accountsMonthsProvider = StateProvider<String>((ref) => '12');

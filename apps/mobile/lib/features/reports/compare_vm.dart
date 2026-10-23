@@ -10,7 +10,7 @@ import '../../state/filters_store.dart';
 import '../../state/preferences.dart';
 import '../../state/tx_detail.dart';
 import '../../ui_logic/names.dart';
-import '../dashboard/dashboard_vm.dart' show TextTable;
+import '../../ui_logic/text_table.dart';
 
 enum CompareMode { previous, yoy, custom }
 
@@ -29,11 +29,11 @@ Period resolvePeriodB(CompareMode mode, Period a, String? bStart, String? bEnd) 
 /// Which way a change is good: spending less or earning more.
 bool isImprovement(double delta, String kind) => delta != 0 && (delta > 0) != (kind == 'expense');
 
-final compareModeProvider = StateProvider.autoDispose<CompareMode>((ref) => CompareMode.previous);
-final compareGroupProvider = StateProvider.autoDispose<String>((ref) => 'category');
-final compareKindProvider = StateProvider.autoDispose<String>((ref) => 'expense');
-final compareBStartProvider = StateProvider.autoDispose<String?>((ref) => null);
-final compareBEndProvider = StateProvider.autoDispose<String?>((ref) => null);
+final compareModeProvider = StateProvider<CompareMode>((ref) => CompareMode.previous);
+final compareGroupProvider = StateProvider<String>((ref) => 'category');
+final compareKindProvider = StateProvider<String>((ref) => 'expense');
+final compareBStartProvider = StateProvider<String?>((ref) => null);
+final compareBEndProvider = StateProvider<String?>((ref) => null);
 
 final _comparePeriodAProvider = Provider<Period>((ref) => ref.watch(filtersProvider.select((f) => f.period)));
 

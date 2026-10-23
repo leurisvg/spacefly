@@ -10,11 +10,12 @@ import 'common.dart';
 /// One transaction as a list row: date, description, accounts, category and amount. Port of the rows of
 /// apps/web/src/app/shared/components/transaction-list.ts.
 class TxTile extends StatelessWidget {
-  const TxTile({super.key, required this.tx, required this.f, this.onTap, this.showCategory = true});
+  const TxTile({super.key, required this.tx, required this.f, this.onTap, this.onLongPress, this.showCategory = true});
 
   final TxRow tx;
   final Formatter f;
   final VoidCallback? onTap;
+  final VoidCallback? onLongPress;
   final bool showCategory;
 
   @override
@@ -25,8 +26,14 @@ class TxTile extends StatelessWidget {
     final t = context.t;
     final isTransfer = tx.type == 'transfer';
     final tone = isTransfer ? tokens.chartInk2 : (tx.type == 'withdrawal' ? tokens.moneyExpense : tokens.moneyIncome);
-    // A transfer is drawn in its own currency; the rest in the display currency, signed.
-    final amount = isTransfer ? f.money(tx.originalAmount, currency: tx.originalCurrency) : f.money(signedAmount(tx), signed: true);
+    // A transfer is drawn in its own currency. Another currency (`rate != 1`) shows the original amount with the conversion under it
+    // (the web has it as a tooltip); the rest is in the display currency, signed.
+    final inOriginal = !isTransfer && tx.rate != 1;
+    final amount = isTransfer
+        ? f.money(tx.originalAmount, currency: tx.originalCurrency)
+        : inOriginal
+            ? f.money(tx.type == 'withdrawal' ? -tx.originalAmount : tx.originalAmount, currency: tx.originalCurrency, signed: true)
+            : f.money(signedAmount(tx), signed: true);
     final muted = text.bodySmall?.copyWith(color: scheme.onSurfaceVariant);
     final chips = <String>[
       if (showCategory) (tx.category?.name.isNotEmpty ?? false) ? tx.category!.name : t.common.uncategorized,
@@ -35,6 +42,7 @@ class TxTile extends StatelessWidget {
     ];
     return InkWell(
       onTap: onTap,
+      onLongPress: onLongPress,
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 4),
         child: Row(
@@ -58,7 +66,13 @@ class TxTile extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 8),
-            Text(amount, style: numStyle(context, size: 14, weight: FontWeight.w600, color: f.hidden ? scheme.onSurface : tone)),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(amount, style: numStyle(context, size: 14, weight: FontWeight.w600, color: f.hidden ? scheme.onSurface : tone)),
+                if (inOriginal) Padding(padding: const EdgeInsets.only(top: 2), child: Text('≈ ${f.money(signedAmount(tx), signed: true)}', key: const Key('tx-converted'), style: numStyle(context, size: 11, color: scheme.onSurfaceVariant))),
+              ],
+            ),
           ],
         ),
       ),

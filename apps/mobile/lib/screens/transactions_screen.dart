@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../api/resources.dart';
 import '../api/models.g.dart' show TxRow;
@@ -14,6 +15,8 @@ import '../ui/common.dart';
 import '../ui/labels.dart';
 import '../ui/period_bar.dart';
 import '../ui/tx_tile.dart';
+
+enum _RowAction { edit, editInFirefly, openInFirefly, delete }
 
 String sortLabel(Translations t, SortKey key) => switch (key) {
       SortKey.date => t.common.date,
@@ -46,10 +49,9 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
     ref.read(explorerProvider.notifier).clearSearch();
   }
 
-  /// A single-part record is deleted by swiping it away. The question and the delete are the actions'; the row goes when the list is
-  /// fetched again, so the swipe itself never removes it.
+  /// Any record is deleted by swiping it away (a record of several parts says so in the question). The question and the delete are
+  /// the actions'; the row goes when the list is fetched again, so the swipe itself never removes it.
   Widget _swipeToDelete(TxRow tx, Widget child) {
-    if (!isEditable(tx)) return child;
     final scheme = Theme.of(context).colorScheme;
     return Dismissible(
       key: ValueKey('tx-${tx.id}'),
@@ -61,6 +63,48 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
       },
       child: child,
     );
+  }
+
+  /// The row's menu (long press): edit (in SpaceFly, or in Firefly when it can't be edited here), open in Firefly, delete.
+  Future<void> _rowMenu(ExplorerView view, TxRow tx) async {
+    final t = context.t;
+    final editable = isEditable(tx);
+    final show = view.fireflyLink(tx);
+    final edit = view.fireflyEditLink(tx);
+    final action = await showModalBottomSheet<_RowAction>(
+      context: context,
+      showDragHandle: true,
+      builder: (sheet) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(title: Text(t.editor.tx.actions, style: Theme.of(sheet).textTheme.titleSmall), subtitle: Text(tx.description, maxLines: 1, overflow: TextOverflow.ellipsis)),
+            if (editable)
+              ListTile(key: const Key('row-menu-edit'), leading: const Icon(Icons.edit_outlined), title: Text(t.editor.tx.edit), onTap: () => Navigator.pop(sheet, _RowAction.edit))
+            else if (edit != null)
+              ListTile(key: const Key('row-menu-edit-firefly'), leading: const Icon(Icons.edit_outlined), title: Text(t.editor.tx.editInFirefly), onTap: () => Navigator.pop(sheet, _RowAction.editInFirefly)),
+            if (show != null) ListTile(key: const Key('row-menu-open-firefly'), leading: const Icon(Icons.open_in_new), title: Text(t.tx.openInFirefly), onTap: () => Navigator.pop(sheet, _RowAction.openInFirefly)),
+            ListTile(
+              key: const Key('row-menu-delete'),
+              leading: Icon(Icons.delete_outline, color: Theme.of(sheet).colorScheme.error),
+              title: Text(t.forms.delete, style: TextStyle(color: Theme.of(sheet).colorScheme.error)),
+              onTap: () => Navigator.pop(sheet, _RowAction.delete),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (action == null || !mounted) return;
+    switch (action) {
+      case _RowAction.edit:
+        context.push('/transactions/${tx.groupId}/edit');
+      case _RowAction.editInFirefly:
+        await launchUrl(Uri.parse(edit!), mode: LaunchMode.externalApplication);
+      case _RowAction.openInFirefly:
+        await launchUrl(Uri.parse(show!), mode: LaunchMode.externalApplication);
+      case _RowAction.delete:
+        await ref.read(transactionActionsProvider).remove(groupId: tx.groupId, name: tx.description, splitCount: tx.splitCount.toInt(), thenGoBack: false);
+    }
   }
 
   /// Hands the CSV of the list to the share sheet.
@@ -186,7 +230,7 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
               for (final tx in rows) ...[
                 _swipeToDelete(
                   tx,
-                  TxTile(tx: tx, f: f, onTap: () => context.push('/transactions/${tx.groupId}', extra: tx)),
+                  TxTile(tx: tx, f: f, onTap: () => context.push('/transactions/${tx.groupId}', extra: tx), onLongPress: () => _rowMenu(view, tx)),
                 ),
                 const Divider(),
               ],
@@ -195,7 +239,7 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
               else if (view.hasMore)
                 Padding(
                   padding: const EdgeInsets.only(top: 8),
-                  child: OutlinedButton(key: const Key('load-more'), onPressed: notifier.loadMore, child: Text(t.common.viewAll)),
+                  child: OutlinedButton(key: const Key('load-more'), onPressed: notifier.loadMore, child: Text(t.explorer.loadMore)),
                 ),
             ],
           ],
@@ -257,7 +301,7 @@ class _FiltersSheetState extends ConsumerState<_FiltersSheet> {
     _firefly = s.useFirefly;
   }
 
-  Widget _dropdown(String label, String value, List<FilterOption> options, void Function(String) onChanged, {Key? key}) => Padding(
+  Widget _dropdown(String label, String all, String value, List<FilterOption> options, void Function(String) onChanged, {Key? key}) => Padding(
         padding: const EdgeInsets.only(top: 12),
         child: DropdownButtonFormField<String>(
           key: key,
@@ -265,7 +309,7 @@ class _FiltersSheetState extends ConsumerState<_FiltersSheet> {
           isExpanded: true,
           decoration: InputDecoration(labelText: label),
           items: [
-            DropdownMenuItem(value: '', child: Text(context.t.explorer.allTypes)),
+            DropdownMenuItem(value: '', child: Text(all)),
             for (final o in options) DropdownMenuItem(value: o.value, child: Text(o.label, overflow: TextOverflow.ellipsis)),
           ],
           onChanged: (v) => setState(() => onChanged(v ?? '')),
@@ -277,6 +321,8 @@ class _FiltersSheetState extends ConsumerState<_FiltersSheet> {
     final t = context.t;
     final view = ref.watch(explorerViewProvider);
     final notifier = ref.read(explorerProvider.notifier);
+    // Firefly's own search ignores the filters, so they are hidden while it is on (like the web).
+    final searching = _firefly && ref.watch(explorerProvider).query.isNotEmpty;
     return SafeArea(
       child: Padding(
         padding: EdgeInsets.fromLTRB(16, 0, 16, 16 + MediaQuery.of(context).viewInsets.bottom),
@@ -285,22 +331,25 @@ class _FiltersSheetState extends ConsumerState<_FiltersSheet> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              SegmentedButton<String>(
-                key: const Key('filter-type'),
-                showSelectedIcon: false,
-                segments: [
-                  ButtonSegment(value: '', label: Text(t.explorer.allTypes)),
-                  ButtonSegment(value: 'withdrawal', label: Text(txTypeLabel(t, 'withdrawal'))),
-                  ButtonSegment(value: 'deposit', label: Text(txTypeLabel(t, 'deposit'))),
-                  ButtonSegment(value: 'transfer', label: Text(txTypeLabel(t, 'transfer'))),
-                ],
-                selected: {_type},
-                onSelectionChanged: (v) => setState(() => _type = v.first),
-              ),
-              _dropdown(t.common.category, _category, view.categoryOptions, (v) => _category = v, key: const Key('filter-category')),
-              _dropdown(t.common.budget, _budget, view.budgetOptions, (v) => _budget = v),
-              _dropdown(t.common.account, _account, view.accountOptions, (v) => _account = v),
-              _dropdown(t.common.tag, _tag, view.tagOptions, (v) => _tag = v),
+              if (!searching)
+                SegmentedButton<String>(
+                  key: const Key('filter-type'),
+                  showSelectedIcon: false,
+                  segments: [
+                    ButtonSegment(value: '', label: Text(t.explorer.allTypes)),
+                    ButtonSegment(value: 'withdrawal', label: Text(txTypeLabel(t, 'withdrawal'))),
+                    ButtonSegment(value: 'deposit', label: Text(txTypeLabel(t, 'deposit'))),
+                    ButtonSegment(value: 'transfer', label: Text(txTypeLabel(t, 'transfer'))),
+                  ],
+                  selected: {_type},
+                  onSelectionChanged: (v) => setState(() => _type = v.first),
+                ),
+              if (!searching) ...[
+                _dropdown(t.common.category, t.calendar.allCategories, _category, view.categoryOptions, (v) => _category = v, key: const Key('filter-category')),
+                _dropdown(t.common.budget, t.explorer.allBudgets, _budget, view.budgetOptions, (v) => _budget = v),
+                _dropdown(t.common.account, t.calendar.allAccounts, _account, view.accountOptions, (v) => _account = v),
+                _dropdown(t.common.tag, t.calendar.allTags, _tag, view.tagOptions, (v) => _tag = v),
+              ],
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
                 title: Text(t.explorer.fireflySyntax),

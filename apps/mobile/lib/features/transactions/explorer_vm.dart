@@ -8,6 +8,7 @@ import '../../state/filters_store.dart';
 import '../../state/meta_store.dart';
 import '../../shared/dates.dart' show Period;
 import '../../state/preferences.dart';
+import '../../ui_logic/text_table.dart' show csvCell;
 import '../../state/privacy_store.dart';
 
 enum SortKey { date, description, amount, category }
@@ -18,11 +19,6 @@ const explorerPageSize = 50;
 double signedAmount(TxRow t) => t.type == 'withdrawal' ? -t.amount : t.amount;
 
 int _cmp(String a, String b) => a.toLowerCase().compareTo(b.toLowerCase());
-
-String _csvCell(Object? v) {
-  final s = '${v ?? ''}';
-  return RegExp(r'[",\n;]').hasMatch(s) ? '"${s.replaceAll('"', '""')}"' : s;
-}
 
 /// CSV (with BOM, for spreadsheets) of [rows]: amounts in the display currency plus the original.
 /// Port of `buildTransactionsCsv` in libs/client/src/features/transactions/explorer.vm.ts.
@@ -43,7 +39,7 @@ String buildTransactionsCsv(List<TxRow> rows, String currency) {
         t.originalAmount.toStringAsFixed(2),
         t.originalCurrency,
         t.rate.toStringAsFixed(6),
-      ].map(_csvCell).join(','),
+      ].map(csvCell).join(','),
   ];
   return '\uFEFF${[header.join(','), ...lines].join('\n')}';
 }
@@ -186,7 +182,7 @@ class FilterOption {
 }
 
 class ExplorerView {
-  ExplorerView({required this.state, required this.list, required this.search, required this.lookups, required this.t, this.hidden = false, this.currency = '', this.period});
+  ExplorerView({required this.state, required this.list, required this.search, required this.lookups, required this.t, this.hidden = false, this.currency = '', this.period, this.meta});
 
   final ExplorerState state;
   final AsyncValue<TxListResponse?> list;
@@ -198,6 +194,7 @@ class ExplorerView {
   final bool hidden;
   final String currency;
   final Period? period;
+  final MetaResponse? meta;
 
   bool get searching => state.searching;
 
@@ -208,6 +205,11 @@ class ExplorerView {
   TxListResponse? get listData => list.valueOrNull;
 
   SearchResponse? get searchData => search.valueOrNull;
+
+  /// The transaction's page in the user's Firefly, `null` while its public URL is not known.
+  String? fireflyLink(TxRow tx) => fireflyUrl(meta, '/transactions/show/${tx.groupId}');
+
+  String? fireflyEditLink(TxRow tx) => fireflyUrl(meta, '/transactions/edit/${tx.groupId}');
 
   /// Everything the period's list holds (or the current search page), in the chosen order.
   List<TxRow> get sorted => searching ? (searchData?.rows ?? const []) : sortTransactions(listData?.rows ?? const [], state.sortKey, state.sortDir);
@@ -244,5 +246,6 @@ final explorerViewProvider = Provider.autoDispose<ExplorerView>((ref) {
     hidden: ref.watch(privacyProvider),
     currency: ref.watch(currencyProvider),
     period: ref.watch(filtersProvider.select((f) => f.period)),
+    meta: ref.watch(metaProvider).valueOrNull,
   );
 });

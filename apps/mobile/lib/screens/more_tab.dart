@@ -45,6 +45,7 @@ final moreSections = <MoreSection>[
     MoreEntry('/planning/projection', Icons.timeline, (t) => t.nav.projection),
   ]),
   MoreSection((t) => t.nav.sections.create, [
+    MoreEntry('/transactions/new', Icons.add_card_outlined, (t) => t.nav.newTransaction),
     MoreEntry('/edit/category', Icons.category_outlined, (t) => t.editor.entity.category.kNew),
     MoreEntry('/edit/tag', Icons.sell_outlined, (t) => t.editor.entity.tag.kNew),
     MoreEntry('/edit/budget', Icons.track_changes, (t) => t.editor.entity.budget.kNew),

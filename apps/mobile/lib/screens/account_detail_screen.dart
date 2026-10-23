@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../api/models.g.dart' show AccountTxRow;
+import '../api/models.g.dart' show AccountTxRow, RankedItem;
 import '../api/resources.dart' show PausedRequest;
 import '../features/accounts/account_detail_vm.dart';
 import '../features/accounts/accounts_vm.dart' show BalanceLine;
@@ -15,6 +15,7 @@ import '../theme/app_theme.dart';
 import '../ui/calendar_grid.dart';
 import '../ui/charts.dart';
 import '../ui/charts/ranking_bars.dart';
+import '../ui/chart_card.dart';
 import '../ui/common.dart';
 import '../ui/drill_sheet.dart';
 import '../ui/kpi_card.dart';
@@ -86,8 +87,10 @@ class _AccountDetailScreenState extends ConsumerState<AccountDetailScreen> {
           ],
         );
 
-    Widget ranks(String title, List items, Color color) => SectionCard(
+    Widget ranks(String title, String fileName, List<RankedItem> items, Color color) => ChartCard(
           title: title,
+          fileName: fileName,
+          table: vm.rankTable(items),
           child: RankingBars(rows: [for (final x in items) RankBar(name: vm.rankName(x), value: vm.rankValue(x), label: f.compact(vm.rankValue(x), currency: own))], color: color, onRow: (_) {}),
         );
 
@@ -222,8 +225,10 @@ class _AccountDetailScreenState extends ConsumerState<AccountDetailScreen> {
             ),
           ],
           const SizedBox(height: 12),
-          SectionCard(
+          ChartCard(
             title: t.accounts.detail.dailyBalance,
+            fileName: 'account-daily-balance',
+            table: vm.balanceTable,
             child: r == null
                 ? const SizedBox(height: 220)
                 : days.isEmpty
@@ -241,8 +246,10 @@ class _AccountDetailScreenState extends ConsumerState<AccountDetailScreen> {
                       ),
           ),
           const SizedBox(height: 12),
-          SectionCard(
+          ChartCard(
             title: t.accounts.detail.dailyFlow,
+            fileName: 'account-daily-flow',
+            table: vm.flowTable,
             subtitle: t.calendar.clickDay,
             padding: const EdgeInsets.fromLTRB(10, 16, 10, 12),
             child: r == null
@@ -259,22 +266,26 @@ class _AccountDetailScreenState extends ConsumerState<AccountDetailScreen> {
                   ),
           ),
           const SizedBox(height: 12),
-          SectionCard(
+          ChartCard(
             title: t.accounts.detail.monthly,
+            fileName: 'account-monthly',
+            table: vm.monthlyTable,
             child: r == null
                 ? const SizedBox(height: 220)
                 : IncomeExpenseChart(months: vm.monthRows, f: f, incomeLabel: t.common.income, expenseLabel: t.common.expenses, netLabel: t.common.net, currency: own, onMonth: (_) {}),
           ),
           const SizedBox(height: 12),
-          SectionCard(
+          ChartCard(
             title: t.accounts.detail.byWeekday,
+            fileName: 'account-weekday',
+            table: vm.weekdayTable,
             child: r == null
                 ? const SizedBox(height: 200)
                 : CategoryBarsChart(labels: vm.weekdayLabels, values: vm.weekdayValues, color: tokens.moneyExpense, f: f, seriesName: t.common.expenses, currency: own),
           ),
-          if (r != null && r.topCategories.isNotEmpty) ...[const SizedBox(height: 12), ranks(t.accounts.detail.topCategories, r.topCategories, tokens.moneyExpense)],
-          if (r != null && r.topMerchants.isNotEmpty) ...[const SizedBox(height: 12), ranks(t.accounts.detail.topMerchants, r.topMerchants, tokens.moneyExpense)],
-          if (r != null && r.topIncomeSources.isNotEmpty) ...[const SizedBox(height: 12), ranks(t.accounts.detail.topIncomeSources, r.topIncomeSources, tokens.moneyIncome)],
+          if (r != null && r.topCategories.isNotEmpty) ...[const SizedBox(height: 12), ranks(t.accounts.detail.topCategories, 'account-categories', r.topCategories, tokens.moneyExpense)],
+          if (r != null && r.topMerchants.isNotEmpty) ...[const SizedBox(height: 12), ranks(t.accounts.detail.topMerchants, 'account-merchants', r.topMerchants, tokens.moneyExpense)],
+          if (r != null && r.topIncomeSources.isNotEmpty) ...[const SizedBox(height: 12), ranks(t.accounts.detail.topIncomeSources, 'account-income-sources', r.topIncomeSources, tokens.moneyIncome)],
           const SizedBox(height: 12),
           SectionCard(
             title: t.accounts.detail.records,

@@ -12,6 +12,7 @@ import '../ui/charts.dart';
 import '../ui/charts/ranking_bars.dart';
 import '../ui/charts/sunburst.dart';
 import '../ui/charts/treemap.dart';
+import '../ui/chart_card.dart';
 import '../ui/common.dart';
 import '../ui/drill_sheet.dart';
 import '../ui/report_page.dart';
@@ -138,8 +139,10 @@ class RankingScreen extends ConsumerWidget {
           ],
         ),
         const SizedBox(height: 12),
-        SectionCard(
+        ChartCard(
           title: t.ranking.distribution,
+          fileName: 'ranking-distribution',
+          table: vm.table,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [

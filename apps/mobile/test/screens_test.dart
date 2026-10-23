@@ -58,6 +58,30 @@ void main() {
       expect(find.text('Alquiler'), findsOneWidget);
     });
 
+    testWidgets('a chart can be seen as a table and shared as a CSV', (tester) async {
+      final env = await open(tester);
+      await tester.tap(find.byKey(const Key('chart-toggle-dashboard-top-categories')));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('chart-table-dashboard-top-categories')), findsOneWidget);
+      expect(find.byKey(const Key('slice-0')), findsNothing, reason: 'the table replaces the chart');
+      expect(find.text('Category'), findsOneWidget);
+
+      await tester.tap(find.byKey(const Key('chart-share-dashboard-top-categories')));
+      await tester.pumpAndSettle();
+      expect(env.share.shared.single.fileName, 'spacefly-dashboard-top-categories.csv');
+      expect(env.share.shared.single.text, contains('Category,Amount'));
+      expect(env.share.shared.single.text, contains('Food,'));
+    });
+
+    testWidgets('budgets, subscriptions and the calendar each have a "View all"', (tester) async {
+      await open(tester);
+      await tester.scrollUntilVisible(find.text('Upcoming subscriptions'), 300, scrollable: find.byType(Scrollable).first);
+      expect(find.text('View all'), findsAtLeastNWidgets(2));
+      await tester.tap(find.text('View all').first);
+      await tester.pumpAndSettle();
+      expect(find.text('Budgets'), findsWidgets);
+    });
+
     testWidgets('a tapped category opens the drill-down of its expenses', (tester) async {
       final env = await open(tester);
       await tester.tap(find.byKey(const Key('slice-0')));
@@ -169,6 +193,31 @@ void main() {
       final request = env.adapter!.requests.lastWhere((r) => r.path == '/api/transactions');
       expect(request.queryParameters['type'], 'deposit');
       expect(find.text('1'), findsOneWidget, reason: 'the filter badge counts the active filters');
+    });
+
+    testWidgets('each filter says what "no filter" means in its own words', (tester) async {
+      await open(tester);
+      await tapTab(tester, 'Transactions');
+      await tester.tap(find.byKey(const Key('filters')));
+      await tester.pumpAndSettle();
+      for (final all in ['All categories', 'All budgets', 'All accounts', 'All tags']) {
+        expect(find.text(all), findsOneWidget, reason: all);
+      }
+    });
+
+    testWidgets('the filters step aside while Firefly\'s own search is on', (tester) async {
+      await open(tester);
+      await tapTab(tester, 'Transactions');
+      await tester.enterText(find.byKey(const Key('search')), 'amount_more:500');
+      await tester.testTextInput.receiveAction(TextInputAction.search);
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('filters')));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('filter-type')), findsOneWidget);
+      await tester.tap(find.byType(Switch));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('filter-type')), findsNothing);
+      expect(find.byKey(const Key('filter-category')), findsNothing);
     });
 
     testWidgets('searches Firefly with its syntax and pages through the results', (tester) async {

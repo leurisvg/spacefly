@@ -12,6 +12,7 @@ import '../state/tx_detail.dart';
 import '../theme/app_theme.dart';
 import '../ui/calendar_grid.dart';
 import '../ui/charts.dart';
+import '../ui/chart_card.dart';
 import '../ui/common.dart';
 import '../ui/drill_sheet.dart';
 import '../ui/kpi_card.dart';
@@ -57,9 +58,11 @@ class DashboardScreen extends ConsumerWidget {
             const SizedBox(height: 8),
             KpiCard(label: t.common.netWorth, f: f, accent: tokens.moneyRevenue, value: data?.kpis.netWorth.value, previous: data?.kpis.netWorth.previous, spark: data?.kpis.netWorth.spark, loading: loading),
             const SizedBox(height: 12),
-            SectionCard(
+            ChartCard(
               title: t.dashboard.incomeVsExpense,
               subtitle: t.dashboard.last12,
+              fileName: 'dashboard-income-expense',
+              table: vm.monthsTable,
               child: data == null
                   ? const SizedBox(height: 220)
                   : IncomeExpenseChart(
@@ -74,8 +77,10 @@ class DashboardScreen extends ConsumerWidget {
                     ),
             ),
             const SizedBox(height: 12),
-            SectionCard(
+            ChartCard(
               title: t.dashboard.topCategories,
+              fileName: 'dashboard-top-categories',
+              table: vm.categoriesTable,
               child: vm.slices.isEmpty
                   ? (loading ? const SizedBox(height: 120) : EmptyState(title: t.common.noData))
                   : Column(
@@ -111,9 +116,11 @@ class DashboardScreen extends ConsumerWidget {
                     ),
             ),
             const SizedBox(height: 12),
-            SectionCard(
+            ChartCard(
               title: t.common.netWorth,
               subtitle: t.dashboard.last12,
+              fileName: 'dashboard-net-worth',
+              table: vm.nwTable,
               child: vm.netWorth.isEmpty
                   ? SizedBox(height: loading ? 160 : 60, child: loading ? null : EmptyState(title: t.common.noData))
                   : LinesChart(
@@ -126,6 +133,7 @@ class DashboardScreen extends ConsumerWidget {
             const SizedBox(height: 12),
             SectionCard(
               title: t.nav.budgets,
+              trailing: viewAll('/analysis/budgets'),
               child: (data?.budgets ?? const []).isEmpty
                   ? Padding(padding: const EdgeInsets.symmetric(vertical: 16), child: Center(child: Text(t.budget.none, style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant))))
                   : Column(
@@ -159,6 +167,7 @@ class DashboardScreen extends ConsumerWidget {
             const SizedBox(height: 12),
             SectionCard(
               title: t.dashboard.upcomingBills,
+              trailing: viewAll('/planning/bills'),
               child: (data?.upcomingBills ?? const []).isEmpty
                   ? Padding(padding: const EdgeInsets.symmetric(vertical: 16), child: Center(child: Text(t.dashboard.noUpcoming, textAlign: TextAlign.center, style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant))))
                   : Column(

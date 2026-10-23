@@ -9,10 +9,12 @@ import '../features/transactions/tx_view_vm.dart';
 import '../format/formatter.dart';
 import '../format/formatter_provider.dart';
 import '../i18n/strings.g.dart';
+import '../platform/platform.dart';
 import '../state/meta_store.dart';
 import '../theme/app_theme.dart';
 import '../ui/common.dart';
 import '../ui/labels.dart';
+import '../ui/not_editable_actions.dart';
 import '../ui/tx_tile.dart';
 
 /// One transaction. [row] is the list row it was opened from (shown when the full record can't be loaded or edited here).
@@ -58,6 +60,14 @@ class TxDetailScreen extends ConsumerWidget {
                 child: Text(r.reason == 'type' ? t.editor.tx.notEditable.type : t.editor.tx.notEditable.splits),
               ),
               if (row != null) ...[const SizedBox(height: 12), SectionCard(child: TxTile(tx: row!, f: f))],
+              const SizedBox(height: 16),
+              NotEditableActions(
+                groupId: id,
+                name: row?.description ?? t.nav.explorer,
+                reason: r.reason,
+                fireflyEditUrl: fireflyUrl(meta, '/transactions/edit/$id'),
+                onBack: () => ref.read(backNavigationProvider).back('/transactions'),
+              ),
             ]),
           TxViewState.missing => EmptyState(icon: Icons.search_off, title: t.editor.tx.missing),
           TxViewState.error => EmptyState(icon: Icons.cloud_off_outlined, title: t.editor.tx.loadError, onRetry: () => ref.invalidate(txViewProvider(id))),

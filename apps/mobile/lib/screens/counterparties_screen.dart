@@ -10,6 +10,7 @@ import '../i18n/strings.g.dart';
 import '../theme/app_theme.dart';
 import '../ui/charts.dart';
 import '../ui/charts/ranking_bars.dart';
+import '../ui/chart_card.dart';
 import '../ui/common.dart';
 import '../ui/kpi_card.dart';
 import '../ui/report_page.dart';
@@ -53,8 +54,10 @@ class CounterpartiesScreen extends ConsumerWidget {
           ],
         ),
         const SizedBox(height: 12),
-        SectionCard(
+        ChartCard(
           title: t.accounts.counterparty.topAccounts,
+          fileName: 'accounts-${vm.income ? 'income' : 'expense'}',
+          table: vm.rankTable,
           child: top.isEmpty
               ? (vm.initialLoading ? const SizedBox(height: 200) : EmptyState(title: t.common.noData))
               : RankingBars(
@@ -64,8 +67,10 @@ class CounterpartiesScreen extends ConsumerWidget {
                 ),
         ),
         const SizedBox(height: 12),
-        SectionCard(
+        ChartCard(
           title: t.accounts.counterparty.monthly,
+          fileName: 'accounts-${vm.income ? 'income' : 'expense'}-monthly',
+          table: vm.monthlyTable,
           child: r == null
               ? const SizedBox(height: 200)
               : CategoryBarsChart(

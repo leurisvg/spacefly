@@ -11,7 +11,7 @@ import '../../state/preferences.dart';
 import '../../state/tx_detail.dart';
 import '../../ui/labels.dart';
 import '../../ui_logic/pagination.dart';
-import '../dashboard/dashboard_vm.dart' show TextTable;
+import '../../ui_logic/text_table.dart';
 
 const accountTabs = ['all', 'withdrawal', 'deposit', 'transfer'];
 
@@ -128,7 +128,7 @@ final accountDetailReportProvider = FutureProvider.autoDispose.family<AccountDet
   return unwrapReport(response.data, AccountDetailReport.fromJson);
 });
 
-final accountTabProvider = StateProvider.autoDispose.family<String, String>((ref, id) => 'all');
+final accountTabProvider = StateProvider.family<String, String>((ref, id) => 'all');
 
 /// The page of records being shown.
 final accountPageProvider = StateProvider.autoDispose.family<int, String>((ref, id) => 1);

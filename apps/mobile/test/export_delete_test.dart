@@ -32,6 +32,7 @@ void main() {
         'GET /api/reports/dashboard' => jsonBody(report(dashboardJson())),
         'GET /api/transactions' => jsonBody(report({'rows': list, 'totals': {'income': 0, 'expense': 100, 'transfer': 0}})),
         'DELETE /api/transactions/11' => ResponseBody.fromString('', 204),
+        'DELETE /api/transactions/12' => ResponseBody.fromString('', 204),
         'POST /api/refresh' => ResponseBody.fromString('', 204),
         _ => jsonBody({'error': 'not_found'}, 404),
       };
@@ -111,12 +112,64 @@ void main() {
       expect(find.byKey(const Key('transactions')), findsOneWidget);
     });
 
-    testWidgets('a record of several parts is not swiped away', (tester) async {
+    testWidgets('a record of several parts is swiped away too, with the question about its parts', (tester) async {
       final (env, writes) = await open(tester);
       await tester.drag(find.text('Compra dividida'), const Offset(-500, 0));
       await tester.pumpAndSettle();
+      await tester.pump(const Duration(seconds: 1));
+      await tester.pumpAndSettle();
+      expect(env.confirm.asked.single.message, contains('several parts'));
+      expect(writes.where((w) => w.method == 'DELETE').single.path, '/api/transactions/12');
+    });
+  });
+
+  group('row menu', () {
+    testWidgets('a record SpaceFly edits offers edit, open in Firefly and delete', (tester) async {
+      final (env, _) = await open(tester);
+      await tester.longPress(find.text('Supermercado'));
+      await tester.pumpAndSettle();
+      expect(find.text('Actions'), findsOneWidget);
+      expect(find.byKey(const Key('row-menu-edit')), findsOneWidget);
+      expect(find.byKey(const Key('row-menu-edit-firefly')), findsNothing);
+      expect(find.byKey(const Key('row-menu-open-firefly')), findsOneWidget);
+      expect(find.byKey(const Key('row-menu-delete')), findsOneWidget);
+
+      await tester.tap(find.byKey(const Key('row-menu-edit')));
+      await tester.pumpAndSettle();
+      expect(find.text('Edit transaction'), findsWidgets);
       expect(env.confirm.asked, isEmpty);
+    });
+
+    testWidgets('a record of several parts is edited in Firefly instead', (tester) async {
+      await open(tester);
+      await tester.longPress(find.text('Compra dividida'));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('row-menu-edit')), findsNothing);
+      expect(find.byKey(const Key('row-menu-edit-firefly')), findsOneWidget);
+      expect(find.byKey(const Key('row-menu-open-firefly')), findsOneWidget);
+      expect(find.byKey(const Key('row-menu-delete')), findsOneWidget);
+    });
+
+    testWidgets('deleting from the menu asks first, and stays on the list', (tester) async {
+      final (env, writes) = await open(tester);
+      env.confirm.answer = false;
+      await tester.longPress(find.text('Supermercado'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('row-menu-delete')));
+      await tester.pumpAndSettle();
+      expect(env.confirm.asked.single.message, contains('Supermercado'));
       expect(writes, isEmpty);
+
+      env.confirm.answer = true;
+      await tester.longPress(find.text('Supermercado'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('row-menu-delete')));
+      await tester.pumpAndSettle();
+      await tester.pump(const Duration(seconds: 1));
+      await tester.pumpAndSettle();
+      expect(writes.where((w) => w.method == 'DELETE').single.path, '/api/transactions/11');
+      expect(env.back.fallbacks, isEmpty);
+      expect(find.byKey(const Key('transactions')), findsOneWidget);
     });
   });
 }

@@ -8,6 +8,7 @@ import '../i18n/strings.g.dart';
 import '../theme/app_theme.dart';
 import '../ui/charts.dart';
 import '../ui/charts/ranking_bars.dart';
+import '../ui/chart_card.dart';
 import '../ui/common.dart';
 import '../ui/drill_sheet.dart';
 import '../ui/kpi_card.dart';
@@ -114,8 +115,10 @@ class BudgetsScreen extends ConsumerWidget {
           ],
         if (selected != null) ...[
           const SizedBox(height: 4),
-          SectionCard(
+          ChartCard(
             title: t.budget.history(name: selected.name),
+            fileName: 'budget-history',
+            table: vm.historyTable,
             child: Column(
               children: [
                 BudgetHistoryChart(history: vm.history, f: f, spentLabel: t.budget.spent, limitLabel: t.budget.limit),
@@ -133,8 +136,10 @@ class BudgetsScreen extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: 12),
-          SectionCard(
+          ChartCard(
             title: t.budget.byCategory(name: selected.name),
+            fileName: 'budget-categories',
+            table: vm.categoryTable,
             child: vm.categoryBars.isEmpty
                 ? EmptyState(title: t.common.noData)
                 : RankingBars(

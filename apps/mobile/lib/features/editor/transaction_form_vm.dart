@@ -640,8 +640,6 @@ class TxFormView {
     return _account(v)?.name ?? data.knownAccounts[v.id]?.name ?? '';
   }
 
-  String? get fireflyUrlPath => args.id == null ? null : '/transactions/show/${args.id}';
-
   // ── Validation ──────────────────────────────────────────────────────────────
   Map<String, List<FieldError>> get clientErrors {
     final m = model;

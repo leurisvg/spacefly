@@ -7,6 +7,7 @@ import '../format/formatter_provider.dart';
 import '../i18n/strings.g.dart';
 import '../theme/app_theme.dart';
 import '../ui/charts.dart';
+import '../ui/chart_card.dart';
 import '../ui/common.dart';
 import '../ui/kpi_card.dart';
 import '../ui/months_picker.dart';
@@ -44,8 +45,10 @@ class NetWorthScreen extends ConsumerWidget {
           ],
         ),
         const SizedBox(height: 12),
-        SectionCard(
+        ChartCard(
           title: t.netWorth.total,
+          fileName: 'net-worth',
+          table: vm.table,
           child: r == null
               ? const SizedBox(height: 220)
               : LinesChart(months: r.months, lines: [BalanceLine(id: 'nw', name: t.common.netWorth, values: r.total, color: tokens.moneyRevenue)], f: f, area: true),

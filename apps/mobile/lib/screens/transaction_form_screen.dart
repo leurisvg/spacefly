@@ -7,10 +7,12 @@ import '../features/editor/transaction_form_vm.dart';
 import '../i18n/strings.g.dart';
 import '../shared/dates.dart';
 import '../shared/tx_type.dart' show txKindName;
+import '../state/meta_store.dart';
 import '../ui/account_sheet.dart';
 import '../ui/common.dart';
 import '../ui/form_widgets.dart';
 import '../ui/labels.dart';
+import '../ui/not_editable_actions.dart';
 import '../ui_logic/suggest.dart';
 import '../ui_logic/time.dart';
 
@@ -139,7 +141,20 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
       ),
       body: switch (data.status) {
         TxFormStatus.loading => const Center(child: CircularProgressIndicator()),
-        TxFormStatus.notEditable => _Message(text: data.blockedReason == 'type' ? t.editor.tx.notEditable.type : t.editor.tx.notEditable.splits, title: t.editor.tx.notEditable.title, onBack: _form.cancel),
+        TxFormStatus.notEditable => ListView(
+            padding: const EdgeInsets.all(16),
+            children: [
+              SectionCard(title: t.editor.tx.notEditable.title, child: Text(data.blockedReason == 'type' ? t.editor.tx.notEditable.type : t.editor.tx.notEditable.splits)),
+              const SizedBox(height: 16),
+              NotEditableActions(
+                groupId: widget.id!,
+                name: m.description.isEmpty ? t.nav.explorer : m.description,
+                reason: data.blockedReason,
+                fireflyEditUrl: fireflyUrl(ref.watch(metaProvider).valueOrNull, '/transactions/edit/${widget.id}'),
+                onBack: _form.cancel,
+              ),
+            ],
+          ),
         TxFormStatus.missing => _Message(text: t.editor.tx.missing, onBack: _form.cancel),
         TxFormStatus.error => _Message(text: t.editor.tx.loadError, onRetry: _form.reload, onBack: _form.cancel),
         TxFormStatus.ready => ListView(
@@ -410,10 +425,9 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
 }
 
 class _Message extends StatelessWidget {
-  const _Message({required this.text, required this.onBack, this.title, this.onRetry});
+  const _Message({required this.text, required this.onBack, this.onRetry});
 
   final String text;
-  final String? title;
   final VoidCallback onBack;
   final VoidCallback? onRetry;
 
@@ -423,7 +437,7 @@ class _Message extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        SectionCard(title: title, child: Text(text)),
+        SectionCard(child: Text(text)),
         const SizedBox(height: 16),
         if (onRetry != null) FilledButton(onPressed: onRetry, child: Text(t.editor.retry)),
         if (onRetry != null) const SizedBox(height: 8),

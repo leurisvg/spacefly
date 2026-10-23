@@ -11,6 +11,7 @@ import '../theme/app_theme.dart';
 import '../ui/calendar_grid.dart';
 import '../ui/charts.dart';
 import '../ui/charts/heatmap.dart';
+import '../ui/chart_card.dart';
 import '../ui/common.dart';
 import '../ui/drill_sheet.dart';
 import '../ui/form_widgets.dart';
@@ -90,8 +91,10 @@ class CalendarScreen extends ConsumerWidget {
           const SizedBox(height: 8),
           KpiCard(label: t.calendar.endBalance, f: f, accent: tokens.moneyNet, value: vm.endBalance, loading: vm.initialLoading),
           const SizedBox(height: 12),
-          SectionCard(
+          ChartCard(
             title: t.monthly.dailyCashFlow,
+            fileName: 'calendar-daily-cash-flow',
+            table: vm.dayTable,
             subtitle: t.calendar.clickDay,
             padding: const EdgeInsets.fromLTRB(10, 16, 10, 12),
             child: data == null
@@ -168,8 +171,10 @@ class _YearHeatmap extends ConsumerWidget {
     final f = ref.watch(formatterProvider);
     final layout = vm.heatmap;
     final y = vm.yearData;
-    return SectionCard(
+    return ChartCard(
       title: t.calendar.heatmapTitle(year: vm.year),
+      fileName: 'spending-heatmap',
+      table: vm.yearTable,
       subtitle: t.calendar.heatmapHint,
       child: layout == null || y == null
           ? const SizedBox(height: 320)

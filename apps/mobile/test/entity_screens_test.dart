@@ -123,6 +123,15 @@ void main() {
     });
   });
 
+  group('More tab', () {
+    testWidgets('offers a new transaction among what can be created', (tester) async {
+      await open(tester);
+      await tapTab(tester, 'More');
+      await tester.ensureVisible(find.byKey(const Key('more-/transactions/new')));
+      expect(find.text('New transaction'), findsOneWidget);
+    });
+  });
+
   group('category form', () {
     testWidgets('creates a category and goes back', (tester) async {
       final (env, writes) = await open(tester);
@@ -243,6 +252,8 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Edit account'), findsOneWidget);
       expect(find.text('The type can\'t be changed after the account is created.'), findsOneWidget);
+      final hint = tester.widget<InputDecorator>(find.descendant(of: find.byKey(const Key('option-type')), matching: find.byType(InputDecorator)));
+      expect(hint.decoration.errorText, isNull, reason: 'a hint is not an error');
       await tester.ensureVisible(find.byKey(const Key('delete')));
       await tester.tap(find.byKey(const Key('delete')));
       await tester.pumpAndSettle();

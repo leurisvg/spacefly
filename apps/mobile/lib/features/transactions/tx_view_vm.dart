@@ -8,7 +8,7 @@ import '../../state/filters_store.dart';
 enum TxViewState { ready, notEditable, missing, error }
 
 /// One stored transaction: what it says and whether SpaceFly can edit it. The loading state is the provider's own `AsyncLoading`.
-/// Port of libs/client/src/features/transactions/tx-view.vm.ts (deleting comes with the write screens).
+/// Port of libs/client/src/features/transactions/tx-view.vm.ts.
 class TxViewResult {
   const TxViewResult(this.state, {this.tx, this.reason});
 

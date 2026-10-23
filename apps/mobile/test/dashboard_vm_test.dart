@@ -55,6 +55,9 @@ void main() {
       expect(vm.slicesTotal, 40);
       expect(vm.categoriesTable?.columns, hasLength(2));
       expect(vm.netWorth, hasLength(1));
+      expect(vm.nwTable?.columns, ['Month', 'Net worth']);
+      expect(vm.nwTable?.rows, hasLength(1));
+      expect(vm.nwTable?.rows.first.first, 'August 2026');
     });
 
     test('is loading, with nothing to show, before the first answer', () async {
@@ -65,6 +68,7 @@ void main() {
       expect(vm.initialLoading, isTrue);
       expect(vm.slices, isEmpty);
       expect(vm.monthsTable, isNull);
+      expect(vm.nwTable, isNull);
     });
 
     test('opens the drill-down for a month, a category, the folded others and a day', () async {

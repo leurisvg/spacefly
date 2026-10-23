@@ -10,7 +10,7 @@ import '../../state/filters_store.dart';
 import '../../state/preferences.dart';
 import '../../state/tx_detail.dart';
 import '../../ui_logic/pagination.dart';
-import '../dashboard/dashboard_vm.dart' show TextTable;
+import '../../ui_logic/text_table.dart';
 import 'counterparties_vm.dart' show kindName;
 
 /// Which account, and whether it is an expense or a revenue one.
