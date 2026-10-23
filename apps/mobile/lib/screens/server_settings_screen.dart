@@ -116,7 +116,7 @@ class _ServerSettingsScreenState extends ConsumerState<ServerSettingsScreen> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(f.date(r.month, DateStyle.month)),
-                                  Text('1 ${r.base} → ${r.quote} · ${r.source.name == 'FIREFLY' ? t.settings.sources.firefly : t.settings.sources.fallback}', style: Theme.of(context).textTheme.bodySmall?.copyWith(color: scheme.onSurfaceVariant)),
+                                  Text('1 ${r.base} → ${r.quote} · ${r.source.name == 'FIREFLY' ? t.settings.sources.firefly : t.settings.sources.fallback} · ${f.date(r.date)}', style: Theme.of(context).textTheme.bodySmall?.copyWith(color: scheme.onSurfaceVariant)),
                                 ],
                               ),
                             ),

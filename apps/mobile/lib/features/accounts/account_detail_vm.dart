@@ -193,8 +193,8 @@ class AccountDetailViewModel {
   /// Currency the charts are drawn in: the account's own, when it isn't the one being displayed.
   String? get own => foreign ? r!.account.currency : null;
 
-  /// More days than a phone can label without a hint.
-  bool get zoomHint => (r?.days.length ?? 0) > 60;
+  /// More days than a phone can label without zooming.
+  bool get zoomable => (r?.days.length ?? 0) > 60;
 
   /// The days with a known balance, in the currency the charts use.
   List<({String date, double balance})> get balanceDays => [
@@ -300,6 +300,14 @@ class AccountDetailViewModel {
       ], rows: [
         for (final x in items) [rankName(x), x.count.toInt().toString(), moneyPair(x.valueOriginal, x.value)]
       ]);
+
+  /// The long daily series can be zoomed, and says so.
+  String? get zoomHint => zoomable ? t.accounts.detail.zoomHintTouch : null;
+
+  /// A record that was made in another currency, with the amount it was made in (signed like its flow). `null` when it was in the
+  /// display currency. Port of `original` in account-detail.vm.ts.
+  ({double amount, String currency, double rate})? original(AccountTxRow tx) =>
+      tx.rate == 1 ? null : (amount: (tx.flow < 0 ? -1 : 1) * tx.originalAmount, currency: tx.originalCurrency, rate: tx.rate);
 
   String counterparty(AccountTxRow tx) => counterpartyOf(tx);
 

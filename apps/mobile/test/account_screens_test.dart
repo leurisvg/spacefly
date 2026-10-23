@@ -213,7 +213,10 @@ void main() {
       final q = lastQuery(env, '/api/reports/accounts/1');
       expect((q['start'], q['end']), ('2026-08-17', '2026-09-15'));
       expect(env.adapter!.requests.where((r) => r.path == '/api/reports/accounts/1'), hasLength(1), reason: 'it does not ask for the user’s period first');
-      expect(find.descendant(of: find.byKey(const Key('period-label')), matching: find.textContaining('Aug 17')), findsOneWidget, reason: 'the period bar shows the screen’s own period');
+      expect(find.descendant(of: find.byKey(const Key('period-label')), matching: find.text('Last 30 days')), findsOneWidget, reason: 'the period bar shows the screen’s own period, by name while it ends today');
+      await tester.tap(find.byKey(const Key('period-previous')));
+      await tester.pumpAndSettle();
+      expect(find.descendant(of: find.byKey(const Key('period-label')), matching: find.text('Last 30 days')), findsNothing, reason: 'after ◀ it is just a range');
     });
 
     testWidgets('shows the balance, the summary, the calendar, the rankings and the records', (tester) async {
@@ -229,6 +232,14 @@ void main() {
       expect(find.text('Where the money comes from'), findsOneWidget);
       expect(find.byKey(const Key('record-1')), findsOneWidget);
       expect(find.byKey(const Key('tab-all')), findsOneWidget);
+    });
+
+    testWidgets('each record tells its type and the year, and one made in another currency its original amount', (tester) async {
+      await detail(tester, foreign: false);
+      expect(find.byKey(const Key('record-type-3')), findsOneWidget);
+      expect(find.descendant(of: find.byKey(const Key('record-type-3')), matching: find.text('Income')), findsOneWidget);
+      expect(find.text('2026'), findsWidgets);
+      expect(find.byKey(const Key('record-original-3')), findsNothing, reason: 'it was made in the display currency');
     });
 
     testWidgets('an account kept in dollars is shown in dollars, with what it is worth', (tester) async {

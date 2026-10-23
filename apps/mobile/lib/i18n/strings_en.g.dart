@@ -1805,6 +1805,9 @@ class Translations$accounts$detail$en {
 	/// en: 'Use the wheel or drag to zoom'
 	String get zoomHint => 'Use the wheel or drag to zoom';
 
+	/// en: 'Pinch or drag to zoom'
+	String get zoomHintTouch => 'Pinch or drag to zoom';
+
 	/// en: 'Last 12 months'
 	String get monthly => 'Last 12 months';
 
@@ -3182,6 +3185,7 @@ extension on Translations {
 			'accounts.detail.dailyBalance' => 'Balance by day',
 			'accounts.detail.dailyFlow' => 'Income and expenses by day',
 			'accounts.detail.zoomHint' => 'Use the wheel or drag to zoom',
+			'accounts.detail.zoomHintTouch' => 'Pinch or drag to zoom',
 			'accounts.detail.monthly' => 'Last 12 months',
 			'accounts.detail.byWeekday' => 'Spending by weekday',
 			'accounts.detail.topCategories' => 'What it\'s spent on',
@@ -3385,9 +3389,9 @@ extension on Translations {
 			'editor.back' => 'Back',
 			'editor.retry' => 'Retry',
 			'editor.networkError' => 'Couldn\'t reach the server. Check your connection: the change may not have been saved.',
-			'editor.kNew' => 'New',
 			_ => null,
 		} ?? switch (path) {
+			'editor.kNew' => 'New',
 			'editor.newTitle' => 'Create',
 			'editor.tx.description' => 'Whether it\'s an expense, income or transfer follows from the accounts you pick.',
 			'editor.tx.what' => 'What happened',

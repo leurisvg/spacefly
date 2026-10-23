@@ -17,6 +17,7 @@ import '../ui/charts.dart';
 import '../ui/charts/ranking_bars.dart';
 import '../ui/chart_card.dart';
 import '../ui/common.dart';
+import '../ui/labels.dart';
 import '../ui/drill_sheet.dart';
 import '../ui/kpi_card.dart';
 import '../ui/report_page.dart';
@@ -110,12 +111,32 @@ class _AccountDetailScreenState extends ConsumerState<AccountDetailScreen> {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              SizedBox(width: 52, child: Text(f.date(tx.date), style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant))),
+              SizedBox(
+                width: 52,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(f.date(tx.date), style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant)),
+                    Text(tx.date.substring(0, 4), style: TextStyle(fontSize: 10, color: scheme.onSurfaceVariant)),
+                  ],
+                ),
+              ),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(tx.description, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w500)),
+                    Row(
+                      children: [
+                        Flexible(child: Text(tx.description, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w500))),
+                        const SizedBox(width: 6),
+                        Container(
+                          key: Key('record-type-${tx.id}'),
+                          padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                          decoration: BoxDecoration(border: Border.all(color: scheme.outlineVariant), borderRadius: BorderRadius.circular(4)),
+                          child: Text(txTypeLabel(t, tx.type), style: TextStyle(fontSize: 9, color: scheme.onSurfaceVariant)),
+                        ),
+                      ],
+                    ),
                     Text('${(tx.category?.name.isNotEmpty ?? false) ? tx.category!.name : t.common.uncategorized} · ${vm.counterparty(tx)}',
                         maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 11, color: scheme.onSurfaceVariant)),
                     if (tx.budget != null || tx.tags.isNotEmpty)
@@ -130,6 +151,9 @@ class _AccountDetailScreenState extends ConsumerState<AccountDetailScreen> {
                 children: [
                   Text(f.money(flow, currency: own, signed: true), style: numStyle(context, size: 14, weight: FontWeight.w600, color: f.hidden ? null : tone)),
                   if (vm.foreign) Text('≈ ${f.money(tx.flow, signed: true)}', style: TextStyle(fontSize: 11, color: scheme.onSurfaceVariant)),
+                  // a record made in another currency than the one shown says what it was made in
+                  if (!vm.foreign && vm.original(tx) != null)
+                    Text(f.money(vm.original(tx)!.amount, currency: vm.original(tx)!.currency, signed: true), key: Key('record-original-${tx.id}'), style: TextStyle(fontSize: 11, color: scheme.onSurfaceVariant)),
                   if (after != null) Text('${t.accounts.detail.balanceAfter}: ${f.money(after, currency: own)}', style: TextStyle(fontSize: 11, color: scheme.onSurfaceVariant)),
                 ],
               ),
@@ -229,6 +253,7 @@ class _AccountDetailScreenState extends ConsumerState<AccountDetailScreen> {
             title: t.accounts.detail.dailyBalance,
             fileName: 'account-daily-balance',
             table: vm.balanceTable,
+            subtitle: vm.zoomHint,
             child: r == null
                 ? const SizedBox(height: 220)
                 : days.isEmpty
@@ -242,6 +267,7 @@ class _AccountDetailScreenState extends ConsumerState<AccountDetailScreen> {
                         f: f,
                         area: true,
                         zeroLine: true,
+                        zoomable: vm.zoomable,
                         yFormat: own == null ? null : (v) => f.compact(v, currency: own),
                         tipTitle: (i) => f.date(days[i].date, DateStyle.full),
                       ),

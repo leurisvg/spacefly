@@ -75,6 +75,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   ),
                   const SizedBox(height: 8),
                   TextButton(onPressed: _busy ? null : () => context.push('/server'), child: Text(t.settings.mobile.server)),
+                  const SizedBox(height: 16),
+                  Text(t.login.readOnly, key: const Key('login-note'), textAlign: TextAlign.center, style: text.bodySmall?.copyWith(color: scheme.onSurfaceVariant)),
                 ],
               ),
             ),

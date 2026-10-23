@@ -349,6 +349,7 @@
       "dailyBalance": "Balance by day",
       "dailyFlow": "Income and expenses by day",
       "zoomHint": "Use the wheel or drag to zoom",
+      "zoomHintTouch": "Pinch or drag to zoom",
       "monthly": "Last 12 months",
       "byWeekday": "Spending by weekday",
       "topCategories": "What it's spent on",

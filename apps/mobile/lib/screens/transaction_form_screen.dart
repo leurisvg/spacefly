@@ -2,12 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../api/models.g.dart' show TxKind;
 import '../features/editor/account_picker_vm.dart';
 import '../features/editor/transaction_form_vm.dart';
 import '../i18n/strings.g.dart';
 import '../shared/dates.dart';
-import '../shared/tx_type.dart' show txKindName;
 import '../state/meta_store.dart';
+import '../theme/app_theme.dart';
 import '../ui/account_sheet.dart';
 import '../ui/common.dart';
 import '../ui/form_widgets.dart';
@@ -35,7 +36,6 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
   final _amount = TextEditingController();
   final _foreignAmount = TextEditingController();
   final _category = TextEditingController();
-  final _tags = TextEditingController();
   final _notes = TextEditingController();
   final _descriptionFocus = FocusNode();
   final _categoryFocus = FocusNode();
@@ -52,7 +52,7 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
 
   @override
   void dispose() {
-    for (final c in [_description, _amount, _foreignAmount, _category, _tags, _notes]) {
+    for (final c in [_description, _amount, _foreignAmount, _category, _notes]) {
       c.dispose();
     }
     _descriptionFocus.dispose();
@@ -72,11 +72,9 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
     put(_foreignAmount, m.foreignAmount);
     put(_category, m.category);
     // Tags are typed as "a, b": do not rewrite the text while it is being typed, only when the list differs from what it says.
-    if (_parseTags(_tags.text).join('\u0000') != m.tags.join('\u0000')) put(_tags, m.tags.join(', '));
     put(_notes, m.notes);
   }
 
-  static List<String> _parseTags(String text) => [for (final x in text.split(',')) if (x.trim().isNotEmpty) x.trim()];
 
   TxFormNotifier get _form => ref.read(txFormProvider(_args).notifier);
 
@@ -163,14 +161,13 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
             keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
             children: [
-              if (view.type != null)
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: Padding(
-                    padding: const EdgeInsets.only(bottom: 12),
-                    child: Chip(key: const Key('type-chip'), avatar: Icon(Icons.bolt, size: 16, color: scheme.primary), label: Text(txTypeLabel(t, txKindName(view.type!)))),
-                  ),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: _TypeBadge(type: view.type, pending: view.typePending, invalid: view.typeInvalid),
                 ),
+              ),
               KeyedSubtree(
                 key: _key('description'),
                 child: FormRow(
@@ -368,13 +365,7 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
                   ],
                   FormRow(
                     icon: Icons.sell_outlined,
-                    child: TextField(
-                      key: const Key('tags'),
-                      controller: _tags,
-                      autocorrect: false,
-                      decoration: InputDecoration(labelText: t.common.tag, hintText: 'a, b', errorText: err('tags')),
-                      onChanged: (v) => _form.setTags(_parseTags(v)),
-                    ),
+                    child: TagField(key: const Key('tags'), tags: m.tags, suggestions: view.tagNames, label: t.common.tag, errorText: err('tags'), onChanged: _form.setTags),
                   ),
                   FormRow(
                     icon: Icons.notes,
@@ -391,7 +382,19 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
                 ],
               ),
               if (view.generalErrors.isNotEmpty) Padding(padding: const EdgeInsets.only(top: 12), child: Text(view.generalErrors.join(' '), style: TextStyle(color: scheme.error))),
-              const SizedBox(height: 8),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(4, 12, 4, 4),
+                child: Row(
+                  key: const Key('rules-note'),
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(Icons.info_outline, size: 16, color: scheme.onSurfaceVariant),
+                    const SizedBox(width: 8),
+                    Expanded(child: Text(t.editor.tx.rules, style: Theme.of(context).textTheme.bodySmall?.copyWith(color: scheme.onSurfaceVariant))),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 4),
               SwitchListTile(
                 key: const Key('stay'),
                 contentPadding: EdgeInsets.zero,
@@ -420,6 +423,43 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
             ],
           ),
       },
+    );
+  }
+}
+
+/// The type of the transaction, deduced from the two accounts: expense, income or transfer; a hint while an account is missing; a warning
+/// for a pair that can't be combined. Announced to screen readers. Port of apps/web/src/app/shared/forms/tx-type-badge.ts.
+class _TypeBadge extends StatelessWidget {
+  const _TypeBadge({required this.type, required this.pending, required this.invalid});
+
+  final TxKind? type;
+  final bool pending;
+  final bool invalid;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.t;
+    final tokens = context.tokens;
+    final scheme = Theme.of(context).colorScheme;
+    final (label, color) = pending
+        ? (t.forms.txType.pending, scheme.onSurfaceVariant)
+        : invalid
+            ? (t.forms.txType.invalid, tokens.moneyDeficit)
+            : switch (type!) {
+                TxKind.WITHDRAWAL => (txTypeLabel(t, 'withdrawal'), tokens.moneyExpense),
+                TxKind.DEPOSIT => (txTypeLabel(t, 'deposit'), tokens.moneyIncome),
+                TxKind.TRANSFER => (txTypeLabel(t, 'transfer'), scheme.primary),
+              };
+    return Semantics(
+      liveRegion: true,
+      child: Chip(
+        key: const Key('type-chip'),
+        visualDensity: VisualDensity.compact,
+        side: BorderSide(color: color.withValues(alpha: 0.5)),
+        backgroundColor: pending ? null : color.withValues(alpha: 0.1),
+        avatar: Icon(invalid ? Icons.warning_amber_rounded : Icons.bolt, size: 16, color: color),
+        label: Text(label, style: TextStyle(color: pending ? scheme.onSurfaceVariant : scheme.onSurface)),
+      ),
     );
   }
 }

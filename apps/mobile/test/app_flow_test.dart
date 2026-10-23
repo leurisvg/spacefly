@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:spacefly_mobile/auth/auth_service.dart';
+import 'package:spacefly_mobile/router.dart';
 import 'package:spacefly_mobile/screens/settings_tab.dart';
 import 'package:spacefly_mobile/screens/login_screen.dart';
 import 'package:spacefly_mobile/storage/server_config.dart';
@@ -108,5 +109,25 @@ void main() {
     await container.read(serverConfigProvider.notifier).setToken(null);
     await tester.pumpAndSettle();
     expect(find.byType(LoginScreen), findsOneWidget);
+  });
+
+  testWidgets('after signing in again the user is back where the session expired', (tester) async {
+    final env = TestEnv(config: const ServerConfig(apiUrl: 'https://spacefly.test', token: 't'), adapter: server());
+    await env.pumpApp(tester);
+
+    final container = ProviderScope.containerOf(tester.element(find.byType(NavigationBar)));
+    container.read(routerProvider).go('/accounts');
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('accounts')), findsOneWidget);
+
+    await container.read(serverConfigProvider.notifier).setToken(null);
+    await tester.pumpAndSettle();
+    expect(find.byType(LoginScreen), findsOneWidget);
+    expect(find.byKey(const Key('login-note')), findsOneWidget);
+
+    await container.read(serverConfigProvider.notifier).setToken('new');
+    await tester.pumpAndSettle();
+    expect(find.byType(LoginScreen), findsNothing);
+    expect(find.byKey(const Key('accounts')), findsOneWidget, reason: 'not the dashboard');
   });
 }

@@ -11,14 +11,15 @@ import '../shared/dates.dart' show todayIso;
 import '../state/filters_store.dart';
 import '../theme/app_theme.dart';
 import '../ui/calendar_grid.dart';
-import '../ui/charts.dart';
 import '../ui/common.dart';
 import '../ui/drill_sheet.dart';
 import '../ui/kpi_card.dart';
 import '../ui/report_page.dart';
+import '../ui/savings_multiples.dart';
 import '../ui/tx_tile.dart';
 import '../ui_logic/budget_status.dart';
 import '../ui_logic/names.dart';
+import '../ui_logic/series_colors.dart';
 
 /// The color of a signed figure: income green, expense red, plain in privacy mode.
 Color? signColor(BuildContext context, Formatter f, double value) {
@@ -110,7 +111,14 @@ class MonthlyScreen extends ConsumerWidget {
                 );
               }),
             if (d.zeroCategories.isNotEmpty)
-              Padding(padding: const EdgeInsets.only(top: 8), child: Align(alignment: Alignment.centerLeft, child: Text(d.zeroCategories.join(', '), style: muted?.copyWith(fontStyle: FontStyle.italic)))),
+              Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: Row(children: [
+                  Expanded(child: Text(d.zeroCategories.join(', '), style: muted?.copyWith(fontStyle: FontStyle.italic))),
+                  // the categories with nothing in the period add up to zero
+                  Text(f.money(0), style: numStyle(context, size: 12, color: scheme.onSurfaceVariant)),
+                ]),
+              ),
           ],
         );
 
@@ -194,24 +202,7 @@ class MonthlyScreen extends ConsumerWidget {
             ],
           );
 
-    Widget savings(SavingsSeries s) => s.accounts.isEmpty
-        ? empty(t.common.noData)
-        : Column(
-            children: [
-              for (final a in s.accounts)
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8),
-                  child: Row(
-                    children: [
-                      Expanded(child: Text(a.name, maxLines: 1, overflow: TextOverflow.ellipsis)),
-                      SizedBox(width: 80, height: 28, child: SparkLine(values: f.hidden ? [for (final _ in a.balances) 0.0] : a.balances, color: tokens.moneySavings)),
-                      const SizedBox(width: 12),
-                      SizedBox(width: 96, child: Text(f.money(a.balances.isEmpty ? 0 : a.balances.last, currency: a.currency), textAlign: TextAlign.end, style: numStyle(context, size: 12, weight: FontWeight.w600))),
-                    ],
-                  ),
-                ),
-            ],
-          );
+    Widget savings(SavingsSeries s) => s.accounts.isEmpty ? empty(t.common.noData) : SavingsMultiples(series: s, f: f, colorOf: (id) => ref.watch(seriesColorsProvider).color('account', id));
 
     Widget block(String title, SummaryBlock b) => Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -220,11 +211,11 @@ class MonthlyScreen extends ConsumerWidget {
             const SizedBox(height: 8),
             Row(
               children: [
-                Expanded(child: StatTile(label: t.monthly.earned, value: f.compact(b.earned.value), accent: tokens.moneyIncome)),
+                Expanded(child: StatTile(label: t.monthly.earned, value: f.money(b.earned.value), accent: tokens.moneyIncome)),
                 const SizedBox(width: 8),
-                Expanded(child: StatTile(label: t.monthly.spent, value: f.compact(b.spent.value), accent: tokens.moneyExpense)),
+                Expanded(child: StatTile(label: t.monthly.spent, value: f.money(b.spent.value), accent: tokens.moneyExpense)),
                 const SizedBox(width: 8),
-                Expanded(child: StatTile(label: t.common.net, value: f.compact(b.net.value), accent: b.net.value >= 0 ? tokens.moneyIncome : tokens.moneyExpense)),
+                Expanded(child: StatTile(label: t.common.net, value: f.money(b.net.value), accent: b.net.value >= 0 ? tokens.moneyIncome : tokens.moneyExpense)),
               ],
             ),
           ],

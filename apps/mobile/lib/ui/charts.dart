@@ -311,7 +311,7 @@ class DonutChart extends StatelessWidget {
 /// [zeroLine] draws the line of zero when the values cross it and [step] holds each value until the next one (a balance that only
 /// changes on the days something happens).
 class LinesChart extends StatelessWidget {
-  const LinesChart({super.key, required this.months, required this.lines, required this.f, this.area = false, this.height = 200, this.labels, this.yFormat, this.tipTitle, this.tipDetail, this.zeroLine = false, this.step = false});
+  const LinesChart({super.key, required this.months, required this.lines, required this.f, this.area = false, this.height = 200, this.labels, this.yFormat, this.tipTitle, this.tipDetail, this.zeroLine = false, this.step = false, this.zoomable = false});
 
   final List<String> months;
   final List<BalanceLine> lines;
@@ -324,6 +324,9 @@ class LinesChart extends StatelessWidget {
   final String? Function(int index)? tipDetail;
   final bool zeroLine;
   final bool step;
+
+  /// Pinch and drag zoom the x axis (a long series of days).
+  final bool zoomable;
 
   @override
   Widget build(BuildContext context) {
@@ -342,6 +345,7 @@ class LinesChart extends StatelessWidget {
         SizedBox(
           height: height,
           child: LineChart(
+            transformationConfig: zoomable ? const FlTransformationConfig(scaleAxis: FlScaleAxis.horizontal, maxScale: 12) : const FlTransformationConfig(),
             LineChartData(
               gridData: _grid(context),
               borderData: FlBorderData(show: false),

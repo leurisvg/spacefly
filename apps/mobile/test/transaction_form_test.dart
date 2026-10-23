@@ -158,12 +158,15 @@ void main() {
       expect(view(args).model.source, const AccountInput.id('1'));
       expect(view(args).model.date, '2026-09-15');
       expect(view(args).type, isNull, reason: 'no destination yet');
+      expect((view(args).typePending, view(args).typeInvalid), (true, false), reason: 'the badge says "pick the accounts"');
       form(args).setDestination(const AccountInput.id('20'));
+      expect((view(args).typePending, view(args).typeInvalid), (false, false));
       expect(view(args).type, TxKind.WITHDRAWAL);
       expect(view(args).showBudgetBill, isTrue);
       expect(view(args).showOtherCurrency, isTrue);
       form(args).setSource(const AccountInput.id('10'));
       expect(view(args).type, isNull, reason: 'a revenue account can not pay an expense account');
+      expect((view(args).typePending, view(args).typeInvalid), (false, true), reason: 'the badge warns about the combination');
       form(args).setSource(const AccountInput.name('Alguien'));
       form(args).setDestination(const AccountInput.id('1'));
       expect(view(args).type, TxKind.DEPOSIT);

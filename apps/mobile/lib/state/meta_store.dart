@@ -32,6 +32,20 @@ final metaProvider = FutureProvider<MetaResponse>((ref) async {
   return MetaResponse.fromJson(response.data!);
 });
 
+/// Who is signed in, as the server sees the session.
+final meProvider = FutureProvider<MeResponse>((ref) async {
+  final response = await ref.watch(dioProvider).get<Map<String, dynamic>>('/api/me');
+  return MeResponse.fromJson(response.data!);
+});
+
+/// The signed-in user's email: the one in the server's metadata, else the session's (`/api/me`); empty when neither says.
+/// Port of `email` in libs/client/src/features/settings/preferences.vm.ts.
+final emailProvider = Provider<String>((ref) {
+  final fromMeta = ref.watch(metaProvider).valueOrNull?.email ?? '';
+  if (fromMeta.isNotEmpty) return fromMeta;
+  return ref.watch(meProvider).valueOrNull?.email ?? '';
+});
+
 /// Categories, tags, budgets and accounts for the filters; refetched when the user refreshes.
 final lookupsProvider = FutureProvider<Lookups>((ref) async {
   final tick = ref.watch(filtersProvider.select((f) => f.refreshTick));

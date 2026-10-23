@@ -33,6 +33,10 @@ double _contrast(Color a, Color b) {
 /// Text color for a filled surface: whichever of white and near-black reads better on it.
 Color onColor(Color background) => _contrast(_lightInk, background) >= _contrast(_darkInk, background) ? _lightInk : _darkInk;
 
+/// The families of the web: Inter for text, JetBrains Mono for figures. See the `fonts` of pubspec.yaml.
+const textFontFamily = 'Inter';
+const numberFontFamily = 'JetBrains Mono';
+
 /// The Material 3 theme of a SpaceFly theme: the surface colors, the ink and the accent come from the generated tokens.
 ThemeData buildTheme(ThemeId id) {
   final t = themeTokens[id]!;
@@ -68,6 +72,7 @@ ThemeData buildTheme(ThemeId id) {
 
   return ThemeData(
     useMaterial3: true,
+    fontFamily: textFontFamily,
     colorScheme: scheme,
     scaffoldBackgroundColor: t.background,
     extensions: [SpaceflyColors(t)],

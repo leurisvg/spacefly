@@ -28,7 +28,10 @@ class AccountsScreen extends ConsumerWidget {
     final scheme = Theme.of(context).colorScheme;
     final tokens = context.tokens;
 
-    Widget card(AccountSummary a, Widget trailing, {VoidCallback? onTap}) => Card(
+    Widget card(AccountSummary a, Widget trailing, {VoidCallback? onTap}) => Opacity(
+        // an account kept out of the totals is shown dimmed, like on the web
+        opacity: a.excluded ? 0.6 : 1,
+        child: Card(
           clipBehavior: Clip.antiAlias,
           child: InkWell(
             onTap: onTap,
@@ -39,6 +42,10 @@ class AccountsScreen extends ConsumerWidget {
                 children: [
                   Row(
                     children: [
+                      Padding(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: Container(key: Key('account-dot-${a.id}'), width: 10, height: 10, decoration: BoxDecoration(color: vm.colors.color('account', a.id), borderRadius: BorderRadius.circular(3))),
+                      ),
                       Expanded(child: Text(a.name, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15), maxLines: 1, overflow: TextOverflow.ellipsis)),
                       Text(f.money(a.balance), style: numStyle(context, size: 15, weight: FontWeight.w600)),
                       trailing,
@@ -70,7 +77,8 @@ class AccountsScreen extends ConsumerWidget {
               ),
             ),
           ),
-        );
+        ),
+      );
 
     return Scaffold(
       appBar: AppBar(
@@ -90,6 +98,7 @@ class AccountsScreen extends ConsumerWidget {
             else if (data == null)
               const Padding(padding: EdgeInsets.symmetric(vertical: 48), child: Center(child: CircularProgressIndicator()))
             else ...[
+              Padding(padding: const EdgeInsets.fromLTRB(4, 0, 4, 8), child: Text(t.accounts.description, style: TextStyle(color: scheme.onSurfaceVariant))),
               SectionCard(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,

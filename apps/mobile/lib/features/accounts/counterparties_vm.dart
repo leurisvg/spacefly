@@ -32,7 +32,8 @@ String kindName(CounterpartyKind kind) => counterpartyKindValues.reverse[kind]!;
 /// Where the detail of an expense or revenue account lives.
 String counterpartyPath(CounterpartyKind kind, String id) => '/accounts/${kind == CounterpartyKind.INCOME ? 'revenue' : 'expense'}/${Uri.encodeComponent(id)}';
 
-final counterpartiesShowEmptyProvider = StateProvider.autoDispose<bool>((ref) => false);
+/// Whether the accounts with no movement are listed, for each kind apart (the expense and the revenue accounts are separate pages).
+final counterpartiesShowEmptyProvider = StateProvider.autoDispose.family<bool, CounterpartyKind>((ref, kind) => false);
 
 final counterpartiesReportProvider = FutureProvider.autoDispose.family<CounterpartiesReport, CounterpartyKind>((ref, kind) async {
   final params = {...ref.watch(filterQueryProvider), 'kind': kindName(kind)};
@@ -101,11 +102,11 @@ class CounterpartiesViewModel {
 
 final counterpartiesViewModelProvider = Provider.autoDispose.family<CounterpartiesViewModel, CounterpartyKind>((ref, kind) {
   ref.watch(preferencesProvider.select((p) => p.lang));
-  final empty = ref.read(counterpartiesShowEmptyProvider.notifier);
+  final empty = ref.read(counterpartiesShowEmptyProvider(kind).notifier);
   return CounterpartiesViewModel(
     kind: kind,
     res: ref.watch(counterpartiesReportProvider(kind)),
-    showEmpty: ref.watch(counterpartiesShowEmptyProvider),
+    showEmpty: ref.watch(counterpartiesShowEmptyProvider(kind)),
     f: ref.watch(formatterProvider),
     t: t,
     setShowEmptyTo: (v) => empty.state = v,

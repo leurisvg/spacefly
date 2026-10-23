@@ -30,7 +30,7 @@ class SettingsTab extends ConsumerWidget {
     final config = ref.watch(serverConfigProvider);
     final scheme = Theme.of(context).colorScheme;
     final meta = ref.watch(metaProvider).valueOrNull;
-    final email = meta?.email ?? '';
+    final email = ref.watch(emailProvider);
     final fireflyLink = (meta?.fireflyPublicUrl ?? '').isEmpty ? null : meta!.fireflyPublicUrl;
     final titleStyle = Theme.of(context).textTheme.titleSmall?.copyWith(color: scheme.onSurfaceVariant);
 

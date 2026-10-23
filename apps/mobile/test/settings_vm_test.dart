@@ -1,12 +1,14 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:spacefly_mobile/api/models.g.dart' show MeResponse;
 import 'package:spacefly_mobile/features/settings/exchange_rates_vm.dart';
 import 'package:spacefly_mobile/features/settings/preferences_vm.dart';
 import 'package:spacefly_mobile/features/settings/settings_vm.dart';
 import 'package:spacefly_mobile/features/transactions/transaction_actions.dart';
 import 'package:spacefly_mobile/i18n/strings.g.dart';
 import 'package:spacefly_mobile/state/filters_store.dart';
+import 'package:spacefly_mobile/state/meta_store.dart';
 
 import 'fixtures.dart';
 import 'support.dart';
@@ -14,6 +16,29 @@ import 'support.dart';
 void main() {
   setUpAll(initFormats);
   setUp(() => LocaleSettings.setLocaleSync(AppLocale.en));
+
+  group('email', () {
+    Future<String> emailWith(Map<String, Object?> meta, Object me) async {
+      final env = TestEnv(config: signedInConfig, adapter: fakeServer({'/api/meta': meta, '/api/me': me}));
+      final c = env.container();
+      c.listen(emailProvider, (_, __) {});
+      await c.read(metaProvider.future);
+      await c.read(meProvider.future).catchError((_) => MeResponse(authenticated: false));
+      return c.read(emailProvider);
+    }
+
+    test('is the one in the server metadata', () async {
+      expect(await emailWith(metaJson(), {'authenticated': true, 'email': 'session@b.c'}), 'a@b.c');
+    });
+
+    test('falls back to the session\'s when the metadata has none', () async {
+      expect(await emailWith({...metaJson(), 'email': ''}, {'authenticated': true, 'email': 'session@b.c'}), 'session@b.c');
+    });
+
+    test('is empty when neither says', () async {
+      expect(await emailWith({...metaJson(), 'email': ''}, {'authenticated': true}), '');
+    });
+  });
 
   group('server settings', () {
     test('toggles ids in a set', () {

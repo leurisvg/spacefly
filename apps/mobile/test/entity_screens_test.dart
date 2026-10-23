@@ -264,6 +264,18 @@ void main() {
       expect(env.back.fallbacks, [entityFormFallback]);
     });
 
+    testWidgets('an asset account marks what is required and writes its amounts with their currency', (tester) async {
+      await open(tester);
+      await tapTab(tester, 'Accounts');
+      await tester.tap(find.byKey(const Key('new-account')));
+      await tester.pumpAndSettle();
+      expect(find.text('Use *'), findsOneWidget, reason: 'the role is required');
+      expect(find.text('Opening balance'), findsOneWidget);
+      expect(find.text('Amount owed'), findsNothing);
+      final balance = tester.widget<TextField>(find.descendant(of: find.byKey(const ValueKey('openingBalance-0')), matching: find.byType(TextField)));
+      expect(balance.decoration!.suffixText, 'DOP');
+    });
+
     testWidgets('creates an account of the kind picked', (tester) async {
       final (env, writes) = await open(tester);
       await tapTab(tester, 'Accounts');
@@ -274,6 +286,10 @@ void main() {
       await tester.tap(find.byKey(const Key('option-liability')));
       await tester.pumpAndSettle();
       expect(find.byKey(const Key('option-liabilityType')), findsOneWidget, reason: 'debt fields appear for a liability');
+      expect(find.text('Interest (%) *'), findsOneWidget, reason: 'the interest is required for a debt');
+      expect(find.text('Amount owed'), findsOneWidget, reason: 'a debt starts from what is owed, not an opening balance');
+      expect(find.text('Opening balance'), findsNothing);
+      expect(find.text('Start date'), findsOneWidget);
       await tester.enterText(field('name'), 'Préstamo auto');
       await save(tester);
       expect(writes.single.path, '/api/accounts');

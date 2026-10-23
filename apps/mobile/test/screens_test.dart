@@ -88,6 +88,9 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.byKey(const Key('drill')), findsOneWidget);
       expect(find.descendant(of: find.byKey(const Key('drill')), matching: find.text('Food')), findsOneWidget);
+      final totals = find.byKey(const Key('drill-totals'));
+      expect(totals, findsOneWidget, reason: 'what the list adds up to, under the title');
+      expect(find.descendant(of: totals, matching: find.textContaining('Transactions')), findsOneWidget);
       expect(find.byType(BottomSheet), findsOneWidget);
       final request = env.adapter!.requests.lastWhere((r) => r.path == '/api/transactions');
       expect((request.queryParameters['type'], request.queryParameters['category']), ('withdrawal', '1'));
@@ -250,6 +253,9 @@ void main() {
       expect(find.text('Ahorros'), findsWidgets);
       expect(find.text('DOP · Savings'), findsOneWidget);
       expect(find.text('Balance history'), findsOneWidget);
+      expect(find.text('Current balances and how they evolved.'), findsOneWidget);
+      expect(find.byKey(const Key('account-dot-1')), findsOneWidget, reason: 'each account has the color of its line');
+      expect(find.byKey(const Key('account-dot-2')), findsOneWidget);
     });
 
     testWidgets('changes how many months of history it asks for', (tester) async {

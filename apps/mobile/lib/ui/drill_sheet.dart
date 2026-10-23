@@ -6,6 +6,7 @@ import '../features/transactions/tx_detail_vm.dart';
 import '../format/formatter.dart' show DateStyle;
 import '../format/formatter_provider.dart';
 import '../i18n/strings.g.dart';
+import '../theme/app_theme.dart';
 import '../ui/common.dart';
 import '../ui/labels.dart';
 import '../ui/tx_tile.dart';
@@ -52,7 +53,22 @@ class DrillSheet extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(req?.title ?? t.nav.explorer, maxLines: 2, overflow: TextOverflow.ellipsis, style: text.titleMedium),
-              Text('${f.date(vm.range.start)} – ${f.date(vm.range.end, DateStyle.long)}', style: text.bodySmall?.copyWith(color: scheme.onSurfaceVariant)),
+              Text('${req?.subtitle == null ? '' : '${req!.subtitle} '}${f.date(vm.range.start)} – ${f.date(vm.range.end, DateStyle.long)}', style: text.bodySmall?.copyWith(color: scheme.onSurfaceVariant)),
+              // what the list adds up to: income and expenses when there are any, and how many records
+              if (vm.data != null)
+                Padding(
+                  key: const Key('drill-totals'),
+                  padding: const EdgeInsets.only(top: 8),
+                  child: Wrap(
+                    spacing: 16,
+                    runSpacing: 2,
+                    children: [
+                      if (vm.data!.totals.income != 0) _Total(label: t.common.income, value: f.money(vm.data!.totals.income, signed: true), color: f.hidden ? null : context.tokens.moneyIncome),
+                      if (vm.data!.totals.expense != 0) _Total(label: t.common.expenses, value: f.money(-vm.data!.totals.expense), color: f.hidden ? null : context.tokens.moneyExpense),
+                      _Total(label: t.tx.count, value: '${vm.data!.rows.length}'),
+                    ],
+                  ),
+                ),
             ],
           ),
         ),
@@ -103,6 +119,23 @@ class DrillSheet extends ConsumerWidget {
       ],
     );
   }
+}
+
+class _Total extends StatelessWidget {
+  const _Total({required this.label, required this.value, this.color});
+
+  final String label;
+  final String value;
+  final Color? color;
+
+  @override
+  Widget build(BuildContext context) => Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text('$label  ', style: TextStyle(fontSize: 11, letterSpacing: 0.6, color: Theme.of(context).colorScheme.onSurfaceVariant)),
+          Text(value, style: numStyle(context, size: 13, weight: FontWeight.w600, color: color)),
+        ],
+      );
 }
 
 class _GroupHeader extends ConsumerWidget {

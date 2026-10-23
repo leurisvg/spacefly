@@ -947,6 +947,7 @@ class _Translations$accounts$detail$es extends Translations$accounts$detail$en {
 	@override String get dailyBalance => 'Saldo por día';
 	@override String get dailyFlow => 'Ingresos y gastos por día';
 	@override String get zoomHint => 'Usa la rueda o arrastra para acercar';
+	@override String get zoomHintTouch => 'Pellizca o arrastra para ampliar';
 	@override String get monthly => 'Últimos 12 meses';
 	@override String get byWeekday => 'Gasto por día de la semana';
 	@override String get topCategories => 'En qué se gasta';
@@ -1817,6 +1818,7 @@ extension on TranslationsEs {
 			'accounts.detail.dailyBalance' => 'Saldo por día',
 			'accounts.detail.dailyFlow' => 'Ingresos y gastos por día',
 			'accounts.detail.zoomHint' => 'Usa la rueda o arrastra para acercar',
+			'accounts.detail.zoomHintTouch' => 'Pellizca o arrastra para ampliar',
 			'accounts.detail.monthly' => 'Últimos 12 meses',
 			'accounts.detail.byWeekday' => 'Gasto por día de la semana',
 			'accounts.detail.topCategories' => 'En qué se gasta',
@@ -2020,9 +2022,9 @@ extension on TranslationsEs {
 			'editor.back' => 'Volver',
 			'editor.retry' => 'Reintentar',
 			'editor.networkError' => 'No se pudo contactar con el servidor. Revisa tu conexión: es posible que el cambio no se haya guardado.',
-			'editor.kNew' => 'Nuevo',
 			_ => null,
 		} ?? switch (path) {
+			'editor.kNew' => 'Nuevo',
 			'editor.newTitle' => 'Crear',
 			'editor.tx.description' => 'Se deduce solo si es un gasto, un ingreso o una transferencia según las cuentas que elijas.',
 			'editor.tx.what' => 'Qué pasó',

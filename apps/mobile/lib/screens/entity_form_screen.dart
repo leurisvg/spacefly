@@ -79,7 +79,7 @@ class _EntityFormScreenState extends ConsumerState<EntityFormScreen> {
     String? err(String field) => view.errorsFor(field).isEmpty ? null : view.errorsFor(field).join(' ');
     const gap = SizedBox(height: 16);
 
-    Widget text(String field, String label, {bool required = false, int lines = 1, TextInputType? keyboard, List<TextInputFormatter>? formatters, String? hint, IconData? icon, bool enabled = true, TextCapitalization caps = TextCapitalization.sentences}) {
+    Widget text(String field, String label, {bool required = false, int lines = 1, TextInputType? keyboard, List<TextInputFormatter>? formatters, String? hint, IconData? icon, bool enabled = true, TextCapitalization caps = TextCapitalization.sentences, String? suffix}) {
       return KeyedSubtree(
         key: _key(field),
         child: TextFormField(
@@ -91,7 +91,7 @@ class _EntityFormScreenState extends ConsumerState<EntityFormScreen> {
           keyboardType: keyboard,
           inputFormatters: formatters,
           textCapitalization: caps,
-          decoration: InputDecoration(labelText: required ? '$label *' : label, hintText: hint, errorText: err(field), alignLabelWithHint: lines > 1, prefixIcon: icon == null ? null : Icon(icon, size: 20)),
+          decoration: InputDecoration(labelText: required ? '$label *' : label, hintText: hint, suffixText: suffix, errorText: err(field), alignLabelWithHint: lines > 1, prefixIcon: icon == null ? null : Icon(icon, size: 20)),
           onChanged: (v) => _form.set(field, v),
         ),
       );
@@ -100,10 +100,10 @@ class _EntityFormScreenState extends ConsumerState<EntityFormScreen> {
     final decimal = TextInputType.numberWithOptions(decimal: true);
     final signedDecimal = TextInputType.numberWithOptions(decimal: true, signed: true);
 
-    Widget amount(String field, String label, {bool required = false, bool signed = false, String? hint}) =>
-        text(field, label, required: required, keyboard: signed ? signedDecimal : decimal, formatters: [FilteringTextInputFormatter.allow(RegExp(signed ? r'[-0-9.,]' : r'[0-9.,]'))], hint: hint, caps: TextCapitalization.none);
+    Widget amount(String field, String label, {bool required = false, bool signed = false, String? hint, String? currency}) =>
+        text(field, label, required: required, keyboard: signed ? signedDecimal : decimal, formatters: [FilteringTextInputFormatter.allow(RegExp(signed ? r'[-0-9.,]' : r'[0-9.,]'))], hint: hint, suffix: currency, caps: TextCapitalization.none);
 
-    Widget integer(String field, String label, {String? hint}) {
+    Widget integer(String field, String label, {String? hint, bool required = false}) {
       return KeyedSubtree(
         key: _key(field),
         child: TextFormField(
@@ -111,7 +111,7 @@ class _EntityFormScreenState extends ConsumerState<EntityFormScreen> {
           initialValue: '${m.number(field)}',
           keyboardType: TextInputType.number,
           inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-          decoration: InputDecoration(labelText: label, helperText: hint, helperMaxLines: 2, errorText: err(field)),
+          decoration: InputDecoration(labelText: required ? '$label *' : label, helperText: hint, helperMaxLines: 2, errorText: err(field)),
           onChanged: (v) => _form.set(field, int.tryParse(v) ?? 0),
         ),
       );
@@ -120,13 +120,14 @@ class _EntityFormScreenState extends ConsumerState<EntityFormScreen> {
     Widget toggle(String field, String label, {String? subtitle, bool enabled = true}) =>
         SwitchListTile(key: Key('switch-$field'), contentPadding: EdgeInsets.zero, title: Text(label), subtitle: subtitle == null ? null : Text(subtitle), value: m.flag(field), onChanged: enabled ? (v) => _form.set(field, v) : null);
 
-    Widget option(String field, String label, List<({String value, String label})> options, {bool enabled = true, IconData? icon, String? none, String? hint}) {
+    Widget option(String field, String label, List<({String value, String label})> options, {bool enabled = true, IconData? icon, String? none, String? hint, bool required = false}) {
       final current = options.where((o) => o.value == m.text(field)).firstOrNull;
       return KeyedSubtree(
         key: _key(field),
         child: TapField(
           key: Key('option-$field'),
           label: label,
+          required: required,
           value: current?.label ?? '',
           placeholder: none,
           icon: icon,
@@ -138,13 +139,14 @@ class _EntityFormScreenState extends ConsumerState<EntityFormScreen> {
       );
     }
 
-    Widget date(String field, String label, {bool optional = false, String? hint}) {
+    Widget date(String field, String label, {bool optional = false, String? hint, bool required = false}) {
       final value = m.text(field);
       return KeyedSubtree(
         key: _key(field),
         child: TapField(
           key: Key('date-$field'),
           label: label,
+          required: required,
           value: value,
           placeholder: optional ? '—' : null,
           icon: Icons.event_outlined,
@@ -177,7 +179,7 @@ class _EntityFormScreenState extends ConsumerState<EntityFormScreen> {
           if (m.flag('auto')) ...[
             option('autoType', t.editor.entity.budget.autoType, view.autoTypeOptions),
             gap,
-            amount('autoAmount', t.editor.entity.budget.autoAmount, required: true),
+            amount('autoAmount', t.editor.entity.budget.autoAmount, required: true, currency: m.text('autoCurrency')),
             gap,
             option('autoPeriod', t.editor.entity.budget.autoPeriod, view.periodOptions),
             gap,
@@ -189,12 +191,12 @@ class _EntityFormScreenState extends ConsumerState<EntityFormScreen> {
           text('name', t.editor.fields.name, required: true),
           gap,
           toggle('fixed', t.editor.entity.bill.fixed),
-          amount('amountMin', m.flag('fixed') ? t.editor.entity.bill.amount : t.editor.entity.bill.amountMin, required: true),
-          if (!m.flag('fixed')) ...[gap, amount('amountMax', t.editor.entity.bill.amountMax, required: true)],
+          amount('amountMin', m.flag('fixed') ? t.editor.entity.bill.amount : t.editor.entity.bill.amountMin, required: true, currency: m.text('currency')),
+          if (!m.flag('fixed')) ...[gap, amount('amountMax', t.editor.entity.bill.amountMax, required: true, currency: m.text('currency'))],
           gap,
           option('currency', t.editor.fields.currency, currency),
           gap,
-          date('date', t.editor.entity.bill.date),
+          date('date', t.editor.entity.bill.date, required: true),
           gap,
           option('repeatFreq', t.editor.entity.bill.freq, view.freqOptions),
           gap,
@@ -217,12 +219,12 @@ class _EntityFormScreenState extends ConsumerState<EntityFormScreen> {
             gap,
           ],
           if (view.isAsset) ...[
-            option('role', t.editor.entity.account.role, view.roleOptions),
+            option('role', t.editor.entity.account.role, view.roleOptions, required: true),
             gap,
             if (view.isCard) ...[
               option('cardType', t.editor.entity.account.cardType, [(value: 'monthlyFull', label: t.editor.entity.account.cardTypes.monthlyFull)]),
               gap,
-              integer('paymentDay', t.editor.entity.account.paymentDay),
+              integer('paymentDay', t.editor.entity.account.paymentDay, required: true),
               gap,
             ],
           ],
@@ -231,15 +233,15 @@ class _EntityFormScreenState extends ConsumerState<EntityFormScreen> {
             gap,
             option('liabilityDirection', t.editor.entity.account.direction, view.directionOptions),
             gap,
-            amount('interest', t.editor.entity.account.interest),
+            amount('interest', t.editor.entity.account.interest, required: true),
             gap,
             option('interestPeriod', t.editor.entity.account.interestPeriod, view.interestPeriodOptions),
             gap,
           ],
           if (view.isOwned) ...[
-            amount('openingBalance', t.editor.entity.account.openingBalance, signed: true),
+            amount('openingBalance', view.isLiability ? t.editor.entity.account.owed : t.editor.entity.account.openingBalance, signed: true, currency: m.text('currency')),
             gap,
-            date('openingBalanceDate', t.editor.entity.account.openingBalanceDate, optional: true),
+            date('openingBalanceDate', view.isLiability ? t.editor.entity.account.startDate : t.editor.entity.account.openingBalanceDate, optional: true),
             toggle('includeNetWorth', t.editor.entity.account.includeNetWorth),
             gap,
           ],
@@ -256,7 +258,7 @@ class _EntityFormScreenState extends ConsumerState<EntityFormScreen> {
         gap,
         option('currency', t.editor.fields.currency, currency, enabled: rows.isEmpty),
         gap,
-        amount('targetAmount', t.editor.entity.piggy.target),
+        amount('targetAmount', t.editor.entity.piggy.target, currency: m.text('currency')),
         gap,
         date('startDate', t.editor.entity.piggy.startDate, optional: true),
         gap,
@@ -287,7 +289,7 @@ class _EntityFormScreenState extends ConsumerState<EntityFormScreen> {
                           key: ValueKey('piggy-amount-$i-${row['currentAmount']}-${data.loadTick}'),
                           initialValue: row['currentAmount'],
                           keyboardType: decimal,
-                          decoration: InputDecoration(labelText: t.editor.entity.piggy.saved, errorText: err('accounts.$i')),
+                          decoration: InputDecoration(labelText: t.editor.entity.piggy.saved, suffixText: m.text('currency'), errorText: err('accounts.$i')),
                           onChanged: (v) => _form.setAccountField(i, 'currentAmount', v),
                         ),
                         const SizedBox(height: 8),
@@ -298,7 +300,7 @@ class _EntityFormScreenState extends ConsumerState<EntityFormScreen> {
                                 key: ValueKey('piggy-adjust-$i-${row['adjust']!.isEmpty}-${data.loadTick}'),
                                 initialValue: row['adjust'],
                                 keyboardType: decimal,
-                                decoration: InputDecoration(labelText: t.editor.entity.piggy.adjustLabel, isDense: true),
+                                decoration: InputDecoration(labelText: t.editor.entity.piggy.adjustLabel, suffixText: m.text('currency'), isDense: true),
                                 onChanged: (v) => _form.setAccountField(i, 'adjust', v),
                               ),
                             ),

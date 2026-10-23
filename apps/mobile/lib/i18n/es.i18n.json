@@ -349,6 +349,7 @@
       "dailyBalance": "Saldo por día",
       "dailyFlow": "Ingresos y gastos por día",
       "zoomHint": "Usa la rueda o arrastra para acercar",
+      "zoomHintTouch": "Pellizca o arrastra para ampliar",
       "monthly": "Últimos 12 meses",
       "byWeekday": "Gasto por día de la semana",
       "topCategories": "En qué se gasta",

@@ -42,6 +42,14 @@ class PeriodBar extends ConsumerWidget implements PreferredSizeWidget {
       quarterShort: t.period.quarterShort,
       ytdShort: t.period.ytdShort,
     );
+    // A rolling window reads as its name ("Last 30 days") only while it ends today; after ◀ it is just a range.
+    final rolling = filters.period.end == todayIso(ref.read(clockProvider)())
+        ? switch (filters.preset) {
+            PeriodPreset.last30 => t.period.presets.last30,
+            PeriodPreset.last6m => t.period.presets.last6m,
+            _ => null,
+          }
+        : null;
     return SizedBox(
       height: 52,
       child: Row(
@@ -52,7 +60,7 @@ class PeriodBar extends ConsumerWidget implements PreferredSizeWidget {
               key: const Key('period-label'),
               onPressed: () => showPeriodSheet(context),
               icon: const Icon(Icons.calendar_month_outlined, size: 18),
-              label: Text(label, maxLines: 1, overflow: TextOverflow.ellipsis),
+              label: Text(rolling ?? label, maxLines: 1, overflow: TextOverflow.ellipsis),
             ),
           ),
           IconButton(key: const Key('period-next'), tooltip: t.period.next, icon: const Icon(Icons.chevron_right), onPressed: () => notifier.shift(1)),

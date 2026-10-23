@@ -103,11 +103,14 @@ void main() {
       expect(find.text('New'), findsOneWidget, reason: 'a category without a previous total');
       expect(find.text('−RD\$20.00 ↓50.0%'), findsOneWidget, reason: 'Food went from −40 to −60: spent more (delta −20 is down)');
       expect(find.text('Pets, Gifts'), findsOneWidget);
+      final zero = find.ancestor(of: find.text('Pets, Gifts'), matching: find.byType(Row)).first;
+      expect(find.descendant(of: zero, matching: find.text('RD\$0.00')), findsOneWidget, reason: 'the categories with nothing add up to zero');
       expect(find.text('Hogar'), findsOneWidget);
       expect(find.text('Ocio'), findsOneWidget);
       expect(find.text('Alquiler'), findsOneWidget);
       expect(find.text('Ahorros'), findsOneWidget);
       expect(find.text('CURRENT NET WORTH'), findsOneWidget);
+      expect(find.byKey(const Key('saving-2')), findsOneWidget, reason: 'one small chart per savings account, like the Savings screen');
     });
 
     testWidgets('opens the transactions of a category and of a budget', (tester) async {

@@ -110,12 +110,13 @@ class _ExchangeRatesScreenState extends ConsumerState<ExchangeRatesScreen> {
                                     child: Column(
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
-                                        Text(r.currency, style: const TextStyle(fontWeight: FontWeight.w600)),
+                                        Text('1 ${r.currency} → ${view.primary}', style: const TextStyle(fontWeight: FontWeight.w600)),
                                         Text(f.date(r.date, DateStyle.long), style: Theme.of(context).textTheme.bodySmall?.copyWith(color: scheme.onSurfaceVariant)),
                                       ],
                                     ),
                                   ),
-                                  Text(rateText(r.rate), style: numStyle(context, size: 14)),
+                                  Text(f.number(r.rate, 4), style: numStyle(context, size: 14)),
+                                  IconButton(key: Key('rate-edit-${r.currency}-${r.date}'), tooltip: '${t.settings.exchange.edit}: ${r.currency} ${r.date}', icon: const Icon(Icons.edit_outlined), onPressed: () => notifier.edit(r)),
                                   IconButton(key: Key('rate-delete-${r.currency}-${r.date}'), tooltip: t.forms.delete, icon: const Icon(Icons.delete_outline), onPressed: () => notifier.remove(r)),
                                 ],
                               ),

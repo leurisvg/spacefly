@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../i18n/strings.g.dart';
+import '../ui_logic/fold.dart';
 import '../ui_logic/suggest.dart';
 
 /// An outlined field that opens a picker when tapped: dates, times, accounts, budgets. Shows [value], or [placeholder] while empty.
@@ -77,6 +78,9 @@ class SuggestField extends StatelessWidget {
     this.hint,
     this.focusNode,
     this.textInputAction,
+    this.onPick,
+    this.onSubmitted,
+    this.createLabel,
   });
 
   final TextEditingController controller;
@@ -90,12 +94,23 @@ class SuggestField extends StatelessWidget {
   final FocusNode? focusNode;
   final TextInputAction? textInputAction;
 
+  /// When set, picking an option calls this instead of filling the field (a field that collects several values, like tags).
+  final void Function(Suggestion option)? onPick;
+
+  /// Called with the text when the keyboard's action is pressed.
+  final void Function(String text)? onSubmitted;
+
+  /// When set, a row "Add “text”" tops the list while the text is not one of the options; it calls [onSubmitted].
+  final String Function(String text)? createLabel;
+
   @override
   Widget build(BuildContext context) => ListenableBuilder(
         listenable: Listenable.merge([controller, if (focusNode != null) focusNode!]),
         builder: (context, _) {
           final focused = focusNode?.hasFocus ?? true;
           final shown = focused ? suggestionsFor(options, controller.text, max: options.length) : const <Suggestion>[];
+          final typed = controller.text.trim();
+          final creatable = createLabel != null && focused && typed.isNotEmpty && !options.any((o) => o.label.toLowerCase() == typed.toLowerCase());
           final scheme = Theme.of(context).colorScheme;
           return Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -123,8 +138,9 @@ class SuggestField extends StatelessWidget {
                       : null,
                 ),
                 onChanged: onChanged,
+                onSubmitted: onSubmitted,
               ),
-              if (shown.isNotEmpty)
+              if (shown.isNotEmpty || creatable)
                 Container(
                   margin: const EdgeInsets.only(top: 2),
                   clipBehavior: Clip.antiAlias,
@@ -143,10 +159,20 @@ class SuggestField extends StatelessWidget {
                       shrinkWrap: true,
                       padding: EdgeInsets.zero,
                       children: [
+                        if (creatable)
+                          InkWell(
+                            key: const Key('suggestion-create'),
+                            onTap: () => onSubmitted?.call(typed),
+                            child: Padding(padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16), child: Align(alignment: Alignment.centerLeft, child: Text(createLabel!(typed), style: TextStyle(fontSize: 16, color: scheme.primary)))),
+                          ),
                         for (final o in shown)
                           InkWell(
                             key: Key('suggestion-${o.value}'),
                             onTap: () {
+                              if (onPick != null) {
+                                onPick!(o);
+                                return;
+                              }
                               controller.text = o.label;
                               controller.selection = TextSelection.collapsed(offset: o.label.length);
                               onChanged(o.label);
@@ -161,6 +187,101 @@ class SuggestField extends StatelessWidget {
           );
         },
       );
+}
+
+/// The tags of a record as chips, with a field to add more: pick a suggestion, or type a new one and press the keyboard's action (or a
+/// comma). Port of apps/web/src/app/shared/forms/tag-input.ts.
+class TagField extends StatefulWidget {
+  const TagField({super.key, required this.tags, required this.suggestions, required this.onChanged, required this.label, this.errorText});
+
+  final List<String> tags;
+  final List<String> suggestions;
+  final void Function(List<String> tags) onChanged;
+  final String label;
+  final String? errorText;
+
+  @override
+  State<TagField> createState() => _TagFieldState();
+}
+
+class _TagFieldState extends State<TagField> {
+  final _text = TextEditingController();
+  final _focus = FocusNode();
+
+  @override
+  void dispose() {
+    _text.dispose();
+    _focus.dispose();
+    super.dispose();
+  }
+
+  /// [tags] with [raw] added: without a leading `#`, and only when it is not there already (ignoring case and accents).
+  static List<String> _with(List<String> tags, String raw) {
+    final tag = raw.trim().replaceFirst(RegExp(r'^#'), '');
+    return tag.isEmpty || tags.any((x) => fold(x) == fold(tag)) ? tags : [...tags, tag];
+  }
+
+  bool _has(String tag) => widget.tags.any((x) => fold(x) == fold(tag));
+
+  void _add(String raw) {
+    _text.clear();
+    final next = _with(widget.tags, raw);
+    if (next.length != widget.tags.length) widget.onChanged(next);
+    setState(() {});
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.t;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (widget.tags.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: Wrap(
+              key: const Key('tag-chips'),
+              spacing: 6,
+              runSpacing: 4,
+              children: [
+                for (final tag in widget.tags)
+                  InputChip(
+                    key: Key('tag-$tag'),
+                    label: Text('#$tag'),
+                    visualDensity: VisualDensity.compact,
+                    deleteButtonTooltipMessage: t.forms.tags.remove(tag: tag),
+                    onDeleted: () => widget.onChanged([for (final x in widget.tags) if (x != tag) x]),
+                  ),
+              ],
+            ),
+          ),
+        SuggestField(
+          controller: _text,
+          focusNode: _focus,
+          label: widget.label,
+          hint: t.forms.tags.placeholder,
+          errorText: widget.errorText,
+          textInputAction: TextInputAction.done,
+          options: [for (final s in widget.suggestions) if (!_has(s)) Suggestion(s, s)],
+          createLabel: (name) => t.forms.tags.add(name: name),
+          onPick: (o) => _add(o.label),
+          onSubmitted: _add,
+          // a comma ends the tag, like on the web's chip field
+          onChanged: (v) {
+            if (!v.contains(',')) return;
+            final parts = v.split(',');
+            var next = widget.tags;
+            for (final p in parts.take(parts.length - 1)) {
+              next = _with(next, p);
+            }
+            if (next.length != widget.tags.length) widget.onChanged(next);
+            _text.text = parts.last;
+            _text.selection = TextSelection.collapsed(offset: parts.last.length);
+          },
+        ),
+      ],
+    );
+  }
 }
 
 /// One row of a form: an icon (or a short text, like a currency code) in a left column, then the field. Keeps the icon level with the

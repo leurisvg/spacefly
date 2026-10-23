@@ -10,8 +10,9 @@ import '../ui_logic/delta.dart';
 /// Digits of the same width, so amounts line up in a column.
 const numFeatures = [FontFeature.tabularFigures()];
 
+/// A figure: the web's `.num` (JetBrains Mono, tabular, a little tighter).
 TextStyle numStyle(BuildContext context, {double? size, FontWeight? weight, Color? color}) =>
-    TextStyle(fontFeatures: numFeatures, fontSize: size, fontWeight: weight, color: color);
+    TextStyle(fontFamily: numberFontFamily, fontFeatures: numFeatures, fontSize: size, fontWeight: weight, color: color, letterSpacing: (size ?? 14) * -0.02);
 
 /// The color a [Tone] stands for in the active theme.
 Color toneColor(BuildContext context, Tone tone) {

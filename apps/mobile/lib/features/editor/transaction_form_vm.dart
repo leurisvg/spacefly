@@ -600,6 +600,12 @@ class TxFormView {
   EditorAccount? get sourceAccount => _account(model.source);
   EditorAccount? get destinationAccount => _account(model.destination);
 
+  /// An account is still missing, so there is no type to tell yet.
+  bool get typePending => sourceSlot == null || destinationSlot == null;
+
+  /// Both accounts are picked but Firefly takes no transaction between them.
+  bool get typeInvalid => !typePending && type == null;
+
   /// Never picked: the user does not choose it, it follows from the two accounts.
   TxKind? get type => inferTransactionType(sourceSlot, destinationSlot);
 

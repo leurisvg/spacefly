@@ -83,7 +83,8 @@ void main() {
       final env = await open(tester, s.adapter);
       await openNewForm(tester);
       expect(find.text('New transaction'), findsWidgets);
-      expect(find.byKey(const Key('type-chip')), findsNothing, reason: 'no type until both accounts are known');
+      expect(find.descendant(of: find.byKey(const Key('type-chip')), matching: find.text('Pick the accounts')), findsOneWidget, reason: 'no type until both accounts are known');
+      expect(find.byKey(const Key('rules-note')), findsOneWidget);
       expect(find.text('Banco Popular'), findsOneWidget, reason: 'the default account is the source');
 
       await tester.enterText(find.widgetWithText(TextField, 'Description *'), 'Compra');
@@ -100,6 +101,32 @@ void main() {
       expect(body['destination'], {'id': '20'});
       expect(env.toast.messages.single.message, 'Transaction created');
       expect(env.back.fallbacks, ['/transactions']);
+    });
+
+    testWidgets('tags are chips: pick one that exists, add a new one, remove one', (tester) async {
+      final s = server();
+      await open(tester, s.adapter);
+      await openNewForm(tester);
+      await tester.enterText(find.widgetWithText(TextField, 'Description *'), 'Compra');
+      await pickAccount(tester, const Key('destination'), 'Supermercado');
+      await tester.enterText(find.byKey(const Key('amount')), '10');
+
+      final tagInput = find.descendant(of: find.byKey(const Key('tags')), matching: find.byType(TextField));
+      await tester.ensureVisible(tagInput);
+      await tester.tap(tagInput);
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('suggestion-hogar')));
+      await tester.pumpAndSettle();
+      await tester.enterText(tagInput, 'oferta,borrar,');
+      await tester.pumpAndSettle();
+      expect(find.text('#hogar'), findsOneWidget);
+      expect(find.text('#oferta'), findsOneWidget);
+      await tester.tap(find.byTooltip('Remove borrar'));
+      await tester.pumpAndSettle();
+
+      await save(tester);
+      final body = s.writes.singleWhere((w) => w.method == 'POST').data as Map;
+      expect(body['tags'], ['hogar', 'oferta']);
     });
 
     testWidgets('says what is missing instead of sending an empty form', (tester) async {
@@ -400,6 +427,9 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Add rate'), findsOneWidget);
       expect(find.byKey(const Key('rate-row-USD-2026-09-01')), findsOneWidget);
+      expect(find.text('1 USD → DOP'), findsOneWidget);
+      expect(find.text('65.1235'), findsOneWidget, reason: 'rates are written with 4 decimals, like on the web');
+      expect(find.byKey(const Key('rate-edit-USD-2026-09-01')), findsOneWidget);
 
       await tester.enterText(find.byKey(const Key('rate')), '62,5');
       await tester.pumpAndSettle();
@@ -409,7 +439,7 @@ void main() {
       expect(post.data, {'currency': 'USD', 'date': '2026-09-15', 'rate': '62.5'});
       expect(env.toast.messages.single.message, 'Rate saved');
 
-      await tester.tap(find.byKey(const Key('rate-row-USD-2026-09-01')));
+      await tester.tap(find.byKey(const Key('rate-edit-USD-2026-09-01')));
       await tester.pumpAndSettle();
       expect(find.text('Replace rate'), findsOneWidget);
       expect(find.text('This day already has a rate: saving replaces it.'), findsOneWidget);

@@ -137,6 +137,17 @@ void main() {
       expect(c.read(counterpartiesViewModelProvider(kind)).shown, hasLength(3));
     });
 
+    test('lists the empty accounts for one kind without doing it for the other', () async {
+      final (_, c) = container();
+      for (final kind in CounterpartyKind.values) {
+        c.listen(counterpartiesViewModelProvider(kind), (_, __) {});
+        await c.read(counterpartiesReportProvider(kind).future);
+      }
+      c.read(counterpartiesViewModelProvider(CounterpartyKind.EXPENSE)).setShowEmpty(true);
+      expect(c.read(counterpartiesViewModelProvider(CounterpartyKind.EXPENSE)).showEmpty, isTrue);
+      expect(c.read(counterpartiesViewModelProvider(CounterpartyKind.INCOME)).showEmpty, isFalse);
+    });
+
     test('creates revenue accounts for the income kind', () async {
       final (env, c) = container({'/api/reports/counterparties': report(counterpartiesJson(kind: 'income'))});
       const kind = CounterpartyKind.INCOME;
@@ -301,12 +312,24 @@ void main() {
       expect(vm.rankTable(vm.r!.topCategories).rows.single.first, 'Comida');
     });
 
+    test('says what a record made in another currency was made in, signed like its flow', () async {
+      final (_, _, vm) = await open(foreign: true);
+      final spent = vm.r!.rows.firstWhere((x) => x.flow < 0);
+      final earned = vm.r!.rows.firstWhere((x) => x.flow > 0);
+      final o = vm.original(spent)!;
+      expect((o.amount < 0, o.rate), (true, 60));
+      expect(vm.original(earned)!.amount > 0, isTrue);
+    });
+
     test('shows an account in the display currency as it is', () async {
+      final (_, _, plain) = await open();
+      expect(plain.original(plain.r!.rows.first), isNull, reason: 'a record in the display currency has no other amount');
       final (_, _, vm) = await open();
       expect((vm.foreign, vm.own, vm.approx(1000)), (false, null, null));
       expect(vm.moneyPair(10, 600), 'RD\$600.00');
       expect(vm.weekdayValues, vm.r!.byWeekday);
-      expect(vm.zoomHint, isFalse);
+      expect(vm.zoomable, isFalse);
+      expect(vm.zoomHint, isNull);
     });
 
     test('switches the tab, pages the records and opens a day with the account as filter', () async {
