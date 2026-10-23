@@ -7,6 +7,7 @@ import '../format/formatter_provider.dart';
 import '../i18n/strings.g.dart';
 import '../ui/common.dart';
 import '../ui/labels.dart';
+import '../ui/threshold_slider.dart';
 
 /// The settings kept on the server: excluded accounts, balance history window, Sankey threshold, and the exchange rates in use.
 /// Port of the settings view-model (libs/client/src/features/settings/settings.vm.ts).
@@ -91,19 +92,7 @@ class _ServerSettingsScreenState extends ConsumerState<ServerSettingsScreen> {
                     ),
                     const SizedBox(height: 20),
                     Text(t.settings.sankeyThreshold, style: Theme.of(context).textTheme.bodyMedium),
-                    const SizedBox(height: 8),
-                    Wrap(
-                      spacing: 8,
-                      children: [
-                        for (final threshold in flowThresholds)
-                          ChoiceChip(
-                            key: Key('threshold-$threshold'),
-                            label: Text(f.pct(threshold, mask: false)),
-                            selected: (draft.sankeyThreshold - threshold).abs() < 1e-9,
-                            onSelected: (_) => notifier.patch(sankeyThreshold: threshold),
-                          ),
-                      ],
-                    ),
+                    ThresholdSlider(f: f, value: draft.sankeyThreshold, onChanged: (v) => notifier.patch(sankeyThreshold: v)),
                     const SizedBox(height: 20),
                     FilledButton(key: const Key('settings-save'), onPressed: state.saving ? null : notifier.save, child: Text(t.settings.save)),
                   ],

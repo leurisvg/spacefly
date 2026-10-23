@@ -241,6 +241,7 @@ class _AccountDetailScreenState extends ConsumerState<AccountDetailScreen> {
                         ],
                         f: f,
                         area: true,
+                        zeroLine: true,
                         yFormat: own == null ? null : (v) => f.compact(v, currency: own),
                         tipTitle: (i) => f.date(days[i].date, DateStyle.full),
                       ),

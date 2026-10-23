@@ -364,7 +364,8 @@ void main() {
       expect(tester.widget<Switch>(find.descendant(of: find.byKey(const Key('excluded-1')), matching: find.byType(Switch))).value, isTrue);
       await tester.tap(find.byKey(const Key('excluded-2')));
       await tester.enterText(find.byKey(const Key('balance-months')), '6');
-      await tester.tap(find.byKey(const Key('threshold-0.05')));
+      await tester.ensureVisible(find.byKey(const Key('threshold-slider')));
+      tester.widget<Slider>(find.byKey(const Key('threshold-slider'))).onChangeEnd!(0.05);
       await tester.pumpAndSettle();
       await tester.ensureVisible(find.byKey(const Key('settings-save')));
       await tester.tap(find.byKey(const Key('settings-save')));

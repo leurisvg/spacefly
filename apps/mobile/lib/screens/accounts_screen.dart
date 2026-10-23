@@ -180,24 +180,7 @@ class AccountsScreen extends ConsumerWidget {
                 trailing: MonthsPicker(value: vm.months, onChanged: (m) => ref.read(accountsMonthsProvider.notifier).state = m),
                 child: vm.lines.isEmpty
                     ? EmptyState(title: t.common.noData)
-                    : Column(
-                        children: [
-                          LinesChart(months: data.months, lines: vm.lines, f: f, height: 220),
-                          const SizedBox(height: 8),
-                          Wrap(
-                            spacing: 14,
-                            runSpacing: 4,
-                            children: [
-                              for (final l in vm.lines)
-                                Row(mainAxisSize: MainAxisSize.min, children: [
-                                  Container(width: 10, height: 10, decoration: BoxDecoration(color: l.color, borderRadius: BorderRadius.circular(3))),
-                                  const SizedBox(width: 6),
-                                  Text(l.name, style: Theme.of(context).textTheme.bodySmall),
-                                ]),
-                            ],
-                          ),
-                        ],
-                      ),
+                    : LinesChart(months: data.months, lines: vm.lines, f: f, height: 220),
               ),
             ],
           ],

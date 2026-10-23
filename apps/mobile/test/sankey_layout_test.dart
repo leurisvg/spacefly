@@ -29,6 +29,32 @@ void main() {
     ];
     SankeyLayout layout({double breadth = 300, double length = 400}) => sankeyLayout(nodes: nodes, links: links, breadth: breadth, length: length);
 
+    test('finds the band under a point, on its curve, and nothing away from it', () {
+      final l = layout();
+      for (final (i, band) in l.links.indexed) {
+        expect(l.linkAt(SankeyLayout.bandPoint(band, 0.5)), i, reason: 'the middle of band $i');
+      }
+      expect(l.linkAt(const Offset(-50, -50)), isNull);
+    });
+
+    test('lights up a node with its bands and the nodes at their other ends', () {
+      final l = layout();
+      final budget = l.nodes.firstWhere((n) => n.id == 'budget').index;
+      final focus = l.focusNode(budget);
+      expect({for (final i in focus.nodes) l.nodes.firstWhere((n) => n.index == i).id}, {'budget', 'hub', 'cat1', 'cat2'});
+      expect(focus.links, hasLength(3));
+      for (final i in focus.links) {
+        expect([l.links[i].source, l.links[i].target], contains(budget));
+      }
+    });
+
+    test('lights up a band with its two nodes only', () {
+      final l = layout();
+      final focus = l.focusLink(0);
+      expect(focus.links, {0});
+      expect(focus.nodes, {l.links[0].source, l.links[0].target});
+    });
+
     test('puts nodes in layers by their longest path and what nothing leaves in the last one', () {
       final l = layout();
       final layer = {for (final n in l.nodes) n.id: n.layer};

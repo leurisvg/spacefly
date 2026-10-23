@@ -17,9 +17,6 @@ List<String> toggleId(List<String> excluded, String id, bool on) {
   return set.toList();
 }
 
-/// The Sankey "Others" thresholds a person can choose, as ratios of the income.
-const flowThresholds = [0.0, 0.01, 0.02, 0.03, 0.05, 0.1];
-
 /// The balance history windows (months) the server accepts: 2–60.
 bool isValidBalanceMonths(int months) => months >= 2 && months <= 60;
 

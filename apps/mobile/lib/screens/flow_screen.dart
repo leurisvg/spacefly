@@ -11,6 +11,7 @@ import '../ui/common.dart';
 import '../ui/drill_sheet.dart';
 import '../ui/kpi_card.dart';
 import '../ui/report_page.dart';
+import '../ui/threshold_slider.dart';
 
 /// Where the money comes from and where it goes: income → budgets / categories / tags → savings, as a Sankey.
 class FlowScreen extends ConsumerWidget {
@@ -27,6 +28,8 @@ class FlowScreen extends ConsumerWidget {
 
     final nodes = [for (final n in r?.nodes ?? const []) SankeyChartNode(id: n.id, label: vm.label(n), value: n.value, color: sankeyColor(tokens, n.kind))];
     final names = {for (final n in r?.nodes ?? const []) n.id: vm.label(n)};
+    // Each figure with its share of the income, like the web's tooltip.
+    String share(double v) => r == null || r.totalIncome == 0 ? '' : ' · ${f.pct(v / r.totalIncome, decimals: 1)}';
 
     return ReportPage(
       title: t.nav.flow,
@@ -46,14 +49,7 @@ class FlowScreen extends ConsumerWidget {
         if (vm.mode == FlowMode.budget) SwitchListTile(key: const Key('flow-budgets'), contentPadding: EdgeInsets.zero, title: Text(t.flow.showBudgets), value: vm.budgets, onChanged: vm.setBudgets),
         SwitchListTile(key: const Key('flow-income-categories'), contentPadding: EdgeInsets.zero, title: Text(t.flow.showIncomeCategories), value: vm.incomeCategories, onChanged: vm.setIncomeCategories),
         Text(t.flow.groupSmall, style: TextStyle(color: scheme.onSurfaceVariant, fontSize: 13)),
-        const SizedBox(height: 6),
-        Wrap(
-          spacing: 8,
-          runSpacing: 4,
-          children: [
-            for (final th in flowThresholds) ChoiceChip(key: Key('threshold-$th'), label: Text(f.pct(th, decimals: 0)), selected: (vm.threshold - th).abs() < 1e-9, onSelected: (_) => vm.setThreshold(th)),
-          ],
-        ),
+        ThresholdSlider(f: f, value: vm.threshold, onChanged: vm.setThreshold),
         const SizedBox(height: 12),
         KpiGrid(
           children: [
@@ -81,6 +77,8 @@ class FlowScreen extends ConsumerWidget {
                           nodes: nodes,
                           links: [for (final l in r.links) SankeyChartLink(l.source, l.target, l.value)],
                           semanticsLabel: t.flow.title,
+                          nodeTip: (n) => '${n.label}\n${f.money(n.value)}${share(n.value)}',
+                          linkTip: (from, to, value) => '${from.label} → ${to.label}\n${f.money(value)}${share(value)}',
                           onNode: (id) {
                             if (vm.openNodeById(id)) showDrillSheet(context);
                           },

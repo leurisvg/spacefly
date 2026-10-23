@@ -99,7 +99,21 @@ class RankingScreen extends ConsumerWidget {
                   children: [
                     Text('${f.pct(it.share, decimals: 1)} · ${it.count.toInt()} ${t.ranking.transactions.toLowerCase()}', style: numStyle(context, size: 11, color: scheme.onSurfaceVariant)),
                     Text('${t.ranking.avgTicket} ${f.money(it.avg)}', style: numStyle(context, size: 11, color: scheme.onSurfaceVariant)),
-                    if (it.previous != 0 && delta.ratio != null) Text('${t.ranking.previous} ${f.compact(it.previous)} · ${f.pct(delta.ratio)}', style: numStyle(context, size: 11, color: toneColor(context, delta.tone))),
+                    // The arrow says which way it moved, so it does not rest on the color alone.
+                    if (it.previous != 0 && delta.ratio != null)
+                      Row(
+                        key: Key('rank-delta-$i'),
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text('${t.ranking.previous} ${f.compact(it.previous)} · ', style: numStyle(context, size: 11, color: toneColor(context, delta.tone))),
+                          Icon(
+                            switch (delta.direction) { Direction.up => Icons.arrow_upward, Direction.down => Icons.arrow_downward, Direction.flat => Icons.remove },
+                            size: 12,
+                            color: toneColor(context, delta.tone),
+                          ),
+                          Text(f.pct(delta.ratio), style: numStyle(context, size: 11, color: toneColor(context, delta.tone))),
+                        ],
+                      ),
                   ],
                 ),
               ),

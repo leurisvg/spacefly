@@ -22,8 +22,7 @@ void main() {
       expect(toggleId(['1'], '1', true), ['1']);
     });
 
-    test('offers the same Sankey thresholds as the web, and accepts 2–60 months of history', () {
-      expect(flowThresholds, [0, 0.01, 0.02, 0.03, 0.05, 0.1]);
+    test('accepts 2–60 months of history', () {
       expect([1, 2, 60, 61].map(isValidBalanceMonths), [false, true, true, false]);
     });
 

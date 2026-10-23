@@ -105,6 +105,15 @@ class AnnualViewModel {
     return true;
   }
 
+  /// The tooltip of a matrix cell: "category · month" over its amount. `null` for an index that is not a cell.
+  String? matrixTip(int index) {
+    final months = r?.months ?? const <String>[];
+    if (months.isEmpty || index < 0 || index >= shownCategories.length * months.length) return null;
+    final cell = matrixCell(index, months.length);
+    final category = shownCategories[cell.category];
+    return '${categoryName(category)} · ${f.date(months[cell.month], DateStyle.month)}\n${f.money(category.values[cell.month])}';
+  }
+
   /// A matrix tap that only reports the cell's data index.
   bool openCellAt(int index) {
     final months = r?.months.length ?? 0;

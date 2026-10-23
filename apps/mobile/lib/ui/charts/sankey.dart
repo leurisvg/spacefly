@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import '../../api/models.g.dart' show SankeyNodeKind;
 import '../../theme/app_theme.dart';
 import '../../theme/tokens.g.dart';
+import 'tip.dart';
 
 /// The color of a node by what it is. Port of `SANKEY_COLORS` in libs/client/src/charts/builders.ts.
 Color sankeyColor(ThemeTokens tokens, SankeyNodeKind kind) => switch (kind) {
@@ -90,6 +91,49 @@ class SankeyLayout {
     }
     return best;
   }
+
+  /// The curve a band follows, as the painter draws it: from the end of its source to the start of its target.
+  static Offset bandPoint(SankeyBand l, double t) {
+    final mid = (l.l0 + l.l1) / 2;
+    final u = 1 - t;
+    // cubic Bézier with control points (sourceB, mid) and (targetB, mid)
+    final x = u * u * u * l.sourceB + 3 * u * u * t * l.sourceB + 3 * u * t * t * l.targetB + t * t * t * l.targetB;
+    final y = u * u * u * l.l0 + 3 * u * u * t * mid + 3 * u * t * t * mid + t * t * t * l.l1;
+    return Offset(x, y);
+  }
+
+  /// The band under a point (index in [links]), allowing [slop] around thin ones.
+  int? linkAt(Offset p, {double slop = 4}) {
+    int? best;
+    var bestDistance = double.infinity;
+    for (final (i, l) in links.indexed) {
+      final reach = math.max(l.width, 0.6) / 2 + slop;
+      for (var k = 0; k <= 32; k++) {
+        final d = (bandPoint(l, k / 32) - p).distance;
+        if (d <= reach && d < bestDistance) {
+          best = i;
+          bestDistance = d;
+        }
+      }
+    }
+    return best;
+  }
+
+  /// What lights up when a node is held ("trinity": the node, the bands that touch it and the nodes at their other ends).
+  SankeyFocus focusNode(int node) {
+    final bands = {for (final (i, l) in links.indexed) if (l.source == node || l.target == node) i};
+    return SankeyFocus(nodes: {node, for (final i in bands) ...[links[i].source, links[i].target]}, links: bands);
+  }
+
+  /// What lights up when a band is held: the band and its two nodes.
+  SankeyFocus focusLink(int link) => SankeyFocus(nodes: {links[link].source, links[link].target}, links: {link});
+}
+
+/// The nodes and bands (by index) that stay lit while the rest is dimmed.
+class SankeyFocus {
+  const SankeyFocus({required this.nodes, required this.links});
+  final Set<int> nodes;
+  final Set<int> links;
 }
 
 class _Node {
@@ -361,13 +405,16 @@ class SankeyChartLink {
 }
 
 /// The money flow as a vertical Sankey: nodes are bars across the width, links are bands between layers, and the labels run down from
-/// each node. It scrolls sideways when there are too many nodes in a layer to fit the width. Tapping a node calls [onNode] with its id.
-class SankeyChart extends StatelessWidget {
-  const SankeyChart({super.key, required this.nodes, required this.links, required this.onNode, this.height = 420, this.labelRoom = 120, this.semanticsLabel});
+/// each node. It scrolls sideways when there are too many nodes in a layer to fit the width. Tapping a node calls [onNode] with its id;
+/// holding a finger on a node or a band lights up its path and shows [nodeTip] / [linkTip] (what hovering does on the web).
+class SankeyChart extends StatefulWidget {
+  const SankeyChart({super.key, required this.nodes, required this.links, required this.onNode, this.nodeTip, this.linkTip, this.height = 420, this.labelRoom = 120, this.semanticsLabel});
 
   final List<SankeyChartNode> nodes;
   final List<SankeyChartLink> links;
   final void Function(String id) onNode;
+  final String Function(SankeyChartNode node)? nodeTip;
+  final String Function(SankeyChartNode from, SankeyChartNode to, double value)? linkTip;
 
   /// Total height, labels included.
   final double height;
@@ -379,8 +426,41 @@ class SankeyChart extends StatelessWidget {
   static const _margin = 8.0;
 
   @override
+  State<SankeyChart> createState() => _SankeyChartState();
+}
+
+class _SankeyChartState extends State<SankeyChart> {
+  SankeyFocus? _focus;
+
+  void _hold(SankeyLayout layout, Offset local, void Function(({String text, Offset at})?) show) {
+    final p = Offset(local.dx - SankeyChart._margin, local.dy - SankeyChart._margin);
+    final node = layout.nodeAt(p);
+    if (node != null) {
+      final tip = widget.nodeTip?.call(widget.nodes[node.index]);
+      setState(() => _focus = layout.focusNode(node.index));
+      show(tip == null ? null : (text: tip, at: Offset(SankeyChart._margin + (node.b0 + node.b1) / 2, SankeyChart._margin + node.l0)));
+      return;
+    }
+    final link = layout.linkAt(p);
+    if (link != null) {
+      final l = layout.links[link];
+      final tip = widget.linkTip?.call(widget.nodes[l.source], widget.nodes[l.target], l.value);
+      setState(() => _focus = layout.focusLink(link));
+      show(tip == null ? null : (text: tip, at: local));
+      return;
+    }
+    _release(show);
+  }
+
+  void _release(void Function(({String text, Offset at})?) show) {
+    if (_focus != null) setState(() => _focus = null);
+    show(null);
+  }
+
+  @override
   Widget build(BuildContext context) {
     final tokens = context.tokens;
+    final nodes = widget.nodes, links = widget.links;
     return LayoutBuilder(
       builder: (context, box) {
         final byLayer = <int, int>{};
@@ -394,26 +474,33 @@ class SankeyChart extends StatelessWidget {
         final layout = sankeyLayout(
           nodes: [for (final n in nodes) SankeyInNode(n.id, n.value)],
           links: [for (final l in links) SankeyInLink(l.source, l.target, l.value)],
-          breadth: width - 2 * _margin,
-          length: height - labelRoom - _margin,
+          breadth: width - 2 * SankeyChart._margin,
+          length: widget.height - widget.labelRoom - SankeyChart._margin,
         );
-        final chart = GestureDetector(
-          key: const Key('sankey'),
-          behavior: HitTestBehavior.opaque,
-          onTapUp: (d) {
-            final hit = layout.nodeAt(Offset(d.localPosition.dx - _margin, d.localPosition.dy - _margin));
-            if (hit != null) onNode(hit.id);
-          },
-          child: CustomPaint(
-            size: Size(width, height),
-            painter: _SankeyPainter(layout: layout, nodes: nodes, tokens: tokens, labelRoom: labelRoom, margin: _margin),
+        final holdable = widget.nodeTip != null || widget.linkTip != null;
+        final chart = TipArea(
+          builder: (context, show) => GestureDetector(
+            key: const Key('sankey'),
+            behavior: HitTestBehavior.opaque,
+            onTapUp: (d) {
+              final hit = layout.nodeAt(Offset(d.localPosition.dx - SankeyChart._margin, d.localPosition.dy - SankeyChart._margin));
+              if (hit != null) widget.onNode(hit.id);
+            },
+            onLongPressStart: holdable ? (d) => _hold(layout, d.localPosition, show) : null,
+            onLongPressMoveUpdate: holdable ? (d) => _hold(layout, d.localPosition, show) : null,
+            onLongPressEnd: holdable ? (_) => _release(show) : null,
+            onLongPressCancel: holdable ? () => _release(show) : null,
+            child: CustomPaint(
+              size: Size(width, widget.height),
+              painter: _SankeyPainter(layout: layout, nodes: nodes, tokens: tokens, labelRoom: widget.labelRoom, margin: SankeyChart._margin, focus: _focus),
+            ),
           ),
         );
         return Semantics(
-          label: semanticsLabel,
+          label: widget.semanticsLabel,
           child: SizedBox(
-            height: height,
-            child: width > box.maxWidth ? SingleChildScrollView(scrollDirection: Axis.horizontal, child: chart) : chart,
+            height: widget.height,
+            child: width > box.maxWidth ? SingleChildScrollView(scrollDirection: Axis.horizontal, child: SizedBox(width: width, child: chart)) : chart,
           ),
         );
       },
@@ -422,7 +509,7 @@ class SankeyChart extends StatelessWidget {
 }
 
 class _SankeyPainter extends CustomPainter {
-  _SankeyPainter({required this.layout, required this.nodes, required this.tokens, required this.labelRoom, required this.margin});
+  _SankeyPainter({required this.layout, required this.nodes, required this.tokens, required this.labelRoom, required this.margin, this.focus});
 
   final SankeyLayout layout;
   final List<SankeyChartNode> nodes;
@@ -430,12 +517,16 @@ class _SankeyPainter extends CustomPainter {
   final double labelRoom;
   final double margin;
 
+  /// What stays lit while the rest is dimmed; `null` draws everything normally.
+  final SankeyFocus? focus;
+
   @override
   void paint(Canvas canvas, Size size) {
     canvas.save();
     canvas.translate(margin, margin);
-    for (final l in layout.links) {
+    for (final (i, l) in layout.links.indexed) {
       final from = nodes[l.source].color, to = nodes[l.target].color;
+      final alpha = focus == null ? 0.32 : (focus!.links.contains(i) ? 0.6 : 0.08);
       final x0 = l.sourceB, y0 = l.l0, x1 = l.targetB, y1 = l.l1;
       final mid = (y0 + y1) / 2;
       final path = Path()
@@ -444,18 +535,19 @@ class _SankeyPainter extends CustomPainter {
       final paint = Paint()
         ..style = PaintingStyle.stroke
         ..strokeWidth = math.max(l.width, 0.6)
-        ..shader = LinearGradient(begin: Alignment.topCenter, end: Alignment.bottomCenter, colors: [from.withValues(alpha: 0.32), to.withValues(alpha: 0.32)]).createShader(Rect.fromLTRB(math.min(x0, x1), y0, math.max(x0, x1) + 1, y1));
+        ..shader = LinearGradient(begin: Alignment.topCenter, end: Alignment.bottomCenter, colors: [from.withValues(alpha: alpha), to.withValues(alpha: alpha)]).createShader(Rect.fromLTRB(math.min(x0, x1), y0, math.max(x0, x1) + 1, y1));
       canvas.drawPath(path, paint);
     }
     final lastLayer = layout.layers - 1;
     final layerStep = layout.layers > 1 ? layout.nodes.firstWhere((n) => n.layer == 1, orElse: () => layout.nodes.first).l0 : 0.0;
     for (final b in layout.nodes) {
       final node = nodes[b.index];
-      canvas.drawRRect(RRect.fromRectAndRadius(Rect.fromLTRB(b.b0, b.l0, math.max(b.b1, b.b0 + 1.5), b.l1), const Radius.circular(2)), Paint()..color = node.color);
+      final lit = focus == null || focus!.nodes.contains(b.index);
+      canvas.drawRRect(RRect.fromRectAndRadius(Rect.fromLTRB(b.b0, b.l0, math.max(b.b1, b.b0 + 1.5), b.l1), const Radius.circular(2)), Paint()..color = lit ? node.color : node.color.withValues(alpha: 0.25));
       final room = b.layer == lastLayer ? labelRoom - 8 : math.max(0.0, layerStep - (b.l1 - b.l0) - 6);
       if (room < 24 || node.label.isEmpty) continue;
       final tp = TextPainter(
-        text: TextSpan(text: node.label, style: TextStyle(fontSize: 10.5, color: tokens.chartInk)),
+        text: TextSpan(text: node.label, style: TextStyle(fontSize: 10.5, color: lit ? tokens.chartInk : tokens.chartInk.withValues(alpha: 0.3))),
         textDirection: TextDirection.ltr,
         maxLines: 1,
         ellipsis: '…',
@@ -471,5 +563,5 @@ class _SankeyPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(_SankeyPainter old) => old.layout != layout || old.nodes != nodes || old.tokens != tokens;
+  bool shouldRepaint(_SankeyPainter old) => old.layout != layout || old.nodes != nodes || old.tokens != tokens || old.focus != focus;
 }

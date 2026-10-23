@@ -109,7 +109,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(lastQuery(env, '/api/reports/sankey')['incomeCategories'], '0');
 
-      await tester.tap(find.byKey(const Key('threshold-0.05')));
+      tester.widget<Slider>(find.byKey(const Key('threshold-slider'))).onChangeEnd!(0.05);
       await tester.pumpAndSettle();
       expect(lastQuery(env, '/api/reports/sankey')['threshold'], 0.05);
 
@@ -145,6 +145,15 @@ void main() {
       expect(find.text('Top items, last 12 months'), findsOneWidget);
       expect(find.byKey(const Key('rank-row-1')), findsOneWidget);
       expect(find.text('Uncategorized'), findsWidgets);
+    });
+
+    testWidgets('a row that changed says which way with an arrow, not only a color', (tester) async {
+      await open(tester);
+      await openEntry(tester, 'Categories');
+      final up = find.descendant(of: find.byKey(const Key('rank-delta-0')), matching: find.byIcon(Icons.arrow_upward));
+      await tester.ensureVisible(find.byKey(const Key('rank-delta-0')));
+      expect(up, findsOneWidget, reason: 'Food went from 80 to 100');
+      expect(find.byKey(const Key('rank-delta-1')), findsNothing, reason: 'nothing to compare the second row with');
     });
 
     testWidgets('opens the transactions of a bar and of a row', (tester) async {

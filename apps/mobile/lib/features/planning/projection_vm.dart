@@ -48,6 +48,14 @@ class ProjectionViewModel {
           rows: [for (final d in r!.days) if (d.inflow != 0 || d.outflow != 0) [f.date(d.date, DateStyle.day), f.money(d.inflow), f.money(d.outflow), f.money(d.balance)]],
         );
 
+  /// What happens on a day of the chart, for its tooltip: one "name  amount" line per scheduled movement, `null` when nothing does.
+  String? eventsTip(int index) {
+    final days = r?.days;
+    if (days == null || index < 0 || index >= days.length) return null;
+    final events = eventsOn(r!.events, days[index].date);
+    return events.isEmpty ? null : events.map((e) => '${e.name}  ${f.money(e.amount, signed: true)}').join('\n');
+  }
+
   void setDays(String next) => setDaysTo(next);
 }
 

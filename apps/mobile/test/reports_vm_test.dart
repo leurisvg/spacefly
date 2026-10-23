@@ -103,6 +103,8 @@ void main() {
       expect(next.yearTable!.rows.first, ['January 2026', 'RD\$0.00']);
       expect(next.openHeatmapDay(31 + 28 + 31 + 30 + 31 + 30 + 31 + 31 + 9), isTrue);
       expect(c.read(txDetailProvider)!.filter, {'start': '2026-09-10', 'end': '2026-09-10'});
+      expect(next.yearTip(0), 'Thursday, January 1, 2026\nExpenses  RD\$0.00');
+      expect(next.yearTip(999), isNull);
       expect(next.openHeatmapDay(999), isFalse);
     });
   });
@@ -204,6 +206,14 @@ void main() {
       expect(vm.matrixCells[13].row, 1);
       expect(vm.matrixCells[13].col, 1);
       expect(vm.matrixMax, 100);
+    });
+
+    test('words the tooltip of a matrix cell', () async {
+      final (_, vm) = await setup();
+      expect(vm.matrixTip(13), 'Uncategorized · February 2026\nRD\$5.00');
+      expect(vm.matrixTip(2 * 12 + 11), 'Rent · December 2026\nRD\$100.00');
+      expect(vm.matrixTip(999), isNull);
+      expect(vm.matrixTip(-1), isNull);
     });
 
     test('opens a month and a matrix cell with the right range', () async {

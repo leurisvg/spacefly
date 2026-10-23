@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../features/accounts/accounts_vm.dart' show BalanceLine;
 import '../features/reports/annual_vm.dart';
 import '../format/formatter.dart' show DateStyle;
 import '../format/formatter_provider.dart';
@@ -36,17 +35,6 @@ class AnnualScreen extends ConsumerWidget {
           value: m == null ? '—' : f.date(m.month, DateStyle.month),
           caption: m == null ? null : f.money(m.net, signed: true),
         );
-
-    // Months without income have no savings rate: the line only has the months that do.
-    final rateMonths = <String>[], rateValues = <double>[];
-    if (r != null) {
-      for (final (i, v) in r.savingsRate.indexed) {
-        if (v != null) {
-          rateMonths.add(r.months[i]);
-          rateValues.add(v);
-        }
-      }
-    }
 
     final categories = vm.shownCategories;
     final months = r?.months ?? const <String>[];
@@ -89,14 +77,9 @@ class AnnualScreen extends ConsumerWidget {
         const SizedBox(height: 12),
         SectionCard(
           title: t.annual.savingsRate,
-          child: rateMonths.isEmpty
+          child: r == null || r.savingsRate.every((v) => v == null)
               ? SizedBox(height: loading ? 200 : 60, child: loading ? null : EmptyState(title: t.common.noData))
-              : LinesChart(
-                  months: rateMonths,
-                  lines: [BalanceLine(id: 'rate', name: t.common.savingsRate, values: rateValues, color: tokens.moneySavings)],
-                  f: f,
-                  yFormat: (v) => f.share(v),
-                ),
+              : SavingsRateChart(months: r.months, rates: r.savingsRate, f: f, label: t.common.savingsRate),
         ),
         const SizedBox(height: 12),
         ChartCard(
@@ -136,6 +119,7 @@ class AnnualScreen extends ConsumerWidget {
                               cellHeight: 28,
                               colLabels: [for (final m in months) f.monthLabel(m, withYear: false)],
                               semanticsLabel: t.annual.matrix,
+                              cellTip: vm.matrixTip,
                               onCell: (i) {
                                 if (vm.openCellAt(i)) drill();
                               },

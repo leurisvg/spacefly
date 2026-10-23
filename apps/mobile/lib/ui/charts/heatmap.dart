@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import '../../api/models.g.dart' show YearHeatmapReportDay;
 import '../../shared/dates.dart';
 import '../../theme/app_theme.dart';
+import 'tip.dart';
 
 /// One filled square of a [HeatmapGrid]: its place in the grid and its value.
 class HeatCell {
@@ -76,7 +77,8 @@ YearGridLayout yearGridLayout(int year, List<YearHeatmapReportDay> days) {
   );
 }
 
-/// A grid of colored squares drawn on a canvas. Tapping a cell calls [onCell] with its index in [cells].
+/// A grid of colored squares drawn on a canvas. Tapping a cell calls [onCell] with its index in [cells]; holding a finger on one shows
+/// [cellTip] for it (what hovering shows on the web).
 class HeatmapGrid extends StatelessWidget {
   const HeatmapGrid({
     super.key,
@@ -91,6 +93,7 @@ class HeatmapGrid extends StatelessWidget {
     this.colLabels = const [],
     this.cellLabel,
     this.onCell,
+    this.cellTip,
     this.semanticsLabel,
   });
 
@@ -113,6 +116,9 @@ class HeatmapGrid extends StatelessWidget {
   /// Short text drawn inside the cell, if any.
   final String? Function(int index)? cellLabel;
   final void Function(int index)? onCell;
+
+  /// The tooltip of a cell, by its index in [cells].
+  final String? Function(int index)? cellTip;
   final String? semanticsLabel;
 
   @override
@@ -123,30 +129,43 @@ class HeatmapGrid extends StatelessWidget {
         final cw = cellWidth ?? (constraints.maxWidth - labelWidth) / cols;
         final geometry = HeatmapGeometry(rows: rows, cols: cols, cellWidth: cw, cellHeight: cellHeight, labelWidth: labelWidth, headerHeight: colLabels.isEmpty ? 0 : 18);
         final byPosition = {for (final (i, c) in cells.indexed) (c.row, c.col): i};
+        void hold(void Function(({String text, Offset at})?) show, Offset p) {
+          final at = geometry.cellAt(p);
+          final index = at == null ? null : byPosition[(at.row, at.col)];
+          final text = index == null ? null : cellTip?.call(index);
+          show(text == null ? null : (text: text, at: geometry.rect(at!.row, at.col).topCenter));
+        }
+
         return Semantics(
           label: semanticsLabel,
-          child: GestureDetector(
-            behavior: HitTestBehavior.opaque,
-            onTapUp: onCell == null
-                ? null
-                : (d) {
-                    final at = geometry.cellAt(d.localPosition);
-                    final index = at == null ? null : byPosition[(at.row, at.col)];
-                    if (index != null) onCell!(index);
-                  },
-            child: CustomPaint(
-              size: Size(geometry.width, geometry.height),
-              painter: _HeatmapPainter(
-                geometry: geometry,
-                cells: cells,
-                max: max,
-                lo: tokens.chartGrid,
-                hi: tokens.moneyExpense,
-                ink: tokens.chartInk,
-                muted: tokens.chartMuted,
-                rowLabels: rowLabels,
-                colLabels: colLabels,
-                cellLabel: cellLabel,
+          child: TipArea(
+            builder: (context, show) => GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTapUp: onCell == null
+                  ? null
+                  : (d) {
+                      final at = geometry.cellAt(d.localPosition);
+                      final index = at == null ? null : byPosition[(at.row, at.col)];
+                      if (index != null) onCell!(index);
+                    },
+              onLongPressStart: cellTip == null ? null : (d) => hold(show, d.localPosition),
+              onLongPressMoveUpdate: cellTip == null ? null : (d) => hold(show, d.localPosition),
+              onLongPressEnd: cellTip == null ? null : (_) => show(null),
+              onLongPressCancel: cellTip == null ? null : () => show(null),
+              child: CustomPaint(
+                size: Size(geometry.width, geometry.height),
+                painter: _HeatmapPainter(
+                  geometry: geometry,
+                  cells: cells,
+                  max: max,
+                  lo: tokens.chartGrid,
+                  hi: tokens.moneyExpense,
+                  ink: tokens.chartInk,
+                  muted: tokens.chartMuted,
+                  rowLabels: rowLabels,
+                  colLabels: colLabels,
+                  cellLabel: cellLabel,
+                ),
               ),
             ),
           ),

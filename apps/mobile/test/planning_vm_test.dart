@@ -144,6 +144,10 @@ void main() {
       var vm = c.read(projectionViewModelProvider);
       expect(vm.lowestLabel, 'Lowest point: RD\$950.00 on September 16, 2026');
       expect(vm.table!.rows, [['Wed, Sep 16', 'RD\$0.00', 'RD\$50.00', 'RD\$950.00'], ['Thu, Sep 17', 'RD\$900.00', 'RD\$0.00', 'RD\$1,850.00']]);
+      expect(vm.eventsTip(0), isNull, reason: 'nothing happens on the first day');
+      expect(vm.eventsTip(1), 'Luz  −RD\$50.00');
+      expect(vm.eventsTip(2), 'Sueldo  +RD\$900.00');
+      expect(vm.eventsTip(9), isNull);
       vm.setDays('180');
       await c.read(projectionReportProvider.future);
       q = lastQuery(env, '/api/reports/projection');

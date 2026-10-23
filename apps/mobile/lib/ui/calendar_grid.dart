@@ -58,45 +58,51 @@ class CalendarGrid extends StatelessWidget {
       return Semantics(
         label: c.tip,
         button: true,
-        child: InkWell(
-          key: Key('day-${c.day.date}'),
-          onTap: () => onDay(c.day.date),
-          borderRadius: BorderRadius.circular(6),
-          child: Opacity(
-            opacity: c.future && c.scheduled.isEmpty ? 0.6 : 1,
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                color: tokens.chartSurface,
-                borderRadius: BorderRadius.circular(6),
-                border: Border.all(color: c.today ? scheme.primary : tokens.chartGrid, width: c.today ? 1.5 : 1),
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(5),
-                child: Stack(
-                  children: [
-                    Positioned.fill(
-                      child: Row(children: [
-                        Expanded(child: ColoredBox(color: tokens.moneyIncome.withValues(alpha: 0.1))),
-                        Expanded(child: ColoredBox(color: tokens.moneyExpense.withValues(alpha: 0.1))),
-                      ]),
-                    ),
-                    if (c.incH > 0)
-                      Align(alignment: Alignment.bottomLeft, child: FractionallySizedBox(widthFactor: 0.5, heightFactor: (c.incH / 100).clamp(0, 1), child: ColoredBox(color: tokens.moneyIncome.withValues(alpha: 0.85)))),
-                    if (c.expH > 0)
-                      Align(alignment: Alignment.bottomRight, child: FractionallySizedBox(widthFactor: 0.5, heightFactor: (c.expH / 100).clamp(0, 1), child: ColoredBox(color: tokens.moneyExpense.withValues(alpha: 0.85)))),
-                    if (c.day.income > 0) Positioned.fill(child: value(c.day.income, c.incH, c.incInside, tokens.moneyIncome, Alignment.centerLeft)),
-                    if (c.day.expense > 0) Positioned.fill(child: value(c.day.expense, c.expH, c.expInside, tokens.moneyExpense, Alignment.centerRight)),
-                    Center(child: Text('${c.num}', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: scheme.onSurface, shadows: const [Shadow(blurRadius: 2, color: Color(0x66000000))]))),
-                    if (c.scheduled.isNotEmpty)
-                      Positioned(
-                        top: 3,
-                        right: 3,
-                        child: Row(mainAxisSize: MainAxisSize.min, children: [
-                          for (final s in c.scheduled.take(3))
-                            Container(margin: const EdgeInsets.only(left: 2), width: 5, height: 5, decoration: BoxDecoration(shape: BoxShape.circle, color: s.kind == Kind.BILL ? warning : scheme.primary)),
+        // Holding a day shows what the web shows on hover: its income, expenses, balance and what is scheduled.
+        child: Tooltip(
+          message: c.tip,
+          triggerMode: TooltipTriggerMode.longPress,
+          excludeFromSemantics: true,
+          child: InkWell(
+            key: Key('day-${c.day.date}'),
+            onTap: () => onDay(c.day.date),
+            borderRadius: BorderRadius.circular(6),
+            child: Opacity(
+              opacity: c.future && c.scheduled.isEmpty ? 0.6 : 1,
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  color: tokens.chartSurface,
+                  borderRadius: BorderRadius.circular(6),
+                  border: Border.all(color: c.today ? scheme.primary : tokens.chartGrid, width: c.today ? 1.5 : 1),
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(5),
+                  child: Stack(
+                    children: [
+                      Positioned.fill(
+                        child: Row(children: [
+                          Expanded(child: ColoredBox(color: tokens.moneyIncome.withValues(alpha: 0.1))),
+                          Expanded(child: ColoredBox(color: tokens.moneyExpense.withValues(alpha: 0.1))),
                         ]),
                       ),
-                  ],
+                      if (c.incH > 0)
+                        Align(alignment: Alignment.bottomLeft, child: FractionallySizedBox(widthFactor: 0.5, heightFactor: (c.incH / 100).clamp(0, 1), child: ColoredBox(color: tokens.moneyIncome.withValues(alpha: 0.85)))),
+                      if (c.expH > 0)
+                        Align(alignment: Alignment.bottomRight, child: FractionallySizedBox(widthFactor: 0.5, heightFactor: (c.expH / 100).clamp(0, 1), child: ColoredBox(color: tokens.moneyExpense.withValues(alpha: 0.85)))),
+                      if (c.day.income > 0) Positioned.fill(child: value(c.day.income, c.incH, c.incInside, tokens.moneyIncome, Alignment.centerLeft)),
+                      if (c.day.expense > 0) Positioned.fill(child: value(c.day.expense, c.expH, c.expInside, tokens.moneyExpense, Alignment.centerRight)),
+                      Center(child: Text('${c.num}', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: scheme.onSurface, shadows: const [Shadow(blurRadius: 2, color: Color(0x66000000))]))),
+                      if (c.scheduled.isNotEmpty)
+                        Positioned(
+                          top: 3,
+                          right: 3,
+                          child: Row(mainAxisSize: MainAxisSize.min, children: [
+                            for (final s in c.scheduled.take(3))
+                              Container(margin: const EdgeInsets.only(left: 2), width: 5, height: 5, decoration: BoxDecoration(shape: BoxShape.circle, color: s.kind == Kind.BILL ? warning : scheme.primary)),
+                          ]),
+                        ),
+                    ],
+                  ),
                 ),
               ),
             ),

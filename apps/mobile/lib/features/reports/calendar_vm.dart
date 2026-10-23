@@ -119,6 +119,13 @@ class CalendarViewModel {
     );
   }
 
+  /// The tooltip of a day of the year heatmap, by its index in the report's days: the date over what was spent.
+  String? yearTip(int index) {
+    final days = yearData?.days;
+    if (days == null || index < 0 || index >= days.length) return null;
+    return '${f.date(days[index].date, DateStyle.full)}\n${t.common.expenses}  ${f.money(days[index].expense)}';
+  }
+
   YearGridLayout? get heatmap {
     final y = yearData;
     return y == null ? null : yearGridLayout(y.year.toInt(), y.days);

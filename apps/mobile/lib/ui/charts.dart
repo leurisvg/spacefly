@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
@@ -40,6 +42,46 @@ FlGridData _grid(BuildContext context) => FlGridData(
       getDrawingHorizontalLine: (_) => FlLine(color: context.tokens.chartGrid, strokeWidth: 1),
     );
 
+/// What each color of a chart stands for, in a row under it (the web's legend). A [line] item is drawn as a dash with a dot.
+class ChartLegend extends StatelessWidget {
+  const ChartLegend({super.key, required this.items});
+
+  final List<({Color color, String label, bool line})> items;
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = context.tokens;
+    return Padding(
+      padding: const EdgeInsets.only(top: 8),
+      child: Wrap(
+        key: const Key('chart-legend'),
+        spacing: 14,
+        runSpacing: 4,
+        children: [
+          for (final item in items)
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                item.line
+                    ? SizedBox(
+                        width: 14,
+                        height: 10,
+                        child: Stack(alignment: Alignment.center, children: [
+                          Container(height: 2, color: item.color),
+                          Container(width: 6, height: 6, decoration: BoxDecoration(shape: BoxShape.circle, color: item.color)),
+                        ]),
+                      )
+                    : Container(width: 10, height: 10, decoration: BoxDecoration(color: item.color, borderRadius: BorderRadius.circular(2))),
+                const SizedBox(width: 5),
+                Text(item.label, style: TextStyle(fontSize: 11, color: tokens.chartInk2)),
+              ],
+            ),
+        ],
+      ),
+    );
+  }
+}
+
 /// Income and expenses side by side per month. Tapping a month calls [onMonth]; the tooltip shows the net too.
 class IncomeExpenseChart extends StatelessWidget {
   const IncomeExpenseChart({super.key, required this.months, required this.f, required this.incomeLabel, required this.expenseLabel, required this.netLabel, required this.onMonth, this.currency});
@@ -58,55 +100,94 @@ class IncomeExpenseChart extends StatelessWidget {
   Widget build(BuildContext context) {
     final tokens = context.tokens;
     final step = labelStep(months.length);
-    final top = months.fold<double>(0, (m, x) => [m, x.income, x.expense].reduce((a, b) => a > b ? a : b));
-    return SizedBox(
-      height: 220,
-      child: BarChart(
-        BarChartData(
-          maxY: top == 0 ? 1 : null,
-          alignment: BarChartAlignment.spaceAround,
-          gridData: _grid(context),
-          borderData: FlBorderData(show: false),
-          titlesData: _titles(
-            context,
-            left: (v) => Text(f.compact(v, currency: currency)),
-            bottom: (v) => v.toInt() % step == 0 && v.toInt() < months.length ? Text(f.monthLabel(months[v.toInt()].month, withYear: false)) : const SizedBox.shrink(),
-          ),
-          barTouchData: BarTouchData(
-            touchCallback: (event, response) {
-              final spot = response?.spot;
-              if (event is FlTapUpEvent && spot != null) onMonth(spot.touchedBarGroupIndex);
-            },
-            touchTooltipData: BarTouchTooltipData(
-              getTooltipColor: (_) => tokens.chartTooltip,
-              getTooltipItem: (group, groupIndex, rod, rodIndex) {
-                if (rodIndex != 0) return null;
-                final m = months[groupIndex];
-                return BarTooltipItem(
-                  '${f.date(m.month, DateStyle.month)}\n',
-                  TextStyle(color: tokens.chartInk, fontWeight: FontWeight.w600, fontSize: 12),
-                  children: [
-                    TextSpan(text: '$incomeLabel  ${f.money(m.income, currency: currency)}\n', style: TextStyle(color: tokens.moneyIncome, fontWeight: FontWeight.w400)),
-                    TextSpan(text: '$expenseLabel  ${f.money(-m.expense, currency: currency)}\n', style: TextStyle(color: tokens.moneyExpense, fontWeight: FontWeight.w400)),
-                    TextSpan(text: '$netLabel  ${f.money(m.net, currency: currency, signed: true)}', style: TextStyle(color: tokens.moneyNet, fontWeight: FontWeight.w400)),
+    final top = months.fold<double>(0, (m, x) => [m, x.income, x.expense, x.net].reduce((a, b) => a > b ? a : b));
+    final bottom = months.fold<double>(0, (m, x) => x.net < m ? x.net : m);
+    // Both charts share the vertical range and the room kept for the axes, so the net line sits over the bars it belongs to.
+    final minY = f.hidden || bottom == 0 ? 0.0 : bottom * 1.1;
+    final maxY = top == 0 || f.hidden ? 1.0 : top * 1.08;
+    Widget monthLabel(double v) => v.toInt() % step == 0 && v.toInt() < months.length ? Text(f.monthLabel(months[v.toInt()].month, withYear: false)) : const SizedBox.shrink();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(
+          height: 220,
+          child: Stack(
+            children: [
+              BarChart(
+                BarChartData(
+                  minY: minY,
+                  maxY: maxY,
+                  alignment: BarChartAlignment.spaceAround,
+                  gridData: _grid(context),
+                  borderData: FlBorderData(show: false),
+                  titlesData: _titles(context, left: (v) => Text(f.compact(v, currency: currency)), bottom: monthLabel),
+                  barTouchData: BarTouchData(
+                    touchCallback: (event, response) {
+                      final spot = response?.spot;
+                      if (event is FlTapUpEvent && spot != null) onMonth(spot.touchedBarGroupIndex);
+                    },
+                    touchTooltipData: BarTouchTooltipData(
+                      getTooltipColor: (_) => tokens.chartTooltip,
+                      getTooltipItem: (group, groupIndex, rod, rodIndex) {
+                        if (rodIndex != 0) return null;
+                        final m = months[groupIndex];
+                        return BarTooltipItem(
+                          '${f.date(m.month, DateStyle.month)}\n',
+                          TextStyle(color: tokens.chartInk, fontWeight: FontWeight.w600, fontSize: 12),
+                          children: [
+                            TextSpan(text: '$incomeLabel  ${f.money(m.income, currency: currency)}\n', style: TextStyle(color: tokens.moneyIncome, fontWeight: FontWeight.w400)),
+                            TextSpan(text: '$expenseLabel  ${f.money(-m.expense, currency: currency)}\n', style: TextStyle(color: tokens.moneyExpense, fontWeight: FontWeight.w400)),
+                            TextSpan(text: '$netLabel  ${f.money(m.net, currency: currency, signed: true)}', style: TextStyle(color: tokens.moneyNet, fontWeight: FontWeight.w400)),
+                          ],
+                        );
+                      },
+                    ),
+                  ),
+                  barGroups: [
+                    for (final (i, m) in months.indexed)
+                      BarChartGroupData(
+                        x: i,
+                        barsSpace: 3,
+                        barRods: [
+                          BarChartRodData(toY: f.hidden ? 0 : m.income, color: tokens.moneyIncome, width: 7, borderRadius: const BorderRadius.vertical(top: Radius.circular(3))),
+                          BarChartRodData(toY: f.hidden ? 0 : m.expense, color: tokens.moneyExpense, width: 7, borderRadius: const BorderRadius.vertical(top: Radius.circular(3))),
+                        ],
+                      ),
                   ],
-                );
-              },
-            ),
-          ),
-          barGroups: [
-            for (final (i, m) in months.indexed)
-              BarChartGroupData(
-                x: i,
-                barsSpace: 3,
-                barRods: [
-                  BarChartRodData(toY: f.hidden ? 0 : m.income, color: tokens.moneyIncome, width: 7, borderRadius: const BorderRadius.vertical(top: Radius.circular(3))),
-                  BarChartRodData(toY: f.hidden ? 0 : m.expense, color: tokens.moneyExpense, width: 7, borderRadius: const BorderRadius.vertical(top: Radius.circular(3))),
-                ],
+                ),
               ),
-          ],
+              // The net of each month as a line over the bars: a transparent chart with the same range and axes, that takes no touches.
+              IgnorePointer(
+                child: LineChart(
+                  LineChartData(
+                    minX: -0.5,
+                    maxX: months.length - 0.5,
+                    minY: minY,
+                    maxY: maxY,
+                    gridData: const FlGridData(show: false),
+                    borderData: FlBorderData(show: false),
+                    titlesData: _titles(context, left: (v) => const SizedBox.shrink(), bottom: (v) => const SizedBox.shrink()),
+                    lineTouchData: const LineTouchData(enabled: false),
+                    lineBarsData: [
+                      LineChartBarData(
+                        spots: [for (final (i, m) in months.indexed) FlSpot(i.toDouble(), f.hidden ? 0 : m.net)],
+                        color: tokens.moneyNet,
+                        barWidth: 2,
+                        dotData: FlDotData(show: true, getDotPainter: (_, __, ___, ____) => FlDotCirclePainter(radius: 3.5, color: tokens.moneyNet, strokeWidth: 1.5, strokeColor: tokens.chartSurface)),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
-      ),
+        ChartLegend(items: [
+          (color: tokens.moneyIncome, label: incomeLabel, line: false),
+          (color: tokens.moneyExpense, label: expenseLabel, line: false),
+          (color: tokens.moneyNet, label: netLabel, line: true),
+        ]),
+      ],
     );
   }
 }
@@ -225,10 +306,12 @@ class DonutChart extends StatelessWidget {
 }
 
 /// One or more lines over a shared x axis; the first line can be filled underneath. The x axis is a list of months unless [labels]
-/// gives its own texts (days of a month…); [yFormat] writes the y axis and tooltip values (percentages), [tipTitle] adds a heading
-/// to the tooltip.
+/// gives its own texts (days of a month…); [yFormat] writes the y axis and tooltip values (percentages), [tipTitle] sets the heading
+/// of the tooltip (the month by default) and [tipDetail] adds lines under the values. With several lines a legend names them.
+/// [zeroLine] draws the line of zero when the values cross it and [step] holds each value until the next one (a balance that only
+/// changes on the days something happens).
 class LinesChart extends StatelessWidget {
-  const LinesChart({super.key, required this.months, required this.lines, required this.f, this.area = false, this.height = 200, this.labels, this.yFormat, this.tipTitle});
+  const LinesChart({super.key, required this.months, required this.lines, required this.f, this.area = false, this.height = 200, this.labels, this.yFormat, this.tipTitle, this.tipDetail, this.zeroLine = false, this.step = false});
 
   final List<String> months;
   final List<BalanceLine> lines;
@@ -238,53 +321,73 @@ class LinesChart extends StatelessWidget {
   final List<String>? labels;
   final String Function(double value)? yFormat;
   final String Function(int index)? tipTitle;
+  final String? Function(int index)? tipDetail;
+  final bool zeroLine;
+  final bool step;
 
   @override
   Widget build(BuildContext context) {
     final tokens = context.tokens;
     final count = labels?.length ?? months.length;
-    final step = labelStep(count);
+    final labelEvery = labelStep(count);
     final axis = yFormat ?? (double v) => f.compact(v);
     final tip = yFormat ?? (double v) => f.money(v);
     String xLabel(int i) => labels != null ? labels![i] : f.monthLabel(months[i], withYear: false);
-    return SizedBox(
-      height: height,
-      child: LineChart(
-        LineChartData(
-          gridData: _grid(context),
-          borderData: FlBorderData(show: false),
-          titlesData: _titles(
-            context,
-            left: (v) => Text(axis(v)),
-            bottom: (v) => v.toInt() % step == 0 && v.toInt() < count ? Text(xLabel(v.toInt())) : const SizedBox.shrink(),
-          ),
-          lineTouchData: LineTouchData(
-            touchTooltipData: LineTouchTooltipData(
-              getTooltipColor: (_) => tokens.chartTooltip,
-              getTooltipItems: (spots) => [
-                for (final (n, s) in spots.indexed)
-                  LineTooltipItem(
-                    n == 0 && tipTitle != null ? '${tipTitle!(s.spotIndex)}\n' : '',
-                    TextStyle(color: tokens.chartInk, fontWeight: FontWeight.w600, fontSize: 12),
-                    children: [TextSpan(text: '${lines[s.barIndex].name}  ${tip(s.y)}', style: TextStyle(color: lines[s.barIndex].color, fontSize: 12, fontWeight: FontWeight.w500))],
+    String? title(int i) => tipTitle != null ? tipTitle!(i) : (labels == null && i < months.length ? f.date(months[i], DateStyle.month) : null);
+    final all = [for (final l in lines) ...l.values];
+    final crossesZero = zeroLine && !f.hidden && all.isNotEmpty && all.reduce(math.min) <= 0 && all.reduce(math.max) >= 0;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(
+          height: height,
+          child: LineChart(
+            LineChartData(
+              gridData: _grid(context),
+              borderData: FlBorderData(show: false),
+              extraLinesData: ExtraLinesData(horizontalLines: [if (crossesZero) HorizontalLine(y: 0, color: tokens.chartAxis, strokeWidth: 1)]),
+              titlesData: _titles(
+                context,
+                left: (v) => Text(axis(v)),
+                bottom: (v) => v.toInt() % labelEvery == 0 && v.toInt() < count ? Text(xLabel(v.toInt())) : const SizedBox.shrink(),
+              ),
+              lineTouchData: LineTouchData(
+                touchTooltipData: LineTouchTooltipData(
+                  getTooltipColor: (_) => tokens.chartTooltip,
+                  getTooltipItems: (spots) {
+                    final detail = spots.isEmpty ? null : tipDetail?.call(spots.first.spotIndex);
+                    return [
+                      for (final (n, s) in spots.indexed)
+                        LineTooltipItem(
+                          n == 0 && title(s.spotIndex) != null ? '${title(s.spotIndex)}\n' : '',
+                          TextStyle(color: tokens.chartInk, fontWeight: FontWeight.w600, fontSize: 12),
+                          children: [
+                            TextSpan(text: '${lines[s.barIndex].name}  ${tip(s.y)}', style: TextStyle(color: lines[s.barIndex].color, fontSize: 12, fontWeight: FontWeight.w500)),
+                            if (n == spots.length - 1 && detail != null && detail.isNotEmpty) TextSpan(text: '\n$detail', style: TextStyle(color: tokens.chartInk2, fontSize: 11, fontWeight: FontWeight.w400)),
+                          ],
+                        ),
+                    ];
+                  },
+                ),
+              ),
+              lineBarsData: [
+                for (final (i, line) in lines.indexed)
+                  LineChartBarData(
+                    spots: [for (final (x, y) in line.values.indexed) FlSpot(x.toDouble(), f.hidden ? 0 : y)],
+                    isCurved: false,
+                    isStepLineChart: step,
+                    color: line.color,
+                    barWidth: 2,
+                    dotData: FlDotData(
+                        show: line.values.length <= 14, getDotPainter: (_, __, ___, ____) => FlDotCirclePainter(radius: 3, color: line.color, strokeWidth: 1.5, strokeColor: tokens.chartSurface)),
+                    belowBarData: BarAreaData(show: area && i == 0, color: line.color.withValues(alpha: 0.18)),
                   ),
               ],
             ),
           ),
-          lineBarsData: [
-            for (final (i, line) in lines.indexed)
-              LineChartBarData(
-                spots: [for (final (x, y) in line.values.indexed) FlSpot(x.toDouble(), f.hidden ? 0 : y)],
-                isCurved: false,
-                color: line.color,
-                barWidth: 2,
-                dotData: FlDotData(
-                    show: line.values.length <= 14, getDotPainter: (_, __, ___, ____) => FlDotCirclePainter(radius: 3, color: line.color, strokeWidth: 1.5, strokeColor: tokens.chartSurface)),
-                belowBarData: BarAreaData(show: area && i == 0, color: line.color.withValues(alpha: 0.18)),
-              ),
-          ],
         ),
-      ),
+        if (lines.length > 1) ChartLegend(items: [for (final l in lines) (color: l.color, label: l.name, line: true)]),
+      ],
     );
   }
 }
@@ -316,9 +419,12 @@ class StackedAreaChart extends StatelessWidget {
     final tokens = context.tokens;
     final step = labelStep(months.length);
     final stacked = cumulativeSeries([for (final l in lines) l.values]);
-    return SizedBox(
-      height: height,
-      child: LineChart(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(
+          height: height,
+          child: LineChart(
         LineChartData(
           minY: 0,
           gridData: _grid(context),
@@ -357,6 +463,79 @@ class StackedAreaChart extends StatelessWidget {
           ],
           betweenBarsData: [
             for (var i = 1; i < lines.length; i++) BetweenBarsData(fromIndex: i - 1, toIndex: i, color: lines[i].color.withValues(alpha: 0.4)),
+          ],
+        ),
+      ),
+        ),
+        ChartLegend(items: [for (final l in lines) (color: l.color, label: l.name, line: false)]),
+      ],
+    );
+  }
+}
+
+/// The savings rate of each month as columns (the expense color below zero) with the line of zero; a month without income (`null`) has
+/// no column. [rates] are percentages. Port of `savingsRateOption` in libs/client/src/charts/builders.ts.
+class SavingsRateChart extends StatelessWidget {
+  const SavingsRateChart({super.key, required this.months, required this.rates, required this.f, required this.label, this.height = 200});
+
+  final List<String> months;
+  final List<double?> rates;
+  final Formatter f;
+
+  /// What the tooltip calls the figure ("Savings rate").
+  final String label;
+  final double height;
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = context.tokens;
+    final step = labelStep(months.length);
+    final known = rates.whereType<double>();
+    final top = known.fold<double>(0, math.max);
+    final bottom = known.fold<double>(0, math.min);
+    return SizedBox(
+      height: height,
+      child: BarChart(
+        BarChartData(
+          minY: f.hidden || bottom == 0 ? 0 : bottom * 1.1,
+          maxY: f.hidden || top == 0 ? 1 : top * 1.1,
+          alignment: BarChartAlignment.spaceAround,
+          gridData: _grid(context),
+          borderData: FlBorderData(show: false),
+          extraLinesData: ExtraLinesData(horizontalLines: [HorizontalLine(y: 0, color: tokens.chartAxis, strokeWidth: 1)]),
+          titlesData: _titles(
+            context,
+            // privacy mode flattens every tick to 0 %, like the compact money axes
+            left: (v) => Text(f.hidden ? '0%' : f.share(v)),
+            bottom: (v) => v.toInt() % step == 0 && v.toInt() < months.length ? Text(f.monthLabel(months[v.toInt()], withYear: false)) : const SizedBox.shrink(),
+          ),
+          barTouchData: BarTouchData(
+            touchTooltipData: BarTouchTooltipData(
+              getTooltipColor: (_) => tokens.chartTooltip,
+              getTooltipItem: (group, groupIndex, rod, rodIndex) {
+                final v = rates[groupIndex];
+                return BarTooltipItem(
+                  '${f.date(months[groupIndex], DateStyle.month)}\n',
+                  TextStyle(color: tokens.chartInk, fontWeight: FontWeight.w600, fontSize: 12),
+                  children: [TextSpan(text: '$label  ${v == null ? '—' : f.share(v)}', style: TextStyle(color: tokens.moneySavings, fontWeight: FontWeight.w400))],
+                );
+              },
+            ),
+          ),
+          barGroups: [
+            for (final (i, v) in rates.indexed)
+              BarChartGroupData(
+                x: i,
+                barRods: [
+                  if (v != null)
+                    BarChartRodData(
+                      toY: f.hidden ? 0 : v,
+                      color: v >= 0 ? tokens.moneySavings : tokens.moneyExpense,
+                      width: months.length > 8 ? 12 : 18,
+                      borderRadius: v >= 0 ? const BorderRadius.vertical(top: Radius.circular(4)) : const BorderRadius.vertical(bottom: Radius.circular(4)),
+                    ),
+                ],
+              ),
           ],
         ),
       ),

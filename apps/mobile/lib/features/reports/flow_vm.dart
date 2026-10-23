@@ -11,9 +11,6 @@ import '../../ui_logic/text_table.dart';
 
 enum FlowMode { budget, tags }
 
-/// Shares of income the "group small flows" control offers on a phone (the web has a slider over the same range).
-const flowThresholds = [0.0, 0.01, 0.02, 0.03, 0.05, 0.1];
-
 const _legendOrder = [
   SankeyNodeKind.REVENUE,
   SankeyNodeKind.INCOME_CAT,

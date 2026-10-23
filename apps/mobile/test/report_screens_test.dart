@@ -1,4 +1,6 @@
+import 'package:flutter/gestures.dart' show kLongPressTimeout;
 import 'package:flutter/material.dart';
+import 'package:spacefly_mobile/ui/charts.dart' show SavingsRateChart;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:spacefly_mobile/i18n/strings.g.dart';
 
@@ -161,6 +163,21 @@ void main() {
       expect(find.text('Monthly savings rate'), findsOneWidget);
       expect(find.byKey(const Key('matrix')), findsOneWidget);
       expect(find.text('Rent'), findsOneWidget);
+      expect(find.byType(SavingsRateChart), findsOneWidget, reason: 'columns, with no column for January: it had no income');
+      expect(find.descendant(of: find.byKey(const Key('chart-legend')), matching: find.text('Net')), findsOneWidget);
+    });
+
+    testWidgets('holding a matrix cell tells its category, month and amount', (tester) async {
+      await open(tester);
+      await openReport(tester, 'Annual report');
+      final matrix = find.byKey(const Key('matrix'));
+      await tester.ensureVisible(matrix);
+      await tester.pumpAndSettle();
+      // the matrix scrolls sideways: cell (row 2, col 0) is Rent in January
+      final gesture = await tester.startGesture(tester.getTopLeft(matrix) + const Offset(22, 18 + 28 * 2 + 14));
+      await tester.pump(kLongPressTimeout + const Duration(milliseconds: 100));
+      expect(find.text('Rent · January 2026\nRD\$100.00'), findsOneWidget);
+      await gesture.up();
     });
 
     testWidgets('a tapped matrix cell opens its category and month', (tester) async {
@@ -191,6 +208,30 @@ void main() {
       expect(find.text('Netflix'), findsOneWidget);
       expect(find.text('+RD\$500.00'), findsOneWidget);
       expect(find.text('−RD\$15.00'), findsOneWidget);
+    });
+
+    testWidgets('holding a day shows what it holds', (tester) async {
+      await open(tester);
+      await openReport(tester, 'Calendar');
+      await tester.longPress(find.byKey(const Key('day-2026-09-02')));
+      await tester.pumpAndSettle();
+      final tip = tester.widget<Tooltip>(find.ancestor(of: find.byKey(const Key('day-2026-09-02')), matching: find.byType(Tooltip)).first).message!;
+      expect(find.text(tip), findsOneWidget);
+      expect(tip, contains('RD\$40.00'));
+    });
+
+    testWidgets('holding a day of the year heatmap shows its date and spending', (tester) async {
+      await open(tester);
+      await openReport(tester, 'Calendar');
+      await tester.tap(find.text('Year'));
+      await tester.pumpAndSettle();
+      final box = find.byKey(const Key('year-heatmap'));
+      final cellWidth = (tester.getSize(box).width - 40) / 7;
+      final gesture = await tester.startGesture(tester.getTopLeft(box) + Offset(40 + cellWidth * 3 + cellWidth / 2, 18 + 11));
+      await tester.pump(kLongPressTimeout + const Duration(milliseconds: 100));
+      expect(find.textContaining('January 1, 2026'), findsOneWidget);
+      expect(find.textContaining('Expenses'), findsWidgets);
+      await gesture.up();
     });
 
     testWidgets('a tapped day opens its transactions within the chosen account', (tester) async {
@@ -252,7 +293,7 @@ void main() {
       await closeSheet(tester);
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('Income'));
+      await tester.tap(find.descendant(of: find.byType(SegmentedButton<String>).first, matching: find.text('Income')));
       await tester.pumpAndSettle();
       expect(env.adapter!.requests.lastWhere((r) => r.path == '/api/reports/compare').queryParameters['kind'], 'income');
 

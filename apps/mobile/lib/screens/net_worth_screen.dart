@@ -61,24 +61,7 @@ class NetWorthScreen extends ConsumerWidget {
               ? const SizedBox(height: 240)
               : stack.isEmpty
                   ? EmptyState(title: t.common.noData)
-                  : Column(
-                      children: [
-                        StackedAreaChart(months: r.months, lines: stack, f: f),
-                        const SizedBox(height: 8),
-                        Wrap(
-                          spacing: 14,
-                          runSpacing: 4,
-                          children: [
-                            for (final l in stack)
-                              Row(mainAxisSize: MainAxisSize.min, children: [
-                                Container(width: 10, height: 10, decoration: BoxDecoration(color: l.color, borderRadius: BorderRadius.circular(3))),
-                                const SizedBox(width: 6),
-                                Text(l.name, style: Theme.of(context).textTheme.bodySmall),
-                              ]),
-                          ],
-                        ),
-                      ],
-                    ),
+                  : StackedAreaChart(months: r.months, lines: stack, f: f),
         ),
       ],
     );
