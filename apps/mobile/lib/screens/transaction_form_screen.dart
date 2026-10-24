@@ -20,10 +20,13 @@ import '../ui_logic/time.dart';
 /// Create (`/transactions/new`) or edit (`/transactions/:id/edit`) a transaction. The rules (the type from the two accounts, other
 /// currency, validation, saving, "stay after saving") are in the view-model; this screen draws the fields and binds them.
 class TransactionFormScreen extends ConsumerStatefulWidget {
-  const TransactionFormScreen({super.key, this.id, this.query = const TxQueryValues()});
+  const TransactionFormScreen({super.key, this.id, this.query = const TxQueryValues(), this.focusDescription = false});
 
   final String? id;
   final TxQueryValues query;
+
+  /// Opens with the keyboard up on the description (the launcher shortcut).
+  final bool focusDescription;
 
   @override
   ConsumerState<TransactionFormScreen> createState() => _TransactionFormScreenState();
@@ -48,6 +51,32 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
   void initState() {
     super.initState();
     _sync(ref.read(txFormProvider(_args)).model);
+    _focusPending = widget.focusDescription;
+    _focusIfReady(ref.read(txFormProvider(_args)).status);
+  }
+
+  /// The keyboard goes to the description once, as soon as the form is drawn (it is not while the form is still loading).
+  bool _focusPending = false;
+
+  void _focusIfReady(TxFormStatus status) {
+    if (!_focusPending || status != TxFormStatus.ready) return;
+    _focusPending = false;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      // while the screen is still sliding in, its focus scope is not the active one yet: wait for the end of the transition
+      final animation = ModalRoute.of(context)?.animation;
+      if (animation == null || animation.isCompleted) {
+        _descriptionFocus.requestFocus();
+        return;
+      }
+      void onStatus(AnimationStatus s) {
+        if (s != AnimationStatus.completed) return;
+        animation.removeStatusListener(onStatus);
+        if (mounted) _descriptionFocus.requestFocus();
+      }
+
+      animation.addStatusListener(onStatus);
+    });
   }
 
   @override
@@ -123,6 +152,7 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
   Widget build(BuildContext context) {
     ref.listen(txFormProvider(_args), (prev, next) {
       _sync(next.model);
+      _focusIfReady(next.status);
       if (prev != null && next.resetTick != prev.resetTick) _descriptionFocus.requestFocus();
     });
     final t = context.t;
@@ -488,4 +518,5 @@ class _Message extends StatelessWidget {
 }
 
 /// `/transactions/new` pre-filled from a query string (`?source=…&amount=…`).
-TransactionFormScreen newTransactionScreen(GoRouterState state) => TransactionFormScreen(query: TxQueryValues.fromMap(state.uri.queryParameters));
+TransactionFormScreen newTransactionScreen(GoRouterState state) =>
+    TransactionFormScreen(query: TxQueryValues.fromMap(state.uri.queryParameters), focusDescription: state.uri.queryParameters['focus'] == 'description');

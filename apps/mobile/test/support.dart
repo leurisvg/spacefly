@@ -9,6 +9,7 @@ import 'package:spacefly_mobile/api/api_client.dart';
 import 'package:spacefly_mobile/app.dart';
 import 'package:spacefly_mobile/i18n/strings.g.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:spacefly_mobile/platform/launcher_shortcuts.dart';
 import 'package:spacefly_mobile/platform/platform.dart';
 import 'package:spacefly_mobile/state/filters_store.dart';
 import 'package:spacefly_mobile/state/preferences.dart';
@@ -110,6 +111,22 @@ class RecordingFileShare implements FileShare {
   }
 }
 
+/// The launcher's shortcut menu: remembers what the app put in it, and lets a test pick an entry.
+class RecordingLauncherShortcuts implements LauncherShortcuts {
+  final List<List<LauncherShortcut>> published = [];
+  void Function(String type)? _onPick;
+
+  List<LauncherShortcut> get current => published.isEmpty ? const [] : published.last;
+
+  void pick(String type) => _onPick!(type);
+
+  @override
+  void listen(void Function(String type) onPick) => _onPick = onPick;
+
+  @override
+  Future<void> set(List<LauncherShortcut> shortcuts) async => published.add(shortcuts);
+}
+
 class FakeBack implements BackNavigation {
   final List<String> fallbacks = [];
 
@@ -134,12 +151,14 @@ class TestEnv {
   final confirm = FakeConfirm();
   final back = FakeBack();
   final share = RecordingFileShare();
+  final shortcuts = RecordingLauncherShortcuts();
 
   List<Override> get overrides => [
         toastProvider.overrideWithValue(toast),
         confirmProvider.overrideWithValue(confirm),
         backNavigationProvider.overrideWithValue(back),
         fileShareProvider.overrideWithValue(share),
+        launcherShortcutsProvider.overrideWithValue(shortcuts),
         keyValueStoreProvider.overrideWithValue(prefs),
         credentialStoreProvider.overrideWithValue(secure),
         initialServerConfigProvider.overrideWithValue(initialConfig),

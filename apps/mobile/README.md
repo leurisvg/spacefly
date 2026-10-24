@@ -28,3 +28,5 @@ Then `npm run build:mobile:android` (or `flutter build appbundle`). Keep the key
 **Icons and launch screens.** Both platforms are drawn from the web's logo by `python3 -I tool/make_icons.py` (Pillow and fontTools). The Android launch background is the default theme's color in `res/values/colors.xml`.
 
 **While the app is away.** After 5 minutes in the background it refetches its data when it comes back; Android keeps the amounts out of the recent-apps thumbnail (`MainActivity`), and on iOS the app covers itself while it is not active.
+
+**Shortcut.** Holding the icon offers "New transaction" (`lib/ui/shortcuts_gate.dart`, `quick_actions`); it opens `/transactions/new?focus=description`.

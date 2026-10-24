@@ -50,6 +50,7 @@ dependencies:
   url_launcher: ^6.3.2
   share_plus: ^10.1.4
   path_provider: ^2.1.5
+  quick_actions: ^1.1.0
 
 dev_dependencies:
   flutter_test:

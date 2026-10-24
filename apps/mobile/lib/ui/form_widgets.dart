@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 
 import '../i18n/strings.g.dart';
@@ -63,9 +65,19 @@ class TapField extends StatelessWidget {
   }
 }
 
-/// A text field with the options that match what is typed listed right under it (not in an overlay, so the keyboard never hides them), all of them in a list that scrolls on its own.
+/// Where the list of a [SuggestField] goes and how tall it can be: under the field, or over it when there is more room there (a field
+/// near the bottom, with the keyboard up). [visibleBottom] is where the screen ends above the keyboard. Pure, so it is tested without drawing.
+({bool below, double height}) suggestionsPlacement({required double fieldTop, required double fieldBottom, required double visibleTop, required double visibleBottom, double max = 264, double gap = 4}) {
+  final below = visibleBottom - fieldBottom - gap;
+  final above = fieldTop - visibleTop - gap;
+  final placeBelow = below >= math.min(max, 140) || below >= above;
+  return (below: placeBelow, height: math.max(0, math.min(max, placeBelow ? below : above)));
+}
+
+/// A text field with the options that match what is typed listed in a panel that floats over the form (it never pushes the fields under it
+/// down), under the field or over it when the keyboard leaves no room below; all of them in a list that scrolls on its own.
 /// Picking one fills the field; typing anything else is allowed. Port of the NativeScript `ns-suggest-field`.
-class SuggestField extends StatelessWidget {
+class SuggestField extends StatefulWidget {
   const SuggestField({
     super.key,
     required this.controller,
@@ -104,86 +116,128 @@ class SuggestField extends StatelessWidget {
   final String Function(String text)? createLabel;
 
   @override
+  State<SuggestField> createState() => _SuggestFieldState();
+}
+
+class _SuggestFieldState extends State<SuggestField> {
+  final _portal = OverlayPortalController();
+  final _link = LayerLink();
+  final _fieldKey = GlobalKey();
+
+  @override
+  void initState() {
+    super.initState();
+    // The panel is always mounted (and empty while there is nothing to offer): showing it from build is not allowed.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && !_portal.isShowing) _portal.show();
+    });
+  }
+
+  Widget _panel(BuildContext context, List<Suggestion> shown, bool creatable, String typed) {
+    final box = _fieldKey.currentContext?.findRenderObject() as RenderBox?;
+    if ((shown.isEmpty && !creatable) || box == null || !box.attached || !box.hasSize) return const SizedBox.shrink();
+    final media = MediaQuery.of(context);
+    final top = box.localToGlobal(Offset.zero).dy;
+    final placement = suggestionsPlacement(
+      fieldTop: top,
+      fieldBottom: top + box.size.height,
+      visibleTop: media.padding.top,
+      visibleBottom: media.size.height - media.viewInsets.bottom,
+    );
+    if (placement.height < 48) return const SizedBox.shrink();
+    final scheme = Theme.of(context).colorScheme;
+    final list = Container(
+      clipBehavior: Clip.antiAlias,
+      constraints: BoxConstraints(maxHeight: placement.height),
+      decoration: BoxDecoration(
+        color: scheme.surfaceContainerHigh,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: scheme.outlineVariant),
+        boxShadow: const [BoxShadow(color: Color(0x40000000), blurRadius: 8, offset: Offset(0, 3))],
+      ),
+      // The list scrolls on its own; its notifications stop here so the form's drag-to-dismiss does not drop the focus (and the list).
+      child: NotificationListener<ScrollNotification>(
+        onNotification: (_) => true,
+        child: ListView(
+          key: const Key('suggestions'),
+          shrinkWrap: true,
+          padding: EdgeInsets.zero,
+          children: [
+            if (creatable)
+              InkWell(
+                key: const Key('suggestion-create'),
+                onTap: () => widget.onSubmitted?.call(typed),
+                child: Padding(padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16), child: Align(alignment: Alignment.centerLeft, child: Text(widget.createLabel!(typed), style: TextStyle(fontSize: 16, color: scheme.primary)))),
+              ),
+            for (final o in shown)
+              InkWell(
+                key: Key('suggestion-${o.value}'),
+                onTap: () {
+                  if (widget.onPick != null) {
+                    widget.onPick!(o);
+                    return;
+                  }
+                  widget.controller.text = o.label;
+                  widget.controller.selection = TextSelection.collapsed(offset: o.label.length);
+                  widget.onChanged(o.label);
+                },
+                child: Padding(padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16), child: Align(alignment: Alignment.centerLeft, child: Text(o.label, style: const TextStyle(fontSize: 16)))),
+              ),
+          ],
+        ),
+      ),
+    );
+    return CompositedTransformFollower(
+      link: _link,
+      showWhenUnlinked: false,
+      targetAnchor: placement.below ? Alignment.bottomLeft : Alignment.topLeft,
+      followerAnchor: placement.below ? Alignment.topLeft : Alignment.bottomLeft,
+      offset: Offset(0, placement.below ? 2 : -2),
+      // a tap on the panel counts as a tap on the field, so it does not drop the focus
+      child: Align(alignment: Alignment.topLeft, child: SizedBox(width: box.size.width, child: TextFieldTapRegion(child: list))),
+    );
+  }
+
+  @override
   Widget build(BuildContext context) => ListenableBuilder(
-        listenable: Listenable.merge([controller, if (focusNode != null) focusNode!]),
+        listenable: Listenable.merge([widget.controller, if (widget.focusNode != null) widget.focusNode!]),
         builder: (context, _) {
-          final focused = focusNode?.hasFocus ?? true;
-          final shown = focused ? suggestionsFor(options, controller.text, max: options.length) : const <Suggestion>[];
-          final typed = controller.text.trim();
-          final creatable = createLabel != null && focused && typed.isNotEmpty && !options.any((o) => o.label.toLowerCase() == typed.toLowerCase());
-          final scheme = Theme.of(context).colorScheme;
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              TextField(
-                controller: controller,
-                focusNode: focusNode,
-                textInputAction: textInputAction,
+          final focused = widget.focusNode?.hasFocus ?? true;
+          final shown = focused ? suggestionsFor(widget.options, widget.controller.text, max: widget.options.length) : const <Suggestion>[];
+          final typed = widget.controller.text.trim();
+          final creatable = widget.createLabel != null && focused && typed.isNotEmpty && !widget.options.any((o) => o.label.toLowerCase() == typed.toLowerCase());
+          return OverlayPortal(
+            controller: _portal,
+            overlayChildBuilder: (context) => _panel(context, shown, creatable, typed),
+            child: CompositedTransformTarget(
+              link: _link,
+              child: TextField(
+                key: _fieldKey,
+                controller: widget.controller,
+                focusNode: widget.focusNode,
+                textInputAction: widget.textInputAction,
                 textCapitalization: TextCapitalization.sentences,
                 decoration: InputDecoration(
-                  labelText: required ? '$label *' : label,
-                  hintText: hint,
-                  errorText: errorText,
-                  prefixIcon: icon == null ? null : Icon(icon, size: 20),
-                  suffixIcon: focused && controller.text.isNotEmpty
+                  labelText: widget.required ? '${widget.label} *' : widget.label,
+                  hintText: widget.hint,
+                  errorText: widget.errorText,
+                  prefixIcon: widget.icon == null ? null : Icon(widget.icon, size: 20),
+                  suffixIcon: focused && widget.controller.text.isNotEmpty
                       ? IconButton(
                           key: const Key('clear-text'),
                           tooltip: context.t.forms.clear,
                           icon: const Icon(Icons.close),
                           onPressed: () {
-                            controller.clear();
-                            onChanged('');
+                            widget.controller.clear();
+                            widget.onChanged('');
                           },
                         )
                       : null,
                 ),
-                onChanged: onChanged,
-                onSubmitted: onSubmitted,
+                onChanged: widget.onChanged,
+                onSubmitted: widget.onSubmitted,
               ),
-              if (shown.isNotEmpty || creatable)
-                Container(
-                  margin: const EdgeInsets.only(top: 2),
-                  clipBehavior: Clip.antiAlias,
-                  constraints: const BoxConstraints(maxHeight: 264),
-                  decoration: BoxDecoration(
-                    color: scheme.surfaceContainerHigh,
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: scheme.outlineVariant),
-                    boxShadow: const [BoxShadow(color: Color(0x40000000), blurRadius: 8, offset: Offset(0, 3))],
-                  ),
-                  // The list scrolls on its own; its notifications stop here so the form's drag-to-dismiss does not drop the focus (and the list).
-                  child: NotificationListener<ScrollNotification>(
-                    onNotification: (_) => true,
-                    child: ListView(
-                      key: const Key('suggestions'),
-                      shrinkWrap: true,
-                      padding: EdgeInsets.zero,
-                      children: [
-                        if (creatable)
-                          InkWell(
-                            key: const Key('suggestion-create'),
-                            onTap: () => onSubmitted?.call(typed),
-                            child: Padding(padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16), child: Align(alignment: Alignment.centerLeft, child: Text(createLabel!(typed), style: TextStyle(fontSize: 16, color: scheme.primary)))),
-                          ),
-                        for (final o in shown)
-                          InkWell(
-                            key: Key('suggestion-${o.value}'),
-                            onTap: () {
-                              if (onPick != null) {
-                                onPick!(o);
-                                return;
-                              }
-                              controller.text = o.label;
-                              controller.selection = TextSelection.collapsed(offset: o.label.length);
-                              onChanged(o.label);
-                            },
-                            child: Padding(padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16), child: Align(alignment: Alignment.centerLeft, child: Text(o.label, style: const TextStyle(fontSize: 16)))),
-                          ),
-                      ],
-                    ),
-                  ),
-                ),
-            ],
+            ),
           );
         },
       );

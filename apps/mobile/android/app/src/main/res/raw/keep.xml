@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The release build drops the resources nothing in the code names. The icon of the "New transaction" shortcut is only named from Dart
+     (lib/platform/launcher_shortcuts.dart), so it has to be kept. -->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:keep="@drawable/ic_shortcut_add" />
