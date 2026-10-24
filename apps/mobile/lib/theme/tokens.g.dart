@@ -133,7 +133,7 @@ const themeDusk = ThemeTokens(
 const themeFrappe = ThemeTokens(
   accent: Color(0xFFCA9EE6),
   background: Color(0xFF303446),
-  chartSurface: Color(0xFF414559),
+  chartSurface: Color(0xFF292C3C),
   chartInk: Color(0xFFC6D0F5),
   chartInk2: Color(0xFFB5BFE2),
   chartMuted: Color(0xFF838BA7),
@@ -156,7 +156,7 @@ const themeFrappe = ThemeTokens(
 const themeMacchiato = ThemeTokens(
   accent: Color(0xFFC6A0F6),
   background: Color(0xFF24273A),
-  chartSurface: Color(0xFF363A4F),
+  chartSurface: Color(0xFF1E2030),
   chartInk: Color(0xFFCAD3F5),
   chartInk2: Color(0xFFB8C0E0),
   chartMuted: Color(0xFF8087A2),
@@ -179,7 +179,7 @@ const themeMacchiato = ThemeTokens(
 const themeMocha = ThemeTokens(
   accent: Color(0xFFCBA6F7),
   background: Color(0xFF1E1E2E),
-  chartSurface: Color(0xFF313244),
+  chartSurface: Color(0xFF181825),
   chartInk: Color(0xFFCDD6F4),
   chartInk2: Color(0xFFBAC2DE),
   chartMuted: Color(0xFF7F849C),

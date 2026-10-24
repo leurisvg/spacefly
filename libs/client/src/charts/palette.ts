@@ -60,10 +60,10 @@ export type PaletteVars = { readonly [K in keyof typeof MIDNIGHT]: string };
  *   midnight (green/orange next to each other fail under deuteranopia); money-* tokens keep their meaning
  *   (green income, red expense, blue net…) regardless of slot. money-hub/other are recessive neutrals, like midnight's.
  * - dusk: surface #464858, same validation in `light` mode (all five checks pass, no exceptions); a third slot order.
- * - frappe / macchiato / mocha (Catppuccin): page = Base, cards and charts = Surface 0, sidebar = Mantle, accent = Mauve.
+ * - frappe / macchiato / mocha (Catppuccin): page = Base, cards and charts = Mantle, sidebar = Mantle, accent = Mauve.
  *   The money-* tokens and the chrome are the flavor's own colors. The pastel accents sit above the validator's
  *   lightness band, so the series slots are each accent nudged (same hue, slightly darker and more saturated) until
- *   the palette passes in `light` mode on its Surface 0 (frappe #414559, macchiato #363a4f, mocha #313244): band,
+ *   the palette passes in `light` mode on its card, Mantle (frappe #292c3c, macchiato #1e2030, mocha #181825): band,
  *   chroma, adjacent CVD ΔE >= 8, normal vision ΔE >= 15, >= 3:1 contrast, no exceptions; one slot order per flavor.
  */
 export const THEMES: Record<ThemeId, PaletteVars> = {
@@ -126,7 +126,7 @@ export const THEMES: Record<ThemeId, PaletteVars> = {
   },
   frappe: {
     '--background': '#303446',
-    '--chart-surface': '#414559',
+    '--chart-surface': '#292c3c',
     '--chart-ink': '#c6d0f5',
     '--chart-ink-2': '#b5bfe2',
     '--chart-muted': '#838ba7',
@@ -154,7 +154,7 @@ export const THEMES: Record<ThemeId, PaletteVars> = {
   },
   macchiato: {
     '--background': '#24273a',
-    '--chart-surface': '#363a4f',
+    '--chart-surface': '#1e2030',
     '--chart-ink': '#cad3f5',
     '--chart-ink-2': '#b8c0e0',
     '--chart-muted': '#8087a2',
@@ -182,7 +182,7 @@ export const THEMES: Record<ThemeId, PaletteVars> = {
   },
   mocha: {
     '--background': '#1e1e2e',
-    '--chart-surface': '#313244',
+    '--chart-surface': '#181825',
     '--chart-ink': '#cdd6f4',
     '--chart-ink-2': '#bac2de',
     '--chart-muted': '#7f849c',
