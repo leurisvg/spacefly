@@ -24,6 +24,9 @@ void main() {
   test('initialTheme falls back to the default for an unknown id', () {
     expect(initialTheme('earth'), ThemeId.earth);
     expect(initialTheme('dusk'), ThemeId.dusk);
+    expect(initialTheme('frappe'), ThemeId.frappe);
+    expect(initialTheme('macchiato'), ThemeId.macchiato);
+    expect(initialTheme('mocha'), ThemeId.mocha);
     expect(initialTheme('neon'), defaultThemeId);
     expect(initialTheme(null), defaultThemeId);
   });

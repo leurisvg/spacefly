@@ -3,7 +3,7 @@
 (function () {
   try {
     var saved = localStorage.getItem('spacefly.theme');
-    if (saved === 'midnight' || saved === 'earth' || saved === 'dusk') document.documentElement.setAttribute('data-theme', saved);
+    if (['midnight', 'earth', 'dusk', 'frappe', 'macchiato', 'mocha'].indexOf(saved) !== -1) document.documentElement.setAttribute('data-theme', saved);
   } catch (e) {
     /* storage blocked: stay on the default theme */
   }

@@ -18,6 +18,9 @@ String themeLabel(Translations t, ThemeId id) => switch (id) {
       ThemeId.midnight => t.theme.midnight,
       ThemeId.earth => t.theme.earth,
       ThemeId.dusk => t.theme.dusk,
+      ThemeId.frappe => t.theme.frappe,
+      ThemeId.macchiato => t.theme.macchiato,
+      ThemeId.mocha => t.theme.mocha,
     };
 
 class SettingsTab extends ConsumerWidget {

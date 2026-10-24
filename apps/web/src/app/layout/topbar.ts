@@ -102,7 +102,7 @@ import { NewMenu } from './new-menu';
         <ng-icon name="lucidePalette" />
       </button>
       <ng-template #themeMenu>
-        <hlm-dropdown-menu class="w-44">
+        <hlm-dropdown-menu class="w-56">
           @for (t of vm.themes; track t) {
             <button hlmDropdownMenuItem (triggered)="vm.setTheme(t)">
               <span

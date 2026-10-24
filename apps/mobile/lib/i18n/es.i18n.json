@@ -1,6 +1,6 @@
 {
   "lang": { "es": "Español", "en": "English" },
-  "theme": { "midnight": "Medianoche", "earth": "Tierra", "dusk": "Atardecer" },
+  "theme": { "midnight": "Medianoche", "earth": "Tierra", "dusk": "Atardecer", "frappe": "Catppuccin Frappé", "macchiato": "Catppuccin Macchiato", "mocha": "Catppuccin Mocha" },
   "common": {
     "income": "Ingresos",
     "expenses": "Gastos",

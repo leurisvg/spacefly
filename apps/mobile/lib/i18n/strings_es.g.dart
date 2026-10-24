@@ -96,6 +96,9 @@ class _Translations$theme$es extends Translations$theme$en {
 	@override String get midnight => 'Medianoche';
 	@override String get earth => 'Tierra';
 	@override String get dusk => 'Atardecer';
+	@override String get frappe => 'Catppuccin Frappé';
+	@override String get macchiato => 'Catppuccin Macchiato';
+	@override String get mocha => 'Catppuccin Mocha';
 }
 
 // Path: common
@@ -1515,6 +1518,9 @@ extension on TranslationsEs {
 			'theme.midnight' => 'Medianoche',
 			'theme.earth' => 'Tierra',
 			'theme.dusk' => 'Atardecer',
+			'theme.frappe' => 'Catppuccin Frappé',
+			'theme.macchiato' => 'Catppuccin Macchiato',
+			'theme.mocha' => 'Catppuccin Mocha',
 			'common.income' => 'Ingresos',
 			'common.expenses' => 'Gastos',
 			'common.net' => 'Neto',
@@ -2019,11 +2025,11 @@ extension on TranslationsEs {
 			'forms.tags.remove' => ({required Object tag}) => 'Quitar ${tag}',
 			'forms.confirm.ok' => 'Confirmar',
 			'forms.confirm.typeToConfirm' => ({required Object text}) => 'Escribe «${text}» para confirmar',
+			_ => null,
+		} ?? switch (path) {
 			'editor.back' => 'Volver',
 			'editor.retry' => 'Reintentar',
 			'editor.networkError' => 'No se pudo contactar con el servidor. Revisa tu conexión: es posible que el cambio no se haya guardado.',
-			_ => null,
-		} ?? switch (path) {
 			'editor.kNew' => 'Nuevo',
 			'editor.newTitle' => 'Crear',
 			'editor.tx.description' => 'Se deduce solo si es un gasto, un ingreso o una transferencia según las cuentas que elijas.',

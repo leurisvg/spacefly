@@ -4,7 +4,7 @@
 
 import 'dart:ui' show Color;
 
-enum ThemeId { midnight, earth, dusk }
+enum ThemeId { midnight, earth, dusk, frappe, macchiato, mocha }
 
 const defaultThemeId = ThemeId.midnight;
 
@@ -130,8 +130,80 @@ const themeDusk = ThemeTokens(
   series: [Color(0xFFE0A165), Color(0xFF6CA9E1), Color(0xFF6EB15F), Color(0xFFE294B3), Color(0xFFB6951F), Color(0xFF24BBAB), Color(0xFFB597F0), Color(0xFFDD7F7B)],
 );
 
+const themeFrappe = ThemeTokens(
+  accent: Color(0xFFCA9EE6),
+  background: Color(0xFF303446),
+  chartSurface: Color(0xFF414559),
+  chartInk: Color(0xFFC6D0F5),
+  chartInk2: Color(0xFFB5BFE2),
+  chartMuted: Color(0xFF838BA7),
+  chartGrid: Color(0xFF51576D),
+  chartAxis: Color(0xFF626880),
+  chartTooltip: Color(0xFF232634),
+  chartOnFill: Color(0xFF232634),
+  moneyIncome: Color(0xFFA6D189),
+  moneyExpense: Color(0xFFE78284),
+  moneyNet: Color(0xFF8CAAEE),
+  moneySavings: Color(0xFF81C8BE),
+  moneyBudget: Color(0xFF8CAAEE),
+  moneyRevenue: Color(0xFFCA9EE6),
+  moneyHub: Color(0xFF838BA7),
+  moneyDeficit: Color(0xFFEF9F76),
+  moneyOther: Color(0xFF737994),
+  series: [Color(0xFF92BB76), Color(0xFFDE8EC9), Color(0xFFD6AB5A), Color(0xFF06BFA9), Color(0xFFC592E8), Color(0xFFD07C57), Color(0xFF90AAF3), Color(0xFFDD787C)],
+);
+
+const themeMacchiato = ThemeTokens(
+  accent: Color(0xFFC6A0F6),
+  background: Color(0xFF24273A),
+  chartSurface: Color(0xFF363A4F),
+  chartInk: Color(0xFFCAD3F5),
+  chartInk2: Color(0xFFB8C0E0),
+  chartMuted: Color(0xFF8087A2),
+  chartGrid: Color(0xFF494D64),
+  chartAxis: Color(0xFF5B6078),
+  chartTooltip: Color(0xFF181926),
+  chartOnFill: Color(0xFF181926),
+  moneyIncome: Color(0xFFA6DA95),
+  moneyExpense: Color(0xFFED8796),
+  moneyNet: Color(0xFF8AADF4),
+  moneySavings: Color(0xFF8BD5CA),
+  moneyBudget: Color(0xFF8AADF4),
+  moneyRevenue: Color(0xFFC6A0F6),
+  moneyHub: Color(0xFF8087A2),
+  moneyDeficit: Color(0xFFF5A97F),
+  moneyOther: Color(0xFF6E738D),
+  series: [Color(0xFF7C9DF6), Color(0xFFD97385), Color(0xFF1FC8BE), Color(0xFFF69961), Color(0xFFC49FF9), Color(0xFF8EC471), Color(0xFFDA87C7), Color(0xFFDAA637)],
+);
+
+const themeMocha = ThemeTokens(
+  accent: Color(0xFFCBA6F7),
+  background: Color(0xFF1E1E2E),
+  chartSurface: Color(0xFF313244),
+  chartInk: Color(0xFFCDD6F4),
+  chartInk2: Color(0xFFBAC2DE),
+  chartMuted: Color(0xFF7F849C),
+  chartGrid: Color(0xFF45475A),
+  chartAxis: Color(0xFF585B70),
+  chartTooltip: Color(0xFF11111B),
+  chartOnFill: Color(0xFF11111B),
+  moneyIncome: Color(0xFFA6E3A1),
+  moneyExpense: Color(0xFFF38BA8),
+  moneyNet: Color(0xFF89B4FA),
+  moneySavings: Color(0xFF94E2D5),
+  moneyBudget: Color(0xFF89B4FA),
+  moneyRevenue: Color(0xFFCBA6F7),
+  moneyHub: Color(0xFF7F849C),
+  moneyDeficit: Color(0xFFFAB387),
+  moneyOther: Color(0xFF6C7086),
+  series: [Color(0xFF43C4B9), Color(0xFFEC8F52), Color(0xFFC881B9), Color(0xFFCBA747), Color(0xFFEB91AE), Color(0xFF8CB0F8), Color(0xFF89C679), Color(0xFFC69DFB)],
+);
+
 const themeTokens = <ThemeId, ThemeTokens>{
   ThemeId.midnight: themeMidnight,
   ThemeId.earth: themeEarth,
   ThemeId.dusk: themeDusk,
+  ThemeId.frappe: themeFrappe,
+  ThemeId.macchiato: themeMacchiato,
+  ThemeId.mocha: themeMocha,
 };

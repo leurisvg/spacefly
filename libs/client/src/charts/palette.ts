@@ -5,7 +5,7 @@ import { signal } from '@angular/core';
  * concrete colors rather than CSS custom properties, so the charts draw from this file;
  * `palette.spec.ts` fails if it drifts from the stylesheet.
  */
-export const THEME_IDS = ['midnight', 'earth', 'dusk'] as const;
+export const THEME_IDS = ['midnight', 'earth', 'dusk', 'frappe', 'macchiato', 'mocha'] as const;
 export type ThemeId = (typeof THEME_IDS)[number];
 export const DEFAULT_THEME: ThemeId = 'midnight';
 
@@ -60,6 +60,11 @@ export type PaletteVars = { readonly [K in keyof typeof MIDNIGHT]: string };
  *   midnight (green/orange next to each other fail under deuteranopia); money-* tokens keep their meaning
  *   (green income, red expense, blue net…) regardless of slot. money-hub/other are recessive neutrals, like midnight's.
  * - dusk: surface #464858, same validation in `light` mode (all five checks pass, no exceptions); a third slot order.
+ * - frappe / macchiato / mocha (Catppuccin): page = Base, cards and charts = Surface 0, sidebar = Mantle, accent = Mauve.
+ *   The money-* tokens and the chrome are the flavor's own colors. The pastel accents sit above the validator's
+ *   lightness band, so the series slots are each accent nudged (same hue, slightly darker and more saturated) until
+ *   the palette passes in `light` mode on its Surface 0 (frappe #414559, macchiato #363a4f, mocha #313244): band,
+ *   chroma, adjacent CVD ΔE >= 8, normal vision ΔE >= 15, >= 3:1 contrast, no exceptions; one slot order per flavor.
  */
 export const THEMES: Record<ThemeId, PaletteVars> = {
   midnight: MIDNIGHT,
@@ -119,6 +124,90 @@ export const THEMES: Record<ThemeId, PaletteVars> = {
     '--series-7': '#b597f0',
     '--series-8': '#dd7f7b',
   },
+  frappe: {
+    '--background': '#303446',
+    '--chart-surface': '#414559',
+    '--chart-ink': '#c6d0f5',
+    '--chart-ink-2': '#b5bfe2',
+    '--chart-muted': '#838ba7',
+    '--chart-grid': '#51576d',
+    '--chart-axis': '#626880',
+    '--chart-tooltip': '#232634',
+    '--chart-on-fill': '#232634',
+    '--money-income': '#a6d189',
+    '--money-expense': '#e78284',
+    '--money-net': '#8caaee',
+    '--money-savings': '#81c8be',
+    '--money-budget': '#8caaee',
+    '--money-revenue': '#ca9ee6',
+    '--money-hub': '#838ba7',
+    '--money-deficit': '#ef9f76',
+    '--money-other': '#737994',
+    '--series-1': '#92bb76',
+    '--series-2': '#de8ec9',
+    '--series-3': '#d6ab5a',
+    '--series-4': '#06bfa9',
+    '--series-5': '#c592e8',
+    '--series-6': '#d07c57',
+    '--series-7': '#90aaf3',
+    '--series-8': '#dd787c',
+  },
+  macchiato: {
+    '--background': '#24273a',
+    '--chart-surface': '#363a4f',
+    '--chart-ink': '#cad3f5',
+    '--chart-ink-2': '#b8c0e0',
+    '--chart-muted': '#8087a2',
+    '--chart-grid': '#494d64',
+    '--chart-axis': '#5b6078',
+    '--chart-tooltip': '#181926',
+    '--chart-on-fill': '#181926',
+    '--money-income': '#a6da95',
+    '--money-expense': '#ed8796',
+    '--money-net': '#8aadf4',
+    '--money-savings': '#8bd5ca',
+    '--money-budget': '#8aadf4',
+    '--money-revenue': '#c6a0f6',
+    '--money-hub': '#8087a2',
+    '--money-deficit': '#f5a97f',
+    '--money-other': '#6e738d',
+    '--series-1': '#7c9df6',
+    '--series-2': '#d97385',
+    '--series-3': '#1fc8be',
+    '--series-4': '#f69961',
+    '--series-5': '#c49ff9',
+    '--series-6': '#8ec471',
+    '--series-7': '#da87c7',
+    '--series-8': '#daa637',
+  },
+  mocha: {
+    '--background': '#1e1e2e',
+    '--chart-surface': '#313244',
+    '--chart-ink': '#cdd6f4',
+    '--chart-ink-2': '#bac2de',
+    '--chart-muted': '#7f849c',
+    '--chart-grid': '#45475a',
+    '--chart-axis': '#585b70',
+    '--chart-tooltip': '#11111b',
+    '--chart-on-fill': '#11111b',
+    '--money-income': '#a6e3a1',
+    '--money-expense': '#f38ba8',
+    '--money-net': '#89b4fa',
+    '--money-savings': '#94e2d5',
+    '--money-budget': '#89b4fa',
+    '--money-revenue': '#cba6f7',
+    '--money-hub': '#7f849c',
+    '--money-deficit': '#fab387',
+    '--money-other': '#6c7086',
+    '--series-1': '#43c4b9',
+    '--series-2': '#ec8f52',
+    '--series-3': '#c881b9',
+    '--series-4': '#cba747',
+    '--series-5': '#eb91ae',
+    '--series-6': '#8cb0f8',
+    '--series-7': '#89c679',
+    '--series-8': '#c69dfb',
+  },
 };
 
 /** Page and accent color of each theme, for the pickers' preview swatch (the accent is `--primary`; `palette.spec.ts` checks it). */
@@ -126,6 +215,9 @@ export const THEME_SWATCH: Record<ThemeId, { readonly background: string; readon
   midnight: { background: MIDNIGHT['--background'], accent: '#818cf8' },
   earth: { background: '#2c3639', accent: '#a27b5c' },
   dusk: { background: '#0f3040', accent: '#a56f63' },
+  frappe: { background: '#303446', accent: '#ca9ee6' },
+  macchiato: { background: '#24273a', accent: '#c6a0f6' },
+  mocha: { background: '#1e1e2e', accent: '#cba6f7' },
 };
 
 function build(id: ThemeId) {

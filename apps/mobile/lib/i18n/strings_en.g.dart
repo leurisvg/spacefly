@@ -108,6 +108,15 @@ class Translations$theme$en {
 
 	/// en: 'Dusk'
 	String get dusk => 'Dusk';
+
+	/// en: 'Catppuccin Frappé'
+	String get frappe => 'Catppuccin Frappé';
+
+	/// en: 'Catppuccin Macchiato'
+	String get macchiato => 'Catppuccin Macchiato';
+
+	/// en: 'Catppuccin Mocha'
+	String get mocha => 'Catppuccin Mocha';
 }
 
 // Path: common
@@ -2882,6 +2891,9 @@ extension on Translations {
 			'theme.midnight' => 'Midnight',
 			'theme.earth' => 'Earth',
 			'theme.dusk' => 'Dusk',
+			'theme.frappe' => 'Catppuccin Frappé',
+			'theme.macchiato' => 'Catppuccin Macchiato',
+			'theme.mocha' => 'Catppuccin Mocha',
 			'common.income' => 'Income',
 			'common.expenses' => 'Expenses',
 			'common.net' => 'Net',
@@ -3386,11 +3398,11 @@ extension on Translations {
 			'forms.tags.remove' => ({required Object tag}) => 'Remove ${tag}',
 			'forms.confirm.ok' => 'Confirm',
 			'forms.confirm.typeToConfirm' => ({required Object text}) => 'Type “${text}” to confirm',
+			_ => null,
+		} ?? switch (path) {
 			'editor.back' => 'Back',
 			'editor.retry' => 'Retry',
 			'editor.networkError' => 'Couldn\'t reach the server. Check your connection: the change may not have been saved.',
-			_ => null,
-		} ?? switch (path) {
 			'editor.kNew' => 'New',
 			'editor.newTitle' => 'Create',
 			'editor.tx.description' => 'Whether it\'s an expense, income or transfer follows from the accounts you pick.',

@@ -66,6 +66,8 @@ void main() {
     expect(env.prefs.values['spacefly.theme'], 'earth');
     expect(Theme.of(tester.element(find.byKey(const Key('language')))).colorScheme.primary, themeEarth.accent);
 
+    await tester.ensureVisible(find.text('Español'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Español'));
     await tester.pumpAndSettle();
     expect(env.prefs.values['spacefly.lang'], 'es');

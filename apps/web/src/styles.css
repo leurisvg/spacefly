@@ -17,7 +17,7 @@
 @source './libs';
 
 /*
- * Dark themes (midnight, earth, dusk), picked in the topbar and stored as `data-theme` on <html> (see ThemeHost). Midnight is the
+ * Dark themes (midnight, earth, dusk, and the Catppuccin flavors frappe, macchiato, mocha), picked in the topbar and stored as `data-theme` on <html> (see ThemeHost). Midnight is the
  * default and also answers to a bare :root / `.dark`, so nothing breaks before the attribute is set. Every theme
  * block defines every token; the chart/money/series tokens are mirrored in libs/client/src/charts/palette.ts, and
  * palette.spec.ts fails when they drift apart.
@@ -258,6 +258,219 @@
 
   --text-positive: #a6e3b4;
   --text-negative: #ffaa9e;
+}
+
+/*
+ * Catppuccin Frappé: Base page, Surface 0 cards, Mantle sidebar, Mauve accent. The series slots are the flavor's accents
+ * nudged until they pass the dataviz validator on Surface 0 (see palette.ts); the money tokens keep the flavor's own colors.
+ */
+:root[data-theme='frappe'] {
+  color-scheme: dark;
+
+  --background: #303446;
+  --foreground: #c6d0f5;
+  --card: #414559;
+  --card-foreground: #c6d0f5;
+  --popover: #414559;
+  --popover-foreground: #c6d0f5;
+  --primary: #ca9ee6;
+  --primary-foreground: #232634;
+  --secondary: #51576d;
+  --secondary-foreground: #c6d0f5;
+  --muted: #51576d;
+  --muted-foreground: #a5adce;
+  --accent: #51576d;
+  --accent-foreground: #c6d0f5;
+  --destructive: #e78284;
+  --border: #51576d;
+  --input: #626880;
+  --ring: #ca9ee6;
+
+  --sidebar: #292c3c;
+  --sidebar-foreground: #b5bfe2;
+  --sidebar-primary: #ca9ee6;
+  --sidebar-primary-foreground: #232634;
+  --sidebar-accent: #414559;
+  --sidebar-accent-foreground: #c6d0f5;
+  --sidebar-border: #414559;
+  --sidebar-ring: #ca9ee6;
+
+  --chart-surface: #414559;
+  --chart-ink: #c6d0f5;
+  --chart-ink-2: #b5bfe2;
+  --chart-muted: #838ba7;
+  --chart-grid: #51576d;
+  --chart-axis: #626880;
+  --chart-tooltip: #232634;
+  --chart-on-fill: #232634;
+
+  --money-income: #a6d189;
+  --money-expense: #e78284;
+  --money-net: #8caaee;
+  --money-savings: #81c8be;
+  --money-budget: #8caaee;
+  --money-revenue: #ca9ee6;
+  --money-hub: #838ba7;
+  --money-deficit: #ef9f76;
+  --money-other: #737994;
+
+  --series-1: #92bb76;
+  --series-2: #de8ec9;
+  --series-3: #d6ab5a;
+  --series-4: #06bfa9;
+  --series-5: #c592e8;
+  --series-6: #d07c57;
+  --series-7: #90aaf3;
+  --series-8: #dd787c;
+
+  --status-good: #a6d189;
+  --status-warning: #e5c890;
+  --status-critical: #e78284;
+
+  --text-positive: #a6d189;
+  --text-negative: #e78284;
+}
+
+/*
+ * Catppuccin Macchiato: Base page, Surface 0 cards, Mantle sidebar, Mauve accent. The series slots are the flavor's accents
+ * nudged until they pass the dataviz validator on Surface 0 (see palette.ts); the money tokens keep the flavor's own colors.
+ */
+:root[data-theme='macchiato'] {
+  color-scheme: dark;
+
+  --background: #24273a;
+  --foreground: #cad3f5;
+  --card: #363a4f;
+  --card-foreground: #cad3f5;
+  --popover: #363a4f;
+  --popover-foreground: #cad3f5;
+  --primary: #c6a0f6;
+  --primary-foreground: #181926;
+  --secondary: #494d64;
+  --secondary-foreground: #cad3f5;
+  --muted: #494d64;
+  --muted-foreground: #a5adcb;
+  --accent: #494d64;
+  --accent-foreground: #cad3f5;
+  --destructive: #ed8796;
+  --border: #494d64;
+  --input: #5b6078;
+  --ring: #c6a0f6;
+
+  --sidebar: #1e2030;
+  --sidebar-foreground: #b8c0e0;
+  --sidebar-primary: #c6a0f6;
+  --sidebar-primary-foreground: #181926;
+  --sidebar-accent: #363a4f;
+  --sidebar-accent-foreground: #cad3f5;
+  --sidebar-border: #363a4f;
+  --sidebar-ring: #c6a0f6;
+
+  --chart-surface: #363a4f;
+  --chart-ink: #cad3f5;
+  --chart-ink-2: #b8c0e0;
+  --chart-muted: #8087a2;
+  --chart-grid: #494d64;
+  --chart-axis: #5b6078;
+  --chart-tooltip: #181926;
+  --chart-on-fill: #181926;
+
+  --money-income: #a6da95;
+  --money-expense: #ed8796;
+  --money-net: #8aadf4;
+  --money-savings: #8bd5ca;
+  --money-budget: #8aadf4;
+  --money-revenue: #c6a0f6;
+  --money-hub: #8087a2;
+  --money-deficit: #f5a97f;
+  --money-other: #6e738d;
+
+  --series-1: #7c9df6;
+  --series-2: #d97385;
+  --series-3: #1fc8be;
+  --series-4: #f69961;
+  --series-5: #c49ff9;
+  --series-6: #8ec471;
+  --series-7: #da87c7;
+  --series-8: #daa637;
+
+  --status-good: #a6da95;
+  --status-warning: #eed49f;
+  --status-critical: #ed8796;
+
+  --text-positive: #a6da95;
+  --text-negative: #ed8796;
+}
+
+/*
+ * Catppuccin Mocha: Base page, Surface 0 cards, Mantle sidebar, Mauve accent. The series slots are the flavor's accents
+ * nudged until they pass the dataviz validator on Surface 0 (see palette.ts); the money tokens keep the flavor's own colors.
+ */
+:root[data-theme='mocha'] {
+  color-scheme: dark;
+
+  --background: #1e1e2e;
+  --foreground: #cdd6f4;
+  --card: #313244;
+  --card-foreground: #cdd6f4;
+  --popover: #313244;
+  --popover-foreground: #cdd6f4;
+  --primary: #cba6f7;
+  --primary-foreground: #11111b;
+  --secondary: #45475a;
+  --secondary-foreground: #cdd6f4;
+  --muted: #45475a;
+  --muted-foreground: #a6adc8;
+  --accent: #45475a;
+  --accent-foreground: #cdd6f4;
+  --destructive: #f38ba8;
+  --border: #45475a;
+  --input: #585b70;
+  --ring: #cba6f7;
+
+  --sidebar: #181825;
+  --sidebar-foreground: #bac2de;
+  --sidebar-primary: #cba6f7;
+  --sidebar-primary-foreground: #11111b;
+  --sidebar-accent: #313244;
+  --sidebar-accent-foreground: #cdd6f4;
+  --sidebar-border: #313244;
+  --sidebar-ring: #cba6f7;
+
+  --chart-surface: #313244;
+  --chart-ink: #cdd6f4;
+  --chart-ink-2: #bac2de;
+  --chart-muted: #7f849c;
+  --chart-grid: #45475a;
+  --chart-axis: #585b70;
+  --chart-tooltip: #11111b;
+  --chart-on-fill: #11111b;
+
+  --money-income: #a6e3a1;
+  --money-expense: #f38ba8;
+  --money-net: #89b4fa;
+  --money-savings: #94e2d5;
+  --money-budget: #89b4fa;
+  --money-revenue: #cba6f7;
+  --money-hub: #7f849c;
+  --money-deficit: #fab387;
+  --money-other: #6c7086;
+
+  --series-1: #43c4b9;
+  --series-2: #ec8f52;
+  --series-3: #c881b9;
+  --series-4: #cba747;
+  --series-5: #eb91ae;
+  --series-6: #8cb0f8;
+  --series-7: #89c679;
+  --series-8: #c69dfb;
+
+  --status-good: #a6e3a1;
+  --status-warning: #f9e2af;
+  --status-critical: #f38ba8;
+
+  --text-positive: #a6e3a1;
+  --text-negative: #f38ba8;
 }
 
 @theme inline {
